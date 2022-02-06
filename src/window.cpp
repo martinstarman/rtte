@@ -4,13 +4,19 @@
 
 namespace rtte
 {
-    Window::Window(int width, int height)
+    Window::Window(int width, int height, bool debug)
         : m_width(width),
-          m_height(height)
+          m_height(height),
+          m_debug(debug)
     {
         m_window = SDL_CreateWindow("RTTE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                     width, height, SDL_WINDOW_SHOWN);
         m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
+
+        if (debug)
+        {
+            SDL_Log("Window size: %ix%i", 800, 600);
+        }
     }
 
     Window::~Window()

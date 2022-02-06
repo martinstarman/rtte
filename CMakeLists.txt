@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(SDL2 CONFIG REQUIRED)
+find_package(docopt CONFIG REQUIRED)
 
 add_executable(
     ${PROJECT_NAME}
@@ -18,4 +19,5 @@ target_link_libraries(
     PRIVATE
     SDL2::SDL2
     SDL2::SDL2main
+    docopt
 )

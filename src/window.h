@@ -8,7 +8,7 @@ namespace rtte
     class Window
     {
     public:
-        Window(int width, int height);
+        Window(int width, int height, bool debug);
         ~Window();
         void Render();
 
@@ -17,6 +17,7 @@ namespace rtte
         SDL_Renderer *m_renderer;
         int m_width;
         int m_height;
+        bool m_debug;
     };
 }
 
