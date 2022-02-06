@@ -1,0 +1,4 @@
+[submodule "vendor/vcpkg"]
+	path = vendor/vcpkg
+	url = git@github.com:microsoft/vcpkg.git
+	branch = master
