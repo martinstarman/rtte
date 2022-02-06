@@ -9,6 +9,7 @@ find_package(SDL2 CONFIG REQUIRED)
 
 add_executable(
     ${PROJECT_NAME}
+    src/window.cpp
     src/main.cpp
 )
 

@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include "window.h"
 
 int main(int argc, char *argv[])
 {
@@ -8,10 +9,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("RTTE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                          800, 600, SDL_WINDOW_SHOWN);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
+    rtte::Window window(800, 600);
     bool isRunning = true;
     SDL_Event event;
 
@@ -25,13 +23,9 @@ int main(int argc, char *argv[])
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 255, 105, 180, 255);
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
+        window.Render();
     }
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
     SDL_Quit();
 
     return 0;
