@@ -8,10 +8,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(docopt CONFIG REQUIRED)
 
+include_directories(
+    vendor/navmesh/source
+)
+
 add_executable(
     ${PROJECT_NAME}
+    # 
+    src/path.cpp
     src/window.cpp
     src/main.cpp
+    # navmesh (it would be nice to port it to vcpkg)
+    vendor/navmesh/source/path_finder.cpp
+    vendor/navmesh/source/point.cpp
+    vendor/navmesh/source/polygon.cpp
 )
 
 target_link_libraries(

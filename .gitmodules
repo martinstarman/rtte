@@ -2,3 +2,7 @@
 	path = vendor/vcpkg
 	url = git@github.com:microsoft/vcpkg.git
 	branch = master
+[submodule "vendor/navmesh"]
+	path = vendor/navmesh
+	url = git@github.com:ilyanikolaevsky/navmesh.git
+	branch = master

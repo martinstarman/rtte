@@ -1,6 +1,7 @@
-#include "window.h"
 #include <docopt.h>
+#include "path.h"
 #include <SDL.h>
+#include "window.h"
 
 static const char USAGE[] =
     R"(RTTE.
@@ -35,6 +36,9 @@ int main(int argc, char *argv[])
     rtte::Window window(800, 600, args["--debug"].asBool());
     bool isRunning = true;
     SDL_Event event;
+
+    rtte::Path path;
+    path.Find(0, 0, 100, 100);
 
     while (isRunning)
     {
