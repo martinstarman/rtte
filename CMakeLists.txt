@@ -15,8 +15,8 @@ include_directories(
 add_executable(
     ${PROJECT_NAME}
     # 
-    src/path.cpp
-    src/window.cpp
+    src/entity.cpp
+    src/game.cpp
     src/main.cpp
     # navmesh (it would be nice to port it to vcpkg)
     vendor/navmesh/source/path_finder.cpp

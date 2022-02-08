@@ -1,7 +1,6 @@
 #include <docopt.h>
-#include "path.h"
+#include "game.h"
 #include <SDL.h>
-#include "window.h"
 
 static const char USAGE[] =
     R"(RTTE.
@@ -33,12 +32,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    rtte::Window window(800, 600, args["--debug"].asBool());
+    rtte::Game *game = rtte::Game::Get();
+
+    if (args["--debug"].asBool())
+    {
+        game->SetDebug();
+    }
+
     bool isRunning = true;
     SDL_Event event;
-
-    rtte::Path path;
-    path.Find(0, 0, 100, 100);
 
     while (isRunning)
     {
@@ -48,9 +50,13 @@ int main(int argc, char *argv[])
             {
                 isRunning = false;
             }
+            else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)
+            {
+                game->HandleClick(event.button.x, event.button.y);
+            }
         }
 
-        window.Render();
+        game->Render();
     }
 
     SDL_Quit();
