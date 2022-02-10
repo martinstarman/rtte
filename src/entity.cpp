@@ -8,22 +8,12 @@
 
 namespace rtte
 {
-    Entity::Entity()
-        : m_x(0.0f),
-          m_y(0.0f),
+    Entity::Entity(const std::vector<NavMesh::Polygon> &polygons)
+        : m_x(20.0f),
+          m_y(20.0f),
           m_pathFinder(),
           m_path({})
     {
-        // TODO: move it to the game
-        NavMesh::Polygon polygon;
-        polygon.AddPoint(25, 25);
-        polygon.AddPoint(50, 25);
-        polygon.AddPoint(50, 50);
-        polygon.AddPoint(25, 50);
-
-        std::vector<NavMesh::Polygon> polygons;
-        polygons.emplace_back(polygon);
-
         m_pathFinder.AddPolygons(polygons, 0);
     }
 
@@ -37,18 +27,24 @@ namespace rtte
 
         if (Game::Get()->GetDebug())
         {
-            if (m_path.size() > 0)
+            SDL_SetRenderDrawColor(Game::Get()->GetRenderer(), 255, 255, 255, 64);
+
+            // position
+            NavMesh::Point pos((int)m_x, (int)m_y);
+            pos = Game::Get()->ToRenderPos(pos);
+
+            SDL_RenderDrawLine(Game::Get()->GetRenderer(), pos.x, pos.y - 10, pos.x, pos.y + 10);
+            SDL_RenderDrawLine(Game::Get()->GetRenderer(), pos.x - 10, pos.y, pos.x + 10, pos.y);
+
+            // path
+            int size = (int)m_path.size();
+
+            for (int i = 0; i < size - 1; i++)
             {
-                std::vector<SDL_Point> points;
+                NavMesh::Point p1 = Game::Get()->ToRenderPos(m_path.at(i));
+                NavMesh::Point p2 = Game::Get()->ToRenderPos(m_path.at(i + 1));
 
-                for (int i = 0; i < m_path.size(); i++)
-                {
-                    NavMesh::Point point = m_path.at(i);
-                    points.emplace_back(SDL_Point{point.x, point.y});
-                }
-
-                SDL_SetRenderDrawColor(Game::Get()->GetRenderer(), 255, 255, 255, 64);
-                SDL_RenderDrawLines(Game::Get()->GetRenderer(), &points[0], (int)m_path.size());
+                SDL_RenderDrawLine(Game::Get()->GetRenderer(), p1.x, p1.y, p2.x, p2.y);
             }
         }
     }
@@ -57,9 +53,7 @@ namespace rtte
     {
         NavMesh::Point start((int)m_x, (int)m_y);
         NavMesh::Point end(x, y);
-
         m_pathFinder.AddExternalPoints({start, end});
-
         m_path = m_pathFinder.GetPath(start, end);
     }
 }

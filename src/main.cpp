@@ -50,13 +50,9 @@ int main(int argc, char *argv[])
             {
                 isRunning = false;
             }
-            else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT)
-            {
-                game->HandleClick(event.button.x, event.button.y);
-            }
         }
 
-        game->Render();
+        game->Update();
     }
 
     SDL_Quit();
