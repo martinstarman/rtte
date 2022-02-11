@@ -2,11 +2,12 @@ project(rtte CXX)
 
 cmake_minimum_required(VERSION 3.17)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(SDL2 CONFIG REQUIRED)
 find_package(docopt CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 include_directories(
     vendor/navmesh/source
@@ -16,6 +17,7 @@ add_executable(
     ${PROJECT_NAME}
     # 
     src/entity.cpp
+    src/serializer.cpp
     src/game.cpp
     src/main.cpp
     # navmesh (it would be nice to port it to vcpkg)
@@ -30,4 +32,5 @@ target_link_libraries(
     SDL2::SDL2
     SDL2::SDL2main
     docopt
+    yaml-cpp
 )

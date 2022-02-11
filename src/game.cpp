@@ -24,8 +24,8 @@ namespace rtte
         : m_debug(false),
           m_mouse{0, 0},
           m_windowSize(800, 600),
-          m_mapSize(1200, 900),
-          m_offset(0.0f, 0.0f)
+          m_offset(0.0f, 0.0f),
+          m_serializer()
     {
         m_window = SDL_CreateWindow("RTTE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                     m_windowSize.x, m_windowSize.y, SDL_WINDOW_SHOWN);
@@ -74,6 +74,23 @@ namespace rtte
         m_rightRect = SDL_Rect{m_windowSize.x - rectWidth, 0, rectWidth, m_windowSize.y};
         m_bottomRect = SDL_Rect{0, m_windowSize.y - rectWidth, m_windowSize.x, rectWidth};
         m_leftRect = SDL_Rect{0, 0, rectWidth, m_windowSize.y};
+
+        // defaults
+        m_gameData = {
+            .missionName = "",
+            .mapWidth = m_windowSize.x,
+            .mapHeight = m_windowSize.y};
+    }
+
+    void Game::Init(GameProps gameProps)
+    {
+        m_debug = gameProps.debug;
+        m_serializer.Deserialize(gameProps.missionFile);
+    }
+
+    void Game::SetGameData(GameData gameData)
+    {
+        m_gameData = gameData;
     }
 
     Game::~Game()
@@ -97,7 +114,7 @@ namespace rtte
             m_offset.x -= step;
         }
 
-        if (m_offset.x <= m_mapSize.x - m_windowSize.x &&
+        if (m_offset.x <= m_gameData.mapWidth - m_windowSize.x &&
             (keyState[SDL_SCANCODE_RIGHT] || SDL_PointInRect(&m_mouse, &m_rightRect)))
         {
             m_offset.x += step;
@@ -109,7 +126,7 @@ namespace rtte
             m_offset.y -= step;
         }
 
-        if (m_offset.y <= m_mapSize.y - m_windowSize.y &&
+        if (m_offset.y <= m_gameData.mapHeight - m_windowSize.y &&
             (keyState[SDL_SCANCODE_DOWN] || SDL_PointInRect(&m_mouse, &m_bottomRect)))
         {
             m_offset.y += step;
@@ -157,11 +174,6 @@ namespace rtte
         }
 
         SDL_RenderPresent(m_renderer);
-    }
-
-    void Game::SetDebug()
-    {
-        m_debug = true;
     }
 
     bool Game::GetDebug()

@@ -6,15 +6,15 @@ static const char USAGE[] =
     R"(RTTE.
 
     Usage:
-      rtte
+      rtte --mission=<path> [--debug]
       rtte (-h | --help)
       rtte (-v | --version)
-      rtte --debug
 
     Options:
-      -h --help     Show this screen.
-      -v --version     Show version.
-      --debug       Enable debug mode.
+      -h --help         Show this screen.
+      -v --version      Show version.
+      --debug           Enable debug mode.
+      --mission=<path>  Mission YAML file path.
 )";
 
 int main(int argc, char *argv[])
@@ -33,11 +33,10 @@ int main(int argc, char *argv[])
     }
 
     rtte::Game *game = rtte::Game::Get();
-
-    if (args["--debug"].asBool())
-    {
-        game->SetDebug();
-    }
+    game->Init({
+        .debug = args["--debug"].asBool(),
+        .missionFile = args["--mission"].asString()
+    });
 
     bool isRunning = true;
     SDL_Event event;
