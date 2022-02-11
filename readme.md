@@ -17,4 +17,4 @@ RTTE is attempt to create 2D open source game engine for real time tactics games
 - run ```./vendor/vcpkg/vcpkg.exe install```
 - run ```cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=./vendor/vcpkg/scripts/buildsystems/vcpkg.cmake```
 - run ```cmake --build build```
-- run ```./build/debug/rtte.exe```
+- run ```./build/debug/rtte.exe <mission-file-path>``` (see demo/mission.yaml for more info)
