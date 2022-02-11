@@ -1,20 +1,19 @@
 #include <docopt.h>
 #include "game.h"
 #include <SDL.h>
+#include "serializer.h"
 
 static const char USAGE[] =
     R"(RTTE.
 
     Usage:
-      rtte --mission=<path> [--debug]
+      rtte <mission-file-path>
       rtte (-h | --help)
       rtte (-v | --version)
 
     Options:
-      -h --help         Show this screen.
-      -v --version      Show version.
-      --debug           Enable debug mode.
-      --mission=<path>  Mission YAML file path.
+      -h --help     Show this screen.
+      -v --version  Show version.
 )";
 
 int main(int argc, char *argv[])
@@ -33,10 +32,8 @@ int main(int argc, char *argv[])
     }
 
     rtte::Game *game = rtte::Game::Get();
-    game->Init({
-        .debug = args["--debug"].asBool(),
-        .missionFile = args["--mission"].asString()
-    });
+    rtte::Serializer serializer;
+    serializer.Deserialize(args["<mission-file-path>"].asString());
 
     bool isRunning = true;
     SDL_Event event;

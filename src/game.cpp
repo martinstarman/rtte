@@ -21,11 +21,9 @@ namespace rtte
     }
 
     Game::Game()
-        : m_debug(false),
-          m_mouse{0, 0},
+        : m_mouse{0, 0},
           m_windowSize(800, 600),
-          m_offset(0.0f, 0.0f),
-          m_serializer()
+          m_offset(0.0f, 0.0f)
     {
         m_window = SDL_CreateWindow("RTTE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                     m_windowSize.x, m_windowSize.y, SDL_WINDOW_SHOWN);
@@ -77,15 +75,10 @@ namespace rtte
 
         // defaults
         m_gameData = {
+            .debug = false,
             .missionName = "",
             .mapWidth = m_windowSize.x,
             .mapHeight = m_windowSize.y};
-    }
-
-    void Game::Init(GameProps gameProps)
-    {
-        m_debug = gameProps.debug;
-        m_serializer.Deserialize(gameProps.missionFile);
     }
 
     void Game::SetGameData(GameData gameData)
@@ -148,7 +141,7 @@ namespace rtte
 
         m_entity->Render();
 
-        if (m_debug)
+        if (m_gameData.debug)
         {
             SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 64);
 
@@ -178,7 +171,7 @@ namespace rtte
 
     bool Game::GetDebug()
     {
-        return m_debug;
+        return m_gameData.debug;
     }
 
     SDL_Renderer *Game::GetRenderer()

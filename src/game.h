@@ -6,22 +6,15 @@
 #include <pointf.h>
 #include <polygon.h>
 #include <SDL.h>
-#include "serializer.h"
 #include <string>
 #include <vector>
 
 namespace rtte
 {
-    // arguments
-    struct GameProps
-    {
-        bool debug;
-        std::string missionFile;
-    };
-
     // data to (de)serialization
     struct GameData
     {
+        bool debug;
         std::string missionName;
         int mapWidth;
         int mapHeight;
@@ -31,7 +24,6 @@ namespace rtte
     {
     public:
         static Game *Get();
-        void Init(GameProps gameProps);
         void SetGameData(GameData gameData);
         ~Game();
         void Update();
@@ -48,7 +40,6 @@ namespace rtte
         SDL_Renderer *m_renderer;
         std::vector<NavMesh::Polygon> m_polygons; // game data
         Entity *m_entity;                         // game data
-        bool m_debug;
         SDL_Point m_mouse;
         NavMesh::Point m_windowSize;
         NavMesh::PointF m_offset;
@@ -56,7 +47,6 @@ namespace rtte
         SDL_Rect m_rightRect;
         SDL_Rect m_bottomRect;
         SDL_Rect m_leftRect;
-        Serializer m_serializer;
         GameData m_gameData;
     };
 }

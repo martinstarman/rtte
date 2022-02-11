@@ -1,3 +1,5 @@
+debug: false
+
 name: "Demo mission"
 
 map width: 1200
