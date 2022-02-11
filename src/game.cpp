@@ -31,42 +31,6 @@ namespace rtte
         SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
         SDL_SetWindowMouseGrab(m_window, SDL_TRUE);
 
-        NavMesh::Polygon polygon1;
-        polygon1.AddPoint(225, 225);
-        polygon1.AddPoint(250, 225);
-        polygon1.AddPoint(250, 250);
-        polygon1.AddPoint(225, 250);
-        m_polygons.emplace_back(polygon1);
-
-        NavMesh::Polygon polygon2;
-        polygon2.AddPoint(275, 225);
-        polygon2.AddPoint(300, 225);
-        polygon2.AddPoint(300, 250);
-        polygon2.AddPoint(275, 250);
-        m_polygons.emplace_back(polygon2);
-
-        NavMesh::Polygon polygon3;
-        polygon3.AddPoint(225, 275);
-        polygon3.AddPoint(250, 275);
-        polygon3.AddPoint(250, 300);
-        polygon3.AddPoint(225, 300);
-        m_polygons.emplace_back(polygon3);
-
-        NavMesh::Polygon polygon4;
-        polygon4.AddPoint(275, 275);
-        polygon4.AddPoint(300, 275);
-        polygon4.AddPoint(300, 300);
-        polygon4.AddPoint(275, 300);
-        m_polygons.emplace_back(polygon4);
-
-        NavMesh::Polygon polygon5;
-        polygon5.AddPoint(1100, 800);
-        polygon5.AddPoint(1150, 850);
-        polygon5.AddPoint(1050, 850);
-        m_polygons.emplace_back(polygon5);
-
-        m_entity = new Entity(m_polygons);
-
         int rectWidth = 20;
         m_topRect = SDL_Rect{0, 0, m_windowSize.x, rectWidth};
         m_rightRect = SDL_Rect{m_windowSize.x - rectWidth, 0, rectWidth, m_windowSize.y};
@@ -78,12 +42,15 @@ namespace rtte
             .debug = false,
             .missionName = "",
             .mapWidth = m_windowSize.x,
-            .mapHeight = m_windowSize.y};
+            .mapHeight = m_windowSize.y,
+            .polygons = {},
+        };
     }
 
     void Game::SetGameData(GameData gameData)
     {
         m_gameData = gameData;
+        m_entity = new Entity(gameData.polygons);
     }
 
     Game::~Game()
@@ -146,7 +113,7 @@ namespace rtte
             SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 64);
 
             // polygons
-            for (const auto polygon : m_polygons)
+            for (const auto polygon : m_gameData.polygons)
             {
                 int size = polygon.Size();
 

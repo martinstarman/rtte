@@ -18,6 +18,7 @@ namespace rtte
         std::string missionName;
         int mapWidth;
         int mapHeight;
+        std::vector<NavMesh::Polygon> polygons;
     };
 
     class Game
@@ -38,7 +39,6 @@ namespace rtte
         static Game *s_instance;
         SDL_Window *m_window;
         SDL_Renderer *m_renderer;
-        std::vector<NavMesh::Polygon> m_polygons; // game data
         Entity *m_entity;                         // game data
         SDL_Point m_mouse;
         NavMesh::Point m_windowSize;
