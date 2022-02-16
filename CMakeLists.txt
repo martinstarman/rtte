@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(docopt CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
+find_package(Fontconfig REQUIRED)
+find_package(sdl2-ttf CONFIG REQUIRED)
 
 include_directories(
     vendor/navmesh/source
@@ -16,6 +18,7 @@ include_directories(
 add_executable(
     ${PROJECT_NAME}
     # 
+    src/util.cpp
     src/entity.cpp
     src/serializer.cpp
     src/game.cpp
@@ -33,4 +36,6 @@ target_link_libraries(
     SDL2::SDL2main
     docopt
     yaml-cpp
+    Fontconfig::Fontconfig
+    SDL2::SDL2_ttf
 )

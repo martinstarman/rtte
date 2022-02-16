@@ -4,6 +4,8 @@
     "dependencies": [
         "sdl2",
         "docopt",
-        "yaml-cpp"
+        "yaml-cpp",
+        "fontconfig",
+        "sdl2-ttf"
     ]
 }

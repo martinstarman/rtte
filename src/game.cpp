@@ -4,6 +4,8 @@
 #include <point.h>
 #include <polygon.h>
 #include <SDL.h>
+#include <SDL_ttf.h>
+#include "util.h"
 #include <vector>
 
 namespace rtte
@@ -31,6 +33,8 @@ namespace rtte
         SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
         SDL_SetWindowMouseGrab(m_window, SDL_TRUE);
 
+        m_font = TTF_OpenFont(util::GetFontPath().c_str(), 14);
+
         int rectWidth = 20;
         m_topRect = SDL_Rect{0, 0, m_windowSize.x, rectWidth};
         m_rightRect = SDL_Rect{m_windowSize.x - rectWidth, 0, rectWidth, m_windowSize.y};
@@ -57,11 +61,12 @@ namespace rtte
     {
         SDL_DestroyRenderer(m_renderer);
         SDL_DestroyWindow(m_window);
+        TTF_CloseFont(m_font);
         delete m_entity;
         delete s_instance;
     }
 
-    void Game::Update()
+    void Game::Update(float dt)
     {
         SDL_PumpEvents();
         const uint8_t *keyState = SDL_GetKeyboardState(nullptr);
@@ -98,10 +103,10 @@ namespace rtte
             m_entity->FindPath(pos.x, pos.y);
         }
 
-        Render();
+        Render(dt);
     }
 
-    void Game::Render()
+    void Game::Render(float dt)
     {
         SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
         SDL_RenderClear(m_renderer);
@@ -131,6 +136,17 @@ namespace rtte
             SDL_RenderDrawRect(m_renderer, &m_rightRect);
             SDL_RenderDrawRect(m_renderer, &m_bottomRect);
             SDL_RenderDrawRect(m_renderer, &m_leftRect);
+
+            //
+            std::string fps = "fps: " + std::to_string(1 / dt);
+            SDL_Surface *surface = TTF_RenderText_Solid(m_font, fps.c_str(), {255, 255, 255, 128});
+            SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
+            int w, h;
+            SDL_QueryTexture(texture, nullptr, nullptr, &w, &h);
+            SDL_Rect dest{30, 30, w, h};
+            SDL_RenderCopy(m_renderer, texture, nullptr, &dest);
+            SDL_DestroyTexture(texture);
+            SDL_FreeSurface(surface);
         }
 
         SDL_RenderPresent(m_renderer);

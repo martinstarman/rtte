@@ -7,6 +7,8 @@
 #include <polygon.h>
 #include <SDL.h>
 #include <string>
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include <vector>
 
 namespace rtte
@@ -27,19 +29,19 @@ namespace rtte
         static Game *Get();
         void SetGameData(GameData gameData);
         ~Game();
-        void Update();
+        void Update(float dt);
         bool GetDebug();
         SDL_Renderer *GetRenderer();
         NavMesh::Point ToRenderPos(NavMesh::Point pos);
 
     private:
         Game();
-        void Render();
+        void Render(float dt);
         NavMesh::Point ToGamePos(SDL_Point pos);
         static Game *s_instance;
         SDL_Window *m_window;
         SDL_Renderer *m_renderer;
-        Entity *m_entity;                         // game data
+        Entity *m_entity; // game data
         SDL_Point m_mouse;
         NavMesh::Point m_windowSize;
         NavMesh::PointF m_offset;
@@ -48,6 +50,7 @@ namespace rtte
         SDL_Rect m_bottomRect;
         SDL_Rect m_leftRect;
         GameData m_gameData;
+        TTF_Font *m_font;
     };
 }
 
