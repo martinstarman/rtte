@@ -52,23 +52,13 @@ int main(int argc, char *argv[])
     rtte::Serializer serializer;
     serializer.Deserialize(args["<mission-file-path>"].asString());
 
-    bool isRunning = true;
     int time = 0;
     int lastTime = 0;
     float dt = 0;
-    SDL_Event event;
 
-    while (isRunning)
+    while (true)
     {
         time = SDL_GetTicks();
-
-        while (SDL_PollEvent(&event))
-        {
-            if (event.type == SDL_QUIT)
-            {
-                isRunning = false;
-            }
-        }
 
         dt += (time - lastTime) / 1000.0f;
 
