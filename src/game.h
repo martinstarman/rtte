@@ -17,7 +17,7 @@ namespace rtte
     struct GameData
     {
         bool debug;
-        std::string missionName;
+        std::string missionName; // TODO: not used
         int mapWidth;
         int mapHeight;
         std::vector<NavMesh::Polygon> polygons;
@@ -30,27 +30,31 @@ namespace rtte
         void SetGameData(GameData gameData);
         ~Game();
         void Update(float dt);
+        void Render(float dt);
         bool GetDebug();
         SDL_Renderer *GetRenderer();
         NavMesh::Point ToRenderPos(NavMesh::Point pos);
+        bool GetRunning();
 
     private:
         Game();
-        void Render(float dt);
         NavMesh::Point ToGamePos(SDL_Point pos);
+
+    private:
         static Game *s_instance;
         SDL_Window *m_window;
         SDL_Renderer *m_renderer;
-        Entity *m_entity; // game data
         SDL_Point m_mouse;
         NavMesh::Point m_windowSize;
         NavMesh::PointF m_offset;
+        TTF_Font *m_font;
+        bool m_running;
         SDL_Rect m_topRect;
         SDL_Rect m_rightRect;
         SDL_Rect m_bottomRect;
         SDL_Rect m_leftRect;
         GameData m_gameData;
-        TTF_Font *m_font;
+        Entity *m_entity; // TODO: game data
     };
 }
 

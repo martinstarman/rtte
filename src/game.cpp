@@ -25,7 +25,8 @@ namespace rtte
     Game::Game()
         : m_mouse{0, 0},
           m_windowSize(800, 600),
-          m_offset(0.0f, 0.0f)
+          m_offset(0.0f, 0.0f),
+          m_running(true)
     {
         m_window = SDL_CreateWindow("RTTE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                     m_windowSize.x, m_windowSize.y, SDL_WINDOW_SHOWN);
@@ -97,13 +98,23 @@ namespace rtte
             m_offset.y += step;
         }
 
+        if (keyState[SDL_SCANCODE_ESCAPE])
+        {
+            m_running = false;
+        }
+
         if ((mouseState & SDL_BUTTON_LMASK) != 0)
         {
             NavMesh::Point pos = ToGamePos(m_mouse);
             m_entity->FindPath(pos.x, pos.y);
         }
 
-        Render(dt);
+        if ((mouseState & SDL_BUTTON_RMASK) != 0)
+        {
+            m_entity->RemovePath();
+        }
+
+        m_entity->Update(dt);
     }
 
     void Game::Render(float dt)
@@ -113,7 +124,8 @@ namespace rtte
 
         m_entity->Render();
 
-        if (m_gameData.debug)
+        // debug
+        if (GetDebug())
         {
             SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 64);
 
@@ -171,4 +183,9 @@ namespace rtte
     {
         return NavMesh::Point(pos.x + (int)m_offset.x, pos.y + (int)m_offset.y);
     }
+
+    bool Game::GetRunning()
+    {
+        return m_running;
+    };
 }

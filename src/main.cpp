@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     int lastTime = 0;
     float dt = 0;
 
-    while (true)
+    while (game->GetRunning())
     {
         time = SDL_GetTicks();
 
@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
         if (dt > 1.0f / 60.0f)
         {
             game->Update(dt);
+            game->Render(dt);
             lastTime = time;
             dt = 0;
         }

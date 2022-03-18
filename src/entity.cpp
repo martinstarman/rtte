@@ -4,6 +4,7 @@
 #include "point.h"
 #include "polygon.h"
 #include <SDL.h>
+#include "util.h"
 #include <vector>
 
 namespace rtte
@@ -21,10 +22,35 @@ namespace rtte
     {
     }
 
+    void Entity::Update(float dt)
+    {
+        // movement
+        if (m_path.size() > 0)
+        {
+            NavMesh::Point next = m_path.at(0);
+            float dx = next.x - m_x;
+            float dy = next.y - m_y;
+            float dist = util::Distance(m_x, m_y, (float)next.x, (float)next.y);
+
+            m_x += dx * dt / dist;
+            m_y += dy * dt / dist;
+
+            dist = util::Distance(m_x, m_y, (float)next.x, (float)next.y);
+
+            if (dist <= 1.0f)
+            {
+                m_path.erase(m_path.begin());
+                m_x = (float)next.x;
+                m_y = (float)next.y;
+            }
+        }
+    }
+
     void Entity::Render()
     {
         // TODO: render entity
 
+        // debug
         if (Game::Get()->GetDebug())
         {
             SDL_SetRenderDrawColor(Game::Get()->GetRenderer(), 255, 255, 255, 64);
@@ -39,12 +65,18 @@ namespace rtte
             // path
             int size = (int)m_path.size();
 
-            for (int i = 0; i < size - 1; i++)
+            if (size > 0)
             {
-                NavMesh::Point p1 = Game::Get()->ToRenderPos(m_path.at(i));
-                NavMesh::Point p2 = Game::Get()->ToRenderPos(m_path.at(i + 1));
+                NavMesh::Point next = Game::Get()->ToRenderPos(m_path.at(0));
+                SDL_RenderDrawLine(Game::Get()->GetRenderer(), pos.x, pos.y, next.x, next.y);
 
-                SDL_RenderDrawLine(Game::Get()->GetRenderer(), p1.x, p1.y, p2.x, p2.y);
+                for (int i = 0; i < size - 1; i++)
+                {
+                    NavMesh::Point p1 = Game::Get()->ToRenderPos(m_path.at(i));
+                    NavMesh::Point p2 = Game::Get()->ToRenderPos(m_path.at(i + 1));
+
+                    SDL_RenderDrawLine(Game::Get()->GetRenderer(), p1.x, p1.y, p2.x, p2.y);
+                }
             }
         }
     }
@@ -55,5 +87,15 @@ namespace rtte
         NavMesh::Point end(x, y);
         m_pathFinder.AddExternalPoints({start, end});
         m_path = m_pathFinder.GetPath(start, end);
+
+        if (m_path.size() > 0)
+        {
+            m_path.erase(m_path.begin()); // first position equals entity position
+        }
+    }
+
+    void Entity::RemovePath()
+    {
+        m_path.clear();
     }
 }

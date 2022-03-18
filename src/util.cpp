@@ -1,5 +1,6 @@
 #include "util.h"
 
+#include <cmath>
 #include <fontconfig/fontconfig.h>
 #include <string>
 
@@ -33,5 +34,12 @@ namespace rtte::util
         FcFini();
 
         return fontPath;
+    }
+
+    float Distance(float x1, float y1, float x2, float y2)
+    {
+        float dx = x1 - x2;
+        float dy = y1 - y2;
+        return std::sqrtf((dx * dx) + (dy * dy));
     }
 }
