@@ -9,9 +9,9 @@
 
 namespace rtte
 {
-    Entity::Entity(const std::vector<NavMesh::Polygon> &polygons)
-        : m_x(20.0f),
-          m_y(20.0f),
+    Entity::Entity(float x, float y, const std::vector<NavMesh::Polygon> &polygons)
+        : m_x(x),
+          m_y(y),
           m_pathFinder(),
           m_path({})
     {

@@ -1,5 +1,6 @@
 #include "serializer.h"
 
+#include "entity.h"
 #include "game.h"
 #include <Polygon.h>
 #include <string>
@@ -33,12 +34,26 @@ namespace rtte
             polygons.emplace_back(polygon);
         }
 
+        std::vector<Entity *> entities;
+
+        for (const auto &character : data["characters"])
+        {
+            float x = character["position"][0].as<float>();
+            float y = character["position"][1].as<float>();
+
+            Entity *entity = new Entity(x, y, polygons);
+
+            entities.emplace_back(entity);
+        }
+
         GameData gameData = {
             .debug = data["debug"].as<bool>(),
             .missionName = data["name"].as<std::string>(),
             .mapWidth = data["map width"].as<int>(),
             .mapHeight = data["map height"].as<int>(),
-            .polygons = polygons};
+            .polygons = polygons,
+            .entities = entities,
+        };
 
         Game::Get()->SetGameData(gameData);
     };

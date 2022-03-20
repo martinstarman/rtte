@@ -55,7 +55,6 @@ namespace rtte
     void Game::SetGameData(GameData gameData)
     {
         m_gameData = gameData;
-        m_entity = new Entity(gameData.polygons);
     }
 
     Game::~Game()
@@ -63,7 +62,12 @@ namespace rtte
         SDL_DestroyRenderer(m_renderer);
         SDL_DestroyWindow(m_window);
         TTF_CloseFont(m_font);
-        delete m_entity;
+
+        for(auto entity : m_gameData.entities)
+        {
+            delete entity;
+        }
+
         delete s_instance;
     }
 
@@ -106,15 +110,15 @@ namespace rtte
         if ((mouseState & SDL_BUTTON_LMASK) != 0)
         {
             NavMesh::Point pos = ToGamePos(m_mouse);
-            m_entity->FindPath(pos.x, pos.y);
+            m_gameData.entities.at(0)->FindPath(pos.x, pos.y);
         }
 
         if ((mouseState & SDL_BUTTON_RMASK) != 0)
         {
-            m_entity->RemovePath();
+            m_gameData.entities.at(0)->RemovePath();
         }
 
-        m_entity->Update(dt);
+        m_gameData.entities.at(0)->Update(dt);
     }
 
     void Game::Render(float dt)
@@ -122,7 +126,7 @@ namespace rtte
         SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
         SDL_RenderClear(m_renderer);
 
-        m_entity->Render();
+        m_gameData.entities.at(0)->Render();
 
         // debug
         if (GetDebug())

@@ -21,6 +21,7 @@ namespace rtte
         int mapWidth;
         int mapHeight;
         std::vector<NavMesh::Polygon> polygons;
+        std::vector<Entity *> entities;
     };
 
     class Game
@@ -54,7 +55,6 @@ namespace rtte
         SDL_Rect m_bottomRect;
         SDL_Rect m_leftRect;
         GameData m_gameData;
-        Entity *m_entity; // TODO: game data
     };
 }
 

@@ -10,7 +10,7 @@ namespace rtte
     class Entity
     {
     public:
-        Entity(const std::vector<NavMesh::Polygon> &polygons);
+        Entity(float x, float y, const std::vector<NavMesh::Polygon> &polygons);
         ~Entity();
         void FindPath(int x, int y);
         void RemovePath();
