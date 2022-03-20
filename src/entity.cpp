@@ -24,7 +24,11 @@ namespace rtte
 
     void Entity::Update(float dt)
     {
-        // movement
+        Move(dt);
+    }
+
+    void Entity::Move(float dt)
+    {
         if (m_path.size() > 0)
         {
             NavMesh::Point next = m_path.at(0);

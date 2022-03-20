@@ -17,6 +17,9 @@ namespace rtte
         void Update(float dt);
         void Render();
 
+    private: 
+        void Move(float dt);
+
     private:
         float m_x;
         float m_y;
