@@ -63,7 +63,7 @@ namespace rtte
         SDL_DestroyWindow(m_window);
         TTF_CloseFont(m_font);
 
-        for(auto entity : m_gameData.entities)
+        for (auto entity : m_gameData.entities)
         {
             delete entity;
         }
@@ -110,15 +110,20 @@ namespace rtte
         if ((mouseState & SDL_BUTTON_LMASK) != 0)
         {
             NavMesh::Point pos = ToGamePos(m_mouse);
+            // TODO: selected character
             m_gameData.entities.at(0)->FindPath(pos.x, pos.y);
         }
 
         if ((mouseState & SDL_BUTTON_RMASK) != 0)
         {
+            // TODO: selected character
             m_gameData.entities.at(0)->RemovePath();
         }
 
-        m_gameData.entities.at(0)->Update(dt);
+        for (const auto entity : m_gameData.entities)
+        {
+            entity->Update(dt);
+        }
     }
 
     void Game::Render(float dt)

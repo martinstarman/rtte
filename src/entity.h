@@ -3,6 +3,7 @@
 
 #include <path_finder.h>
 #include <point.h>
+#include <polygon.h>
 #include <vector>
 
 namespace rtte

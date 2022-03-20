@@ -1,6 +1,7 @@
 #include "serializer.h"
 
 #include "entity.h"
+#include "character.h"
 #include "game.h"
 #include <Polygon.h>
 #include <string>
@@ -41,7 +42,7 @@ namespace rtte
             float x = character["position"][0].as<float>();
             float y = character["position"][1].as<float>();
 
-            Entity *entity = new Entity(x, y, polygons);
+            Entity *entity = new Character(x, y, polygons);
 
             entities.emplace_back(entity);
         }
