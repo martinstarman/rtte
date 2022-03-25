@@ -15,8 +15,8 @@ namespace rtte
         ~Entity();
         void FindPath(int x, int y);
         void RemovePath();
-        void Update(float dt);
-        void Render();
+        virtual void Update(float dt);
+        virtual void Render();
         SDL_Rect GetRect();
         void Select();
         void Deselect();
@@ -28,11 +28,13 @@ namespace rtte
         void Move(float dt);
 
     private:
-        float m_x;
-        float m_y;
         bool m_selected;
         NavMesh::PathFinder m_pathFinder;
         std::vector<SDL_Point> m_path;
+
+    protected:
+        float m_x;
+        float m_y;
     };
 }
 

@@ -1,7 +1,8 @@
 #include "game.h"
 
 #include <algorithm>
-#include "entity.h"
+#include "enemy.h"
+#include "character.h"
 #include <point.h>
 #include <polygon.h>
 #include <SDL.h>
@@ -274,42 +275,75 @@ namespace rtte
     void Game::HandleLeftMouseButtonClick()
     {
         SDL_Point mouse = ToGamePos(m_mouse);
-        int selectedEntityIndex = -1;
 
-        for (int i = 0; i < m_gameData.entities.size(); i++)
+        // characters
+        int selectedCharacterIndex = -1;
+
+        for (int i = 0; i < m_gameData.characters.size(); i++)
         {
-            Entity *entity = m_gameData.entities.at(i);
-            SDL_Rect entityRect = entity->GetRect();
+            Character *character = m_gameData.characters.at(i);
+            SDL_Rect entityRect = character->GetRect();
 
             if (SDL_PointInRect(&mouse, &entityRect))
             {
-                selectedEntityIndex = i;
+                selectedCharacterIndex = i;
             }
         }
 
-        if (selectedEntityIndex == -1)
+        if (selectedCharacterIndex == -1)
         {
-            for (const auto entity : m_gameData.entities)
+            for (const auto character : m_gameData.characters)
             {
-                if (entity->Selected())
+                if (character->Selected())
                 {
-                    entity->FindPath(mouse.x, mouse.y);
+                    character->FindPath(mouse.x, mouse.y);
                 }
             }
         }
         else
         {
-            for (int i = 0; i < m_gameData.entities.size(); i++)
+            for (int i = 0; i < m_gameData.characters.size(); i++)
             {
-                Entity *entity = m_gameData.entities.at(i);
+                Entity *character = m_gameData.characters.at(i);
 
-                if (i == selectedEntityIndex)
+                if (i == selectedCharacterIndex)
                 {
-                    entity->Select();
+                    character->Select();
                 }
                 else
                 {
-                    entity->Deselect();
+                    character->Deselect();
+                }
+            }
+        }
+
+        // enemies
+        int selectedEnemyIndex = -1;
+
+        for (int i = 0; i < m_gameData.enemies.size(); i++)
+        {
+            Enemy *enemy = m_gameData.enemies.at(i);
+            SDL_Rect entityRect = enemy->GetRect();
+
+            if (SDL_PointInRect(&mouse, &entityRect))
+            {
+                selectedEnemyIndex = i;
+            }
+        }
+
+        if (selectedEnemyIndex > -1)
+        {
+            for (int i = 0; i < m_gameData.enemies.size(); i++)
+            {
+                Enemy *enemy = m_gameData.enemies.at(i);
+
+                if (i == selectedEnemyIndex)
+                {
+                    enemy->Select();
+                }
+                else
+                {
+                    enemy->Deselect();
                 }
             }
         }
@@ -317,7 +351,7 @@ namespace rtte
 
     void Game::HandleLeftMouseButtonArea()
     {
-        std::vector<int> selectedEntityIndex;
+        std::vector<int> selectedCharacterIndex;
         SDL_Point mouse = ToGamePos(m_mouse);
         SDL_Point leftMouseButtonDown = ToGamePos(m_leftMouseButtonDown);
 
@@ -328,32 +362,32 @@ namespace rtte
 
         SDL_Rect rect = {minx, miny, maxx - minx, maxy - miny};
 
-        for (int i = 0; i < m_gameData.entities.size(); i++)
+        for (int i = 0; i < m_gameData.characters.size(); i++)
         {
-            Entity *entity = m_gameData.entities.at(i);
-            SDL_Point pos{(int)entity->GetX(), (int)entity->GetY()};
+            Character *character = m_gameData.characters.at(i);
+            SDL_Point pos{(int)character->GetX(), (int)character->GetY()};
 
             if (SDL_PointInRect(&pos, &rect))
             {
-                selectedEntityIndex.emplace_back(i);
+                selectedCharacterIndex.emplace_back(i);
             }
         }
 
         // do not deselect entities when no character is in selection area
-        if (selectedEntityIndex.size() > 0)
+        if (selectedCharacterIndex.size() > 0)
         {
-            for (int i = 0; i < m_gameData.entities.size(); i++)
+            for (int i = 0; i < m_gameData.characters.size(); i++)
             {
-                Entity *entity = m_gameData.entities.at(i);
+                Character *character = m_gameData.characters.at(i);
 
-                if (std::find(selectedEntityIndex.begin(), selectedEntityIndex.end(), i) ==
-                    selectedEntityIndex.end())
+                if (std::find(selectedCharacterIndex.begin(), selectedCharacterIndex.end(), i) ==
+                    selectedCharacterIndex.end())
                 {
-                    entity->Deselect();
+                    character->Deselect();
                 }
                 else
                 {
-                    entity->Select();
+                    character->Select();
                 }
             }
         }

@@ -15,3 +15,6 @@ polygons:
 characters:
   - position: [100, 300]
   - position: [300, 100]
+
+enemies:
+  - position: [275, 350]

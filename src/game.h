@@ -1,7 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "enemy.h"
 #include "entity.h"
+#include "character.h"
 #include <pointf.h>
 #include <polygon.h>
 #include <SDL.h>
@@ -21,6 +23,8 @@ namespace rtte
         int mapHeight;
         std::vector<NavMesh::Polygon> polygons;
         std::vector<Entity *> entities;
+        std::vector<Character *> characters;
+        std::vector<Enemy *> enemies;
     };
 
     class Game

@@ -1,7 +1,9 @@
 #include "serializer.h"
 
+#include "enemy.h"
 #include "entity.h"
 #include "game.h"
+#include "character.h"
 #include <Polygon.h>
 #include <string>
 #include <vector>
@@ -35,15 +37,29 @@ namespace rtte
         }
 
         std::vector<Entity *> entities;
+        std::vector<Character *> characters;
+        std::vector<Enemy *> enemies;
 
         for (const auto &character : data["characters"])
         {
             float x = character["position"][0].as<float>();
             float y = character["position"][1].as<float>();
 
-            Entity *entity = new Entity(x, y, polygons);
+            Character *entity = new Character(x, y, polygons);
 
             entities.emplace_back(entity);
+            characters.emplace_back(entity);
+        }
+
+        for (const auto &enemy : data["enemies"])
+        {
+            float x = enemy["position"][0].as<float>();
+            float y = enemy["position"][1].as<float>();
+
+            Enemy *entity = new Enemy(x, y, polygons);
+
+            entities.emplace_back(entity);
+            enemies.emplace_back(entity);
         }
 
         GameData gameData = {
@@ -53,6 +69,8 @@ namespace rtte
             .mapHeight = data["map height"].as<int>(),
             .polygons = polygons,
             .entities = entities,
+            .characters = characters,
+            .enemies = enemies,
         };
 
         Game::Get()->SetGameData(gameData);

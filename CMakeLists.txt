@@ -20,6 +20,8 @@ add_executable(
     # 
     src/util.cpp
     src/entity.cpp
+    src/character.cpp
+    src/enemy.cpp
     src/serializer.cpp
     src/game.cpp
     src/main.cpp
@@ -27,6 +29,8 @@ add_executable(
     vendor/navmesh/source/path_finder.cpp
     vendor/navmesh/source/point.cpp
     vendor/navmesh/source/polygon.cpp
+    vendor/navmesh/source/cone_of_vision.cpp
+    vendor/navmesh/source/segment.cpp
 )
 
 target_link_libraries(
