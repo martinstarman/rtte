@@ -14,3 +14,4 @@ polygons:
 
 characters:
   - position: [100, 300]
+  - position: [300, 100]

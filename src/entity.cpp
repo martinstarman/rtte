@@ -12,6 +12,7 @@ namespace rtte
     Entity::Entity(float x, float y, const std::vector<NavMesh::Polygon> &polygons)
         : m_x(x),
           m_y(y),
+          m_selected(false),
           m_pathFinder(),
           m_path({})
     {
@@ -31,7 +32,7 @@ namespace rtte
     {
         if (m_path.size() > 0)
         {
-            NavMesh::Point next = m_path.at(0);
+            SDL_Point next = m_path.at(0);
             float dx = next.x - m_x;
             float dy = next.y - m_y;
             float dist = util::Distance(m_x, m_y, (float)next.x, (float)next.y);
@@ -60,24 +61,33 @@ namespace rtte
             SDL_SetRenderDrawColor(Game::Get()->GetRenderer(), 255, 255, 255, 64);
 
             // position
-            NavMesh::Point pos((int)m_x, (int)m_y);
-            pos = Game::Get()->ToRenderPos(pos);
+            SDL_Point pos = Game::Get()->ToRenderPos((int)m_x, (int)m_y);
 
             SDL_RenderDrawLine(Game::Get()->GetRenderer(), pos.x, pos.y - 10, pos.x, pos.y + 10);
             SDL_RenderDrawLine(Game::Get()->GetRenderer(), pos.x - 10, pos.y, pos.x + 10, pos.y);
+
+            // rect
+            if (m_selected)
+            {
+                SDL_Rect rect = {pos.x - 10, pos.y - 10, 20, 20}; // TODO: width, height
+                SDL_RenderDrawRect(Game::Get()->GetRenderer(), &rect);
+            }
 
             // path
             int size = (int)m_path.size();
 
             if (size > 0)
             {
-                NavMesh::Point next = Game::Get()->ToRenderPos(m_path.at(0));
+                SDL_Point next = m_path.at(0);
+                next = Game::Get()->ToRenderPos(next.x, next.y);
                 SDL_RenderDrawLine(Game::Get()->GetRenderer(), pos.x, pos.y, next.x, next.y);
 
                 for (int i = 0; i < size - 1; i++)
                 {
-                    NavMesh::Point p1 = Game::Get()->ToRenderPos(m_path.at(i));
-                    NavMesh::Point p2 = Game::Get()->ToRenderPos(m_path.at(i + 1));
+                    SDL_Point p1 = m_path.at(i);
+                    SDL_Point p2 = m_path.at(i + 1);
+                    p1 = Game::Get()->ToRenderPos(p1.x, p1.y);
+                    p2 = Game::Get()->ToRenderPos(p2.x, p2.y);
 
                     SDL_RenderDrawLine(Game::Get()->GetRenderer(), p1.x, p1.y, p2.x, p2.y);
                 }
@@ -90,16 +100,49 @@ namespace rtte
         NavMesh::Point start((int)m_x, (int)m_y);
         NavMesh::Point end(x, y);
         m_pathFinder.AddExternalPoints({start, end});
-        m_path = m_pathFinder.GetPath(start, end);
+        std::vector<NavMesh::Point> path = m_pathFinder.GetPath(start, end);
+        m_path.clear();
 
-        if (m_path.size() > 0)
+        // first position equals entity position
+        for (int i = 1; i < path.size(); i++)
         {
-            m_path.erase(m_path.begin()); // first position equals entity position
+            NavMesh::Point point = path.at(i);
+            m_path.emplace_back(SDL_Point{point.x, point.y});
         }
     }
 
     void Entity::RemovePath()
     {
         m_path.clear();
+    }
+
+    SDL_Rect Entity::GetRect()
+    {
+        return SDL_Rect{(int)m_x - 10, (int)m_y - 10, 20, 20}; // TODO: width, height
+    }
+
+    void Entity::Select()
+    {
+        m_selected = true;
+    }
+
+    void Entity::Deselect()
+    {
+        m_selected = false;
+    }
+
+    bool Entity::Selected()
+    {
+        return m_selected;
+    }
+
+    float Entity::GetX()
+    {
+        return m_x;
+    }
+
+    float Entity::GetY()
+    {
+        return m_y;
     }
 }

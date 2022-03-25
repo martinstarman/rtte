@@ -10,7 +10,7 @@ namespace rtte
     public:
         Serializer();
         ~Serializer();
-        void Deserialize(const std::string file);
+        void Deserialize(const std::string &file);
     };
 }
 

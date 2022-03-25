@@ -21,7 +21,6 @@ add_executable(
     src/util.cpp
     src/entity.cpp
     src/serializer.cpp
-    src/character.cpp
     src/game.cpp
     src/main.cpp
     # navmesh (it would be nice to port it to vcpkg)

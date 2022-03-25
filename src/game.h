@@ -2,7 +2,6 @@
 #define GAME_H
 
 #include "entity.h"
-#include <point.h>
 #include <pointf.h>
 #include <polygon.h>
 #include <SDL.h>
@@ -28,25 +27,32 @@ namespace rtte
     {
     public:
         static Game *Get();
-        void SetGameData(GameData gameData);
+        void SetGameData(const GameData &gameData);
         ~Game();
         void Update(float dt);
         void Render(float dt);
         bool GetDebug();
         SDL_Renderer *GetRenderer();
-        NavMesh::Point ToRenderPos(NavMesh::Point pos);
+        SDL_Point ToRenderPos(int x, int y);
         bool GetRunning();
 
     private:
         Game();
-        NavMesh::Point ToGamePos(SDL_Point pos);
+        SDL_Point ToGamePos(SDL_Point pos);
+        void HandleKeyboardState();
+        void HandleMouseState();
+        void HandleLeftMouseButtonClick();
+        void HandleLeftMouseButtonArea();
+        void HandleRightMouseButtonClick();
 
     private:
         static Game *s_instance;
         SDL_Window *m_window;
         SDL_Renderer *m_renderer;
         SDL_Point m_mouse;
-        NavMesh::Point m_windowSize;
+        SDL_Point m_leftMouseButtonDown;
+        SDL_Point m_rightMouseButtonDown;
+        SDL_Point m_windowSize;
         NavMesh::PointF m_offset;
         TTF_Font *m_font;
         bool m_running;
