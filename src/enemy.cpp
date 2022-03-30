@@ -2,17 +2,15 @@
 
 #include "entity.h"
 #include "game.h"
-#include <polygon.h>
 #include <SDL.h>
 #include <vector>
 
 namespace rtte
 {
-    Enemy::Enemy(float x, float y, const std::vector<NavMesh::Polygon> &polygons)
-        : Entity(x, y, polygons),
+    Enemy::Enemy(float x, float y)
+        : Entity(x, y),
           m_cone()
     {
-        m_cone.AddPolygons(polygons);
     }
 
     Enemy::~Enemy()
@@ -21,6 +19,8 @@ namespace rtte
 
     void Enemy::Update(float dt)
     {
+        m_cone.AddPolygons(Game::Get()->GetGameData().polygons);
+
         m_vision = m_cone.GetVision(NavMesh::Point((int)m_x, (int)m_y), 100, 120, 210);
         m_vision.insert(m_vision.begin(), NavMesh::PointF(m_x, m_y));
         m_vision.emplace_back(NavMesh::PointF(m_x, m_y));
@@ -43,5 +43,10 @@ namespace rtte
         }
 
         Entity::Render();
+    }
+
+    int Enemy::GetYIndex()
+    {
+        return (int)m_y; // TODO: height
     }
 }

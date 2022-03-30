@@ -4,7 +4,6 @@
 #include <cone_of_vision.h>
 #include "entity.h"
 #include <pointf.h>
-#include <polygon.h>
 #include <vector>
 
 namespace rtte
@@ -12,10 +11,11 @@ namespace rtte
     class Enemy : public Entity
     {
     public:
-        Enemy(float x, float y, const std::vector<NavMesh::Polygon> &polygons);
+        Enemy(float x, float y);
         ~Enemy();
         void Update(float dt) override;
         void Render() override;
+        int GetYIndex() override;
 
     private:
         NavMesh::ConeOfVision m_cone;

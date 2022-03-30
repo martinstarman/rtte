@@ -4,6 +4,7 @@
 #include "enemy.h"
 #include "entity.h"
 #include "character.h"
+#include "object.h"
 #include <pointf.h>
 #include <polygon.h>
 #include <SDL.h>
@@ -25,6 +26,7 @@ namespace rtte
         std::vector<Entity *> entities;
         std::vector<Character *> characters;
         std::vector<Enemy *> enemies;
+        std::vector<Object *> objects;
     };
 
     class Game
@@ -32,6 +34,7 @@ namespace rtte
     public:
         static Game *Get();
         void SetGameData(const GameData &gameData);
+        const GameData &GetGameData();
         ~Game();
         void Update(float dt);
         void Render(float dt);

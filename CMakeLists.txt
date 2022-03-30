@@ -10,6 +10,7 @@ find_package(docopt CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(Fontconfig REQUIRED)
 find_package(sdl2-ttf CONFIG REQUIRED)
+find_package(sdl2-image CONFIG REQUIRED)
 
 include_directories(
     vendor/navmesh/source
@@ -22,6 +23,8 @@ add_executable(
     src/entity.cpp
     src/character.cpp
     src/enemy.cpp
+    src/object.cpp
+    src/texture.cpp
     src/serializer.cpp
     src/game.cpp
     src/main.cpp
@@ -42,4 +45,5 @@ target_link_libraries(
     yaml-cpp
     Fontconfig::Fontconfig
     SDL2::SDL2_ttf
+    SDL2::SDL2_image
 )

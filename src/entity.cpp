@@ -9,14 +9,13 @@
 
 namespace rtte
 {
-    Entity::Entity(float x, float y, const std::vector<NavMesh::Polygon> &polygons)
+    Entity::Entity(float x, float y)
         : m_x(x),
           m_y(y),
           m_selected(false),
           m_pathFinder(),
           m_path({})
     {
-        m_pathFinder.AddPolygons(polygons, 0);
     }
 
     Entity::~Entity()
@@ -58,7 +57,7 @@ namespace rtte
         // debug
         if (Game::Get()->GetDebug())
         {
-            SDL_SetRenderDrawColor(Game::Get()->GetRenderer(), 255, 255, 255, 64);
+            SDL_SetRenderDrawColor(Game::Get()->GetRenderer(), 255, 255, 255, 255);
 
             // position
             SDL_Point pos = Game::Get()->ToRenderPos((int)m_x, (int)m_y);
@@ -97,6 +96,10 @@ namespace rtte
 
     void Entity::FindPath(int x, int y)
     {
+        // TODO: call only when polygons changed
+        // TODO: inflation
+        m_pathFinder.AddPolygons(Game::Get()->GetGameData().polygons, 0);
+
         NavMesh::Point start((int)m_x, (int)m_y);
         NavMesh::Point end(x, y);
         m_pathFinder.AddExternalPoints({start, end});

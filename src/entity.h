@@ -2,7 +2,6 @@
 #define ENTITY_H
 
 #include <path_finder.h>
-#include <polygon.h>
 #include <SDL.h>
 #include <vector>
 
@@ -11,7 +10,7 @@ namespace rtte
     class Entity
     {
     public:
-        Entity(float x, float y, const std::vector<NavMesh::Polygon> &polygons);
+        Entity(float x, float y);
         ~Entity();
         void FindPath(int x, int y);
         void RemovePath();
@@ -23,6 +22,7 @@ namespace rtte
         bool Selected();
         float GetX();
         float GetY();
+        virtual int GetYIndex() = 0;
 
     private:
         void Move(float dt);

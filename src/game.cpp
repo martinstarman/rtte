@@ -45,21 +45,16 @@ namespace rtte
         m_rightRect = SDL_Rect{m_windowSize.x - rectWidth, 0, rectWidth, m_windowSize.y};
         m_bottomRect = SDL_Rect{0, m_windowSize.y - rectWidth, m_windowSize.x, rectWidth};
         m_leftRect = SDL_Rect{0, 0, rectWidth, m_windowSize.y};
-
-        // defaults
-        m_gameData = {
-            .debug = false,
-            .missionName = "",
-            .mapWidth = m_windowSize.x,
-            .mapHeight = m_windowSize.y,
-            .polygons = {},
-            .entities = {},
-        };
     }
 
     void Game::SetGameData(const GameData &gameData)
     {
         m_gameData = gameData;
+    }
+
+    const GameData &Game::GetGameData()
+    {
+        return m_gameData;
     }
 
     Game::~Game()
@@ -90,10 +85,14 @@ namespace rtte
 
     void Game::Render(float dt)
     {
-        SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(m_renderer, 255, 0, 255, 255);
         SDL_RenderClear(m_renderer);
 
         // entities
+        std::sort(m_gameData.entities.begin(), m_gameData.entities.end(),
+                  [](Entity *a, Entity *b) -> bool
+                  { return a->GetYIndex() < b->GetYIndex(); });
+
         for (const auto entity : m_gameData.entities)
         {
             entity->Render();
@@ -114,7 +113,7 @@ namespace rtte
         // debug
         if (GetDebug())
         {
-            SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 64);
+            SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
 
             // polygons
             for (const auto polygon : m_gameData.polygons)
@@ -141,7 +140,7 @@ namespace rtte
             // fps
             // TODO: refactor
             std::string fps = "fps: " + std::to_string(1 / dt);
-            SDL_Surface *surface = TTF_RenderText_Solid(m_font, fps.c_str(), {255, 255, 255, 128});
+            SDL_Surface *surface = TTF_RenderText_Solid(m_font, fps.c_str(), {255, 255, 255, 255});
             SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
             int w, h;
             SDL_QueryTexture(texture, nullptr, nullptr, &w, &h);
