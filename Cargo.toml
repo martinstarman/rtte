@@ -1,0 +1,15 @@
+[package]
+edition = "2021"
+name = "rtte"
+version = "0.0.1"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+delaunator = "1.0.2" 
+ggegui = "0.3.4" 
+ggez = "0.8.1" 
+maths-rs = "0.1.14" 
+pathfinding = "4.2.1" 
+serde = "1.0.160" 
+toml = "0.7.3"
