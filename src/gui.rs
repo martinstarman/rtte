@@ -100,7 +100,7 @@ pub fn update(state: &mut State) -> Option<Rect> {
         );
 
         if character.pos != pos {
-          character.pos(pos);
+          character.set_pos(pos);
         }
       }
     }
@@ -130,7 +130,7 @@ pub fn update(state: &mut State) -> Option<Rect> {
         );
 
         if enemy.pos != pos {
-          enemy.pos(pos);
+          enemy.set_pos(pos);
         }
 
         // texture

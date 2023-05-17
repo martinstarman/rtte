@@ -90,7 +90,7 @@ impl Enemy {
     }
   }
 
-  pub fn rect(&self) -> Rect {
+  pub fn get_rect(&self) -> Rect {
     Rect::new(
       self.pos.x - (self.size.x / 2.),
       self.pos.y - (self.size.y / 2.),
@@ -99,7 +99,7 @@ impl Enemy {
     )
   }
 
-  pub fn pos(&mut self, pos: Vec2) {
+  pub fn set_pos(&mut self, pos: Vec2) {
     // update pov corresponding to new position
     let d = self.pos - pos;
     self.pov_dest.x -= d.x;
@@ -122,10 +122,10 @@ impl Enemy {
 
       if dist < 1. {
         self.path.remove(0);
-        self.pos(next);
+        self.set_pos(next);
       } else {
         let d = next - self.pos;
-        self.pos(self.pos + (d / dist));
+        self.set_pos(self.pos + (d / dist));
       }
     } else {
       self.path = self.path_default.clone(); // reset path if any

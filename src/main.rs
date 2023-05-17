@@ -121,13 +121,13 @@ impl State {
   pub fn handle_runtime_mode_click(&mut self, ctx: &mut Context, v: Vec2) {
     if ctx.keyboard.is_mod_active(KeyMods::SHIFT) {
       for character in self.characters.iter_mut() {
-        if character.rect().contains::<Point2<f32>>(v.into()) {
+        if character.get_rect().contains::<Point2<f32>>(v.into()) {
           character.is_selected = !character.is_selected
         }
       }
 
       for enemy in self.enemies.iter_mut() {
-        if enemy.rect().contains::<Point2<f32>>(v.into()) {
+        if enemy.get_rect().contains::<Point2<f32>>(v.into()) {
           enemy.is_selected = !enemy.is_selected;
         }
       }

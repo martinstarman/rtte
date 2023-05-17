@@ -52,7 +52,7 @@ impl Character {
     }
   }
 
-  pub fn rect(&self) -> Rect {
+  pub fn get_rect(&self) -> Rect {
     Rect::new(
       self.pos.x - (self.size.x / 2.),
       self.pos.y - (self.size.y / 2.),
@@ -61,7 +61,7 @@ impl Character {
     )
   }
 
-  pub fn pos(&mut self, pos: Vec2) {
+  pub fn set_pos(&mut self, pos: Vec2) {
     self.pos = pos;
   }
 
