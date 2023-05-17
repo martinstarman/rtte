@@ -20,7 +20,7 @@ use ggez::{
   Context, ContextBuilder, GameError, GameResult,
 };
 use serde::{Deserialize, Serialize};
-use std::{fs::File, io::prelude::*};
+use std::{fs::File, io::prelude::*, path};
 
 #[derive(Default, PartialEq)]
 enum Mode {
@@ -45,6 +45,8 @@ pub struct State {
   #[serde(skip)]
   #[serde(default = "rect_default")]
   gui_window_rect: Option<Rect>,
+  #[serde(skip)]
+  resources: Vec<String>,
 }
 
 fn rect_default() -> Option<Rect> {
@@ -56,7 +58,7 @@ const OFFSET_SPEED: f32 = 10.;
 impl State {
   // create new state
   pub fn new(ctx: &mut Context) -> GameResult<State> {
-    let state = State {
+    let mut state = State {
       mesh: Mesh::new(800., 600.),
       offset: Vec2::default(),
       scale: Vec2::new(1., 1.),
@@ -65,7 +67,13 @@ impl State {
       mode: Mode::Runtime,
       gui: Gui::new(ctx),
       gui_window_rect: Some(Rect::NOTHING),
+      resources: vec![],
     };
+
+    let resources: Vec<_> = ctx.fs.read_dir("/")?.collect();
+    for item in resources {
+      state.resources.push(item.to_str().unwrap().to_string());
+    }
 
     Ok(state)
   }
@@ -161,7 +169,7 @@ impl EventHandler<GameError> for State {
 
     // update enemies
     for enemy in self.enemies.iter_mut() {
-      enemy.update();
+      enemy.update(ctx);
       enemy.pov = self.mesh.get_pov(enemy.pos, enemy.pov_dest); // TODO: move to enemy.update()
     }
 
@@ -235,10 +243,15 @@ impl EventHandler<GameError> for State {
 }
 
 fn main() -> GameResult {
+  let resource_dir = path::PathBuf::from("./resources");
+
   let context_builder = ContextBuilder::new("rtte", "rtte")
     .window_setup(ggez::conf::WindowSetup::default().title("rtte"))
-    .window_mode(ggez::conf::WindowMode::default().dimensions(800., 600.));
+    .window_mode(ggez::conf::WindowMode::default().dimensions(800., 600.))
+    .add_resource_path(resource_dir);
+
   let (mut ctx, event_loop) = context_builder.build()?;
   let state = State::new(&mut ctx)?;
+
   event::run(ctx, event_loop, state)
 }

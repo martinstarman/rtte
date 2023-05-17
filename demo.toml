@@ -267,6 +267,7 @@ x = 10.0
 y = 10.0
 
 [[enemies]]
+texture_path = "/enemy.png"
 
 [enemies.pos]
 x = 176.92059326171875
