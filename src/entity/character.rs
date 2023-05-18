@@ -41,8 +41,7 @@ impl Character {
     // draw itself
     let color = if self.is_selected { Color::WHITE } else { Color::BLACK };
 
-    let mesh =
-      Mesh::new_circle(ctx, DrawMode::stroke(1.), self.pos, self.size.x / 2., 2., color).unwrap();
+    let mesh = Mesh::new_rectangle(ctx, DrawMode::stroke(1.), self.get_rect(), color).unwrap();
     canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
 
     if state.mode == Mode::Edit && self.path.len() >= 2 {

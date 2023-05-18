@@ -1,7 +1,7 @@
 use crate::{geometry::vec2::Vec2, State};
 
 use ggez::{
-  graphics::{Canvas, Color, DrawMode, DrawParam, Image, Mesh, Rect},
+  graphics::{Canvas, Color, DrawMode, DrawParam, Drawable, Image, Mesh, Rect},
   Context,
 };
 use maths_rs::{distance, Vec2f};
@@ -60,26 +60,30 @@ impl Enemy {
     self.pov_dest.x = f32::cos(ONE_DEGREE) * d.x - f32::sin(ONE_DEGREE) * d.y + self.pos.x;
     self.pov_dest.y = f32::sin(ONE_DEGREE) * d.x + f32::cos(ONE_DEGREE) * d.y + self.pos.y;
 
-    //
+    // TODO: remove from update()
     if self.texture_path != "" && self.texture.is_none() {
       self.texture = Some(Image::from_path(ctx, self.texture_path.clone()).unwrap());
+
+      if let Some(dim) = self.texture.as_ref().unwrap().dimensions(ctx) {
+        self.size.x = dim.w;
+        self.size.y = dim.h;
+      }
     }
   }
 
   pub fn draw(&self, canvas: &mut Canvas, ctx: &mut Context, state: &State) {
-    // draw itself
-    let color = if self.is_selected { Color::WHITE } else { Color::BLACK };
-
+    // draw texture
     if self.texture.is_some() {
-      canvas.draw(
-        self.texture.as_ref().unwrap(),
-        DrawParam::new().dest(self.pos).offset(state.offset).scale(state.scale), // TODO: offset is broken for some reason
-      );
-    } else {
-      let mesh =
-        Mesh::new_circle(ctx, DrawMode::stroke(1.), self.pos, self.size.x / 2., 2., color).unwrap();
-      canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
+      // calculate position manually because Image uses relative offset
+      // @see https://github.com/ggez/ggez/blob/devel/docs/FAQ.md#offsets
+      let pos = (self.pos - state.offset - (self.size / 2.)) * state.scale.x;
+      canvas.draw(self.texture.as_ref().unwrap(), DrawParam::new().dest(pos).scale(state.scale));
     }
+
+    // draw rectangle
+    let color = if self.is_selected { Color::WHITE } else { Color::BLACK };
+    let mesh = Mesh::new_rectangle(ctx, DrawMode::stroke(1.), self.get_rect(), color).unwrap();
+    canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
 
     // draw pov
     if self.is_selected {
@@ -112,7 +116,6 @@ impl Enemy {
   pub fn set_texture_path(&mut self, path: String) {
     self.texture_path = path;
     self.texture = None;
-    // TODO: update size
   }
 
   fn walk(&mut self) {

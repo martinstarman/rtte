@@ -37,7 +37,7 @@ x = 281.0
 y = 180.0
 
 [[mesh.triangles]]
-is_blocking_path = false
+is_blocking_path = true
 is_blocking_view = true
 
 [mesh.triangles.a]
@@ -53,7 +53,7 @@ x = 228.0
 y = 222.0
 
 [[mesh.triangles]]
-is_blocking_path = false
+is_blocking_path = true
 is_blocking_view = true
 
 [mesh.triangles.a]
@@ -275,7 +275,7 @@ y = 253.84100341796875
 
 [enemies.size]
 x = 10.0
-y = 10.0
+y = 23.0
 
 [[enemies.path_default]]
 x = 100.0
