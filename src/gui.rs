@@ -28,6 +28,10 @@ pub fn update(state: &mut State) -> Option<Rect> {
       if ui.button("character").clicked() {
         state.add_character();
       }
+
+      if ui.button("object").clicked() {
+        state.add_object();
+      }
     });
 
     //
@@ -133,7 +137,6 @@ pub fn update(state: &mut State) -> Option<Rect> {
           enemy.set_pos(pos);
         }
 
-        // texture
         ui.horizontal(|ui| {
           ui.label("texture:");
 
@@ -147,6 +150,32 @@ pub fn update(state: &mut State) -> Option<Rect> {
 
           if path != enemy.texture_path {
             enemy.set_texture_path(path);
+          }
+        });
+      }
+    }
+
+    for object in state.objects.iter_mut() {
+      if object.is_selected {
+        ui.separator();
+        ui.label("object");
+
+        // TODO: pos
+        // TODO: size
+
+        ui.horizontal(|ui| {
+          ui.label("texture:");
+
+          let mut path = object.texture_path.clone();
+
+          ComboBox::from_label("").selected_text(path.clone()).show_ui(ui, |ui| {
+            for option in &state.resources {
+              ui.selectable_value(&mut path, option.into(), option);
+            }
+          });
+
+          if path != object.texture_path {
+            object.set_texture_path(path);
           }
         });
       }

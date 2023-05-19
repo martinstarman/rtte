@@ -3,7 +3,7 @@ pub mod geometry;
 pub mod gui;
 
 use crate::{
-  entity::{character::Character, enemy::Enemy},
+  entity::{character::Character, enemy::Enemy, object::Object},
   geometry::{mesh::Mesh, vec2::Vec2},
 };
 
@@ -38,6 +38,7 @@ pub struct State {
   mesh: Mesh,
   characters: Vec<Character>,
   enemies: Vec<Enemy>,
+  objects: Vec<Object>,
   #[serde(skip)]
   mode: Mode,
   #[serde(skip)]
@@ -64,6 +65,7 @@ impl State {
       scale: Vec2::new(1., 1.),
       characters: vec![],
       enemies: vec![],
+      objects: vec![],
       mode: Mode::Runtime,
       gui: Gui::new(ctx),
       gui_window_rect: Some(Rect::NOTHING),
@@ -117,9 +119,15 @@ impl State {
     self.enemies.push(Enemy::default());
   }
 
+  // add new object to the game
+  pub fn add_object(&mut self) {
+    self.objects.push(Object::default());
+  }
+
   // handle LMB runtime mode click
   pub fn handle_runtime_mode_click(&mut self, ctx: &mut Context, v: Vec2) {
     if ctx.keyboard.is_mod_active(KeyMods::SHIFT) {
+      // TODO: same code for every entity
       for character in self.characters.iter_mut() {
         if character.get_rect().contains::<Point2<f32>>(v.into()) {
           character.is_selected = !character.is_selected
@@ -129,6 +137,12 @@ impl State {
       for enemy in self.enemies.iter_mut() {
         if enemy.get_rect().contains::<Point2<f32>>(v.into()) {
           enemy.is_selected = !enemy.is_selected;
+        }
+      }
+
+      for object in self.objects.iter_mut() {
+        if object.get_rect().contains::<Point2<f32>>(v.into()) {
+          object.is_selected = !object.is_selected;
         }
       }
     } else {
@@ -167,15 +181,20 @@ impl EventHandler<GameError> for State {
       }
     }
 
+    // update characters
+    for character in self.characters.iter_mut() {
+      character.update();
+    }
+
     // update enemies
     for enemy in self.enemies.iter_mut() {
       enemy.update(ctx);
       enemy.pov = self.mesh.get_pov(enemy.pos, enemy.pov_dest); // TODO: move to enemy.update()
     }
 
-    // update characters
-    for character in self.characters.iter_mut() {
-      character.update();
+    // update objects
+    for object in self.objects.iter_mut() {
+      object.update(ctx);
     }
 
     // gui
@@ -200,6 +219,11 @@ impl EventHandler<GameError> for State {
     // draw enemies
     for enemy in &self.enemies {
       enemy.draw(&mut canvas, ctx, &self);
+    }
+
+    // draw objects
+    for object in &self.objects {
+      object.draw(&mut canvas, ctx, &self);
     }
 
     // draw gui
