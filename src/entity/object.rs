@@ -74,4 +74,12 @@ impl Object {
     self.texture_path = path;
     self.texture = None;
   }
+
+  pub fn set_pos(&mut self, pos: Vec2) {
+    self.pos = pos;
+  }
+
+  pub fn set_size(&mut self, size: Vec2) {
+    self.size = size;
+  }
 }

@@ -36,49 +36,193 @@ y = 236.0
 x = 281.0
 y = 180.0
 
+[[mesh.vectors]]
+x = 153.0
+y = 77.0
+
+[[mesh.vectors]]
+x = 193.0
+y = 82.0
+
+[[mesh.vectors]]
+x = 194.0
+y = 117.0
+
+[[mesh.vectors]]
+x = 155.0
+y = 115.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 283.0
+y = 236.0
+
+[mesh.triangles.b]
+x = 281.0
+y = 180.0
+
+[mesh.triangles.c]
+x = 228.0
+y = 222.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 281.0
+y = 180.0
+
+[mesh.triangles.b]
+x = 246.0
+y = 143.0
+
+[mesh.triangles.c]
+x = 228.0
+y = 222.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 246.0
+y = 143.0
+
+[mesh.triangles.b]
+x = 194.0
+y = 117.0
+
+[mesh.triangles.c]
+x = 228.0
+y = 222.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 194.0
+y = 117.0
+
+[mesh.triangles.b]
+x = 155.0
+y = 115.0
+
+[mesh.triangles.c]
+x = 228.0
+y = 222.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 246.0
+y = 143.0
+
+[mesh.triangles.b]
+x = 193.0
+y = 82.0
+
+[mesh.triangles.c]
+x = 194.0
+y = 117.0
+
 [[mesh.triangles]]
 is_blocking_path = true
 is_blocking_view = true
 
 [mesh.triangles.a]
-x = 283.0
-y = 236.0
+x = 194.0
+y = 117.0
 
 [mesh.triangles.b]
-x = 281.0
-y = 180.0
+x = 193.0
+y = 82.0
 
 [mesh.triangles.c]
-x = 228.0
-y = 222.0
+x = 155.0
+y = 115.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 800.0
+y = 0.0
+
+[mesh.triangles.b]
+x = 193.0
+y = 82.0
+
+[mesh.triangles.c]
+x = 246.0
+y = 143.0
 
 [[mesh.triangles]]
 is_blocking_path = true
 is_blocking_view = true
 
 [mesh.triangles.a]
-x = 281.0
-y = 180.0
+x = 193.0
+y = 82.0
 
 [mesh.triangles.b]
-x = 246.0
-y = 143.0
+x = 153.0
+y = 77.0
 
 [mesh.triangles.c]
-x = 228.0
-y = 222.0
+x = 155.0
+y = 115.0
 
 [[mesh.triangles]]
 is_blocking_path = false
 is_blocking_view = false
 
 [mesh.triangles.a]
-x = 246.0
-y = 143.0
+x = 193.0
+y = 82.0
 
 [mesh.triangles.b]
 x = 0.0
 y = 0.0
+
+[mesh.triangles.c]
+x = 153.0
+y = 77.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 153.0
+y = 77.0
+
+[mesh.triangles.b]
+x = 0.0
+y = 0.0
+
+[mesh.triangles.c]
+x = 155.0
+y = 115.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 155.0
+y = 115.0
+
+[mesh.triangles.b]
+x = 0.0
+y = 600.0
 
 [mesh.triangles.c]
 x = 228.0
@@ -97,8 +241,8 @@ x = 0.0
 y = 600.0
 
 [mesh.triangles.c]
-x = 228.0
-y = 222.0
+x = 155.0
+y = 115.0
 
 [[mesh.triangles]]
 is_blocking_path = false
@@ -121,8 +265,40 @@ is_blocking_path = false
 is_blocking_view = false
 
 [mesh.triangles.a]
+x = 283.0
+y = 236.0
+
+[mesh.triangles.b]
+x = 800.0
+y = 0.0
+
+[mesh.triangles.c]
+x = 281.0
+y = 180.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 281.0
+y = 180.0
+
+[mesh.triangles.b]
+x = 800.0
+y = 0.0
+
+[mesh.triangles.c]
 x = 246.0
 y = 143.0
+
+[[mesh.triangles]]
+is_blocking_path = false
+is_blocking_view = false
+
+[mesh.triangles.a]
+x = 193.0
+y = 82.0
 
 [mesh.triangles.b]
 x = 800.0
@@ -137,38 +313,6 @@ is_blocking_path = false
 is_blocking_view = false
 
 [mesh.triangles.a]
-x = 281.0
-y = 180.0
-
-[mesh.triangles.b]
-x = 800.0
-y = 0.0
-
-[mesh.triangles.c]
-x = 246.0
-y = 143.0
-
-[[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
-
-[mesh.triangles.a]
-x = 283.0
-y = 236.0
-
-[mesh.triangles.b]
-x = 800.0
-y = 0.0
-
-[mesh.triangles.c]
-x = 281.0
-y = 180.0
-
-[[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
-
-[mesh.triangles.a]
 x = 800.0
 y = 600.0
 
@@ -199,68 +343,68 @@ y = 236.0
 [[mesh.pov_barriers]]
 
 [mesh.pov_barriers.a]
-x = 283.0
-y = 236.0
+x = 194.0
+y = 117.0
 
 [mesh.pov_barriers.b]
-x = 281.0
-y = 180.0
+x = 193.0
+y = 82.0
 
 [[mesh.pov_barriers]]
 
 [mesh.pov_barriers.a]
-x = 281.0
-y = 180.0
+x = 193.0
+y = 82.0
 
 [mesh.pov_barriers.b]
-x = 228.0
-y = 222.0
+x = 155.0
+y = 115.0
 
 [[mesh.pov_barriers]]
 
 [mesh.pov_barriers.a]
-x = 228.0
-y = 222.0
+x = 155.0
+y = 115.0
 
 [mesh.pov_barriers.b]
-x = 283.0
-y = 236.0
+x = 194.0
+y = 117.0
 
 [[mesh.pov_barriers]]
 
 [mesh.pov_barriers.a]
-x = 281.0
-y = 180.0
+x = 193.0
+y = 82.0
 
 [mesh.pov_barriers.b]
-x = 246.0
-y = 143.0
+x = 153.0
+y = 77.0
 
 [[mesh.pov_barriers]]
 
 [mesh.pov_barriers.a]
-x = 246.0
-y = 143.0
+x = 153.0
+y = 77.0
 
 [mesh.pov_barriers.b]
-x = 228.0
-y = 222.0
+x = 155.0
+y = 115.0
 
 [[mesh.pov_barriers]]
 
 [mesh.pov_barriers.a]
-x = 228.0
-y = 222.0
+x = 155.0
+y = 115.0
 
 [mesh.pov_barriers.b]
-x = 281.0
-y = 180.0
+x = 193.0
+y = 82.0
 
 [[characters]]
 
 [characters.pos]
-x = 200.0
-y = 200.0
+x = 199.0
+y = 60.0
 
 [characters.size]
 x = 10.0
@@ -284,3 +428,14 @@ y = 100.0
 [[enemies.path_default]]
 x = 200.0
 y = 300.0
+
+[[objects]]
+texture_path = "/barrels.png"
+
+[objects.pos]
+x = 175.0
+y = 100.0
+
+[objects.size]
+x = 36.0
+y = 32.0

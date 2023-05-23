@@ -99,6 +99,7 @@ impl State {
     self.mesh = deserialized.mesh;
     self.characters = deserialized.characters;
     self.enemies = deserialized.enemies;
+    self.objects = deserialized.objects;
   }
 
   // toggle game modes
