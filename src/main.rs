@@ -7,6 +7,9 @@ pub mod geometry;
 ///
 pub mod gui;
 
+///
+pub mod resource;
+
 use crate::{
   entity::{character::Character, enemy::Enemy, object::Object},
   geometry::{mesh::Mesh, vec2::Vec2},
@@ -24,6 +27,7 @@ use ggez::{
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
+use resource::Resource;
 use serde::{Deserialize, Serialize};
 use std::{fs::File, io::prelude::*, path};
 
@@ -52,7 +56,7 @@ pub struct State {
   #[serde(default = "rect_default")]
   gui_window_rect: Option<Rect>,
   #[serde(skip)]
-  resources: Vec<String>,
+  resources: Vec<Resource>,
 }
 
 fn rect_default() -> Option<Rect> {
@@ -81,7 +85,11 @@ impl State {
     let resources: Vec<_> = ctx.fs.read_dir("/")?.collect();
 
     for item in resources {
-      state.resources.push(item.to_str().unwrap().to_string());
+      let path = item.to_str().unwrap().to_string();
+    
+      let res = Resource::new(path, ctx);
+
+      state.resources.push(res);
     }
 
     Ok(state)
@@ -198,7 +206,7 @@ impl EventHandler<GameError> for State {
 
     // update enemies
     for enemy in self.enemies.iter_mut() {
-      enemy.update(ctx);
+      enemy.update();
       enemy.pov = self.mesh.get_pov(enemy.pos, enemy.pov_dest); // TODO: move to enemy.update()
     }
 

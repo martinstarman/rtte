@@ -52,21 +52,21 @@ pub fn draw_object_gui(ui: &mut Ui, state: &mut State) {
         object.set_size(size);
       }
 
-      ui.horizontal(|ui| {
-        ui.label("texture:");
+    //   ui.horizontal(|ui| {
+    //     ui.label("texture:");
 
-        let mut path = object.texture_path.clone();
+    //     let mut path = object.texture_path.clone();
 
-        ComboBox::from_label("").selected_text(path.clone()).show_ui(ui, |ui| {
-          for option in &state.resources {
-            ui.selectable_value(&mut path, option.into(), option);
-          }
-        });
+    //     ComboBox::from_label("").selected_text(path.clone()).show_ui(ui, |ui| {
+    //       for option in &state.resources {
+    //         ui.selectable_value(&mut path, option.into(), option);
+    //       }
+    //     });
 
-        if path != object.texture_path {
-          object.set_texture_path(path);
-        }
-      });
+    //     if path != object.texture_path {
+    //       object.set_texture_path(path);
+    //     }
+    //   });
     }
   }
 }

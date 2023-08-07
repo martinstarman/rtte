@@ -1,7 +1,7 @@
-use crate::{geometry::vec2::Vec2, State};
+use crate::{geometry::vec2::Vec2, resource::Resource, State};
 
 use ggez::{
-  graphics::{Canvas, Color, DrawMode, DrawParam, Drawable, Image, Mesh, Rect},
+  graphics::{Canvas, Color, DrawMode, DrawParam, Mesh, Rect},
   Context,
 };
 use maths_rs::{distance, Vec2f};
@@ -24,9 +24,7 @@ pub struct Enemy {
   pub is_selected: bool,
   #[serde(skip)]
   pub path: Vec<Vec2>,
-  pub texture_path: String,
-  #[serde(skip)]
-  texture: Option<Image>,
+  pub resource: Option<Resource>,
 }
 
 impl Default for Enemy {
@@ -46,12 +44,11 @@ impl Enemy {
       pov_dest: Vec2::new(pos.x + VIEW_DISTANCE, pos.y), // TODO: this shoud be editable trough gui
       is_selected: false,
       path: vec![],
-      texture_path: String::new(),
-      texture: None,
+      resource: None,
     }
   }
 
-  pub fn update(&mut self, ctx: &mut Context) {
+  pub fn update(&mut self) {
     self.walk();
 
     let d = self.pov_dest - self.pos;
@@ -59,26 +56,17 @@ impl Enemy {
     // TODO: limit pov
     self.pov_dest.x = f32::cos(ONE_DEGREE) * d.x - f32::sin(ONE_DEGREE) * d.y + self.pos.x;
     self.pov_dest.y = f32::sin(ONE_DEGREE) * d.x + f32::cos(ONE_DEGREE) * d.y + self.pos.y;
-
-    // TODO: remove from update()
-    if self.texture_path != "" && self.texture.is_none() {
-      self.texture = Some(Image::from_path(ctx, self.texture_path.clone()).unwrap());
-
-      if let Some(dim) = self.texture.as_ref().unwrap().dimensions(ctx) {
-        // TODO: set_size()
-        self.size.x = dim.w;
-        self.size.y = dim.h;
-      }
-    }
   }
 
   pub fn draw(&self, canvas: &mut Canvas, ctx: &mut Context, state: &State) {
     // draw texture
-    if self.texture.is_some() {
-      // calculate position manually because Image uses relative offset
-      // @see https://github.com/ggez/ggez/blob/devel/docs/FAQ.md#offsets
-      let pos = (self.pos - state.offset - (self.size / 2.)) * state.scale.x;
-      canvas.draw(self.texture.as_ref().unwrap(), DrawParam::new().dest(pos).scale(state.scale));
+    if let Some(resource) = &self.resource {
+      if let Some(image) = &resource.image {
+        // calculate position manually because Image uses relative offset
+        // @see https://github.com/ggez/ggez/blob/devel/docs/FAQ.md#offsets
+        let pos = (self.pos - state.offset - (self.size / 2.)) * state.scale.x;
+        canvas.draw(image, DrawParam::new().dest(pos).scale(state.scale));
+      }
     }
 
     // draw rectangle
@@ -114,9 +102,10 @@ impl Enemy {
     self.pos = pos;
   }
 
-  pub fn set_texture_path(&mut self, path: String) {
-    self.texture_path = path;
-    self.texture = None;
+  pub fn set_resource(&mut self, res: Resource) {
+    self.resource = Some(res.clone());
+    self.size.x = res.w;
+    self.size.y = res.h;
   }
 
   fn walk(&mut self) {
