@@ -40,6 +40,7 @@ impl Object {
       self.texture = Some(Image::from_path(ctx, self.texture_path.clone()).unwrap());
 
       if let Some(dim) = self.texture.as_ref().unwrap().dimensions(ctx) {
+        // TODO: set_size()
         self.size.x = dim.w;
         self.size.y = dim.h;
       }

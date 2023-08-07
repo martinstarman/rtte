@@ -53,7 +53,7 @@ impl Mesh {
     let mut is_straight = true;
 
     for triangle in &self.triangles {
-      if triangle.is_blocking_path && triangle.intersected(LineSegment::new(start, dest)) {
+      if triangle.is_path_block && triangle.intersected(LineSegment::new(start, dest)) {
         is_straight = false; // we intersect some non walkable triangle
       }
     }
@@ -66,7 +66,7 @@ impl Mesh {
     // dx and dy are always in map rect, so we have to find some triangle
     let triangle: &Triangle = self.triangles.iter().find(|t| t.contains(dest)).unwrap();
 
-    if !triangle.is_blocking_path {
+    if !triangle.is_path_block {
       let path = dijkstra(
         &start.into(),
         |&point| self.get_point_neighbors(&point),
@@ -138,7 +138,7 @@ impl Mesh {
         let points = vec![triangle.a, triangle.b, triangle.c];
 
         // bg
-        if triangle.is_blocking_path || triangle.is_blocking_view {
+        if triangle.is_path_block || triangle.is_view_block {
           let mesh =
             graphics::Mesh::new_polygon(ctx, DrawMode::fill(), &points[..], Color::GREEN).unwrap();
           canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
@@ -162,7 +162,7 @@ impl Mesh {
     let mut pov_barriers: Vec<LineSegment> = vec![];
 
     for triangle in &self.triangles {
-      if triangle.is_blocking_view {
+      if triangle.is_view_block {
         let a = LineSegment::new(triangle.a, triangle.b);
         let b = LineSegment::new(triangle.b, triangle.c);
         let c = LineSegment::new(triangle.c, triangle.a);
@@ -200,7 +200,7 @@ impl Mesh {
     let mut neighbors: Vec<(Point2<i32>, usize)> = vec![];
 
     for triangle in &self.triangles {
-      if !triangle.is_blocking_path && triangle.contains((*point).into()) {
+      if !triangle.is_path_block && triangle.contains((*point).into()) {
         neighbors
           .push((triangle.a.into(), distance::<f32, Vec2f>(v.into(), triangle.a.into()) as usize));
         neighbors
@@ -213,12 +213,3 @@ impl Mesh {
     neighbors
   }
 }
-
-// TODO: tests
-// #[cfg(test)]
-// mod test {
-//   use super::*;
-
-//   #[test]
-//   fn default() {}
-// }

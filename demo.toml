@@ -53,8 +53,8 @@ x = 155.0
 y = 115.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 283.0
@@ -69,8 +69,8 @@ x = 228.0
 y = 222.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 281.0
@@ -85,8 +85,8 @@ x = 228.0
 y = 222.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 246.0
@@ -101,8 +101,8 @@ x = 228.0
 y = 222.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 194.0
@@ -117,8 +117,8 @@ x = 228.0
 y = 222.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 246.0
@@ -133,8 +133,8 @@ x = 194.0
 y = 117.0
 
 [[mesh.triangles]]
-is_blocking_path = true
-is_blocking_view = true
+is_path_block = true
+is_view_block = true
 
 [mesh.triangles.a]
 x = 194.0
@@ -149,8 +149,8 @@ x = 155.0
 y = 115.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 800.0
@@ -165,8 +165,8 @@ x = 246.0
 y = 143.0
 
 [[mesh.triangles]]
-is_blocking_path = true
-is_blocking_view = true
+is_path_block = true
+is_view_block = true
 
 [mesh.triangles.a]
 x = 193.0
@@ -181,8 +181,8 @@ x = 155.0
 y = 115.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 193.0
@@ -197,8 +197,8 @@ x = 153.0
 y = 77.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 153.0
@@ -213,8 +213,8 @@ x = 155.0
 y = 115.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 155.0
@@ -229,8 +229,8 @@ x = 228.0
 y = 222.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 0.0
@@ -245,8 +245,8 @@ x = 155.0
 y = 115.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 228.0
@@ -261,8 +261,8 @@ x = 283.0
 y = 236.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 283.0
@@ -277,8 +277,8 @@ x = 281.0
 y = 180.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 281.0
@@ -293,8 +293,8 @@ x = 246.0
 y = 143.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 193.0
@@ -309,8 +309,8 @@ x = 0.0
 y = 0.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 800.0
@@ -325,8 +325,8 @@ x = 283.0
 y = 236.0
 
 [[mesh.triangles]]
-is_blocking_path = false
-is_blocking_view = false
+is_path_block = false
+is_view_block = false
 
 [mesh.triangles.a]
 x = 0.0

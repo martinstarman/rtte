@@ -1,5 +1,10 @@
+///
 pub mod entity;
+
+///
 pub mod geometry;
+
+///
 pub mod gui;
 
 use crate::{
@@ -69,10 +74,12 @@ impl State {
       mode: Mode::Runtime,
       gui: Gui::new(ctx),
       gui_window_rect: Some(Rect::NOTHING),
+      // TODO: vector of tuples (name: String, img: Image)?
       resources: vec![],
     };
 
     let resources: Vec<_> = ctx.fs.read_dir("/")?.collect();
+
     for item in resources {
       state.resources.push(item.to_str().unwrap().to_string());
     }
@@ -98,6 +105,8 @@ impl State {
 
     self.mesh = deserialized.mesh;
     self.characters = deserialized.characters;
+    // TODO: if we deserialize enemy pos, pov_dest does not get updated...
+    //       one solution should be serialized pov_dest
     self.enemies = deserialized.enemies;
     self.objects = deserialized.objects;
   }

@@ -8,8 +8,8 @@ pub struct Triangle {
   pub a: Vec2,
   pub b: Vec2,
   pub c: Vec2,
-  pub is_blocking_path: bool,
-  pub is_blocking_view: bool,
+  pub is_path_block: bool,
+  pub is_view_block: bool,
   #[serde(skip)]
   pub is_selected: bool,
 }
@@ -20,8 +20,8 @@ impl Triangle {
       a,
       b,
       c,
-      is_blocking_path: false,
-      is_blocking_view: false,
+      is_path_block: false,
+      is_view_block: false,
       is_selected: false,
     }
   }

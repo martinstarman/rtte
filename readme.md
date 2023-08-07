@@ -12,3 +12,9 @@ I'm not game developer nor Rust developer.
 - human readable mission files
 - online cooperation
 - ...
+
+## Build
+```cargo build```
+
+## Run
+```cargo run```
