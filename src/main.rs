@@ -53,14 +53,9 @@ pub struct State {
   #[serde(skip)]
   gui: Gui,
   #[serde(skip)]
-  #[serde(default = "rect_default")]
   gui_window_rect: Option<Rect>,
   #[serde(skip)]
   resources: Vec<Resource>,
-}
-
-fn rect_default() -> Option<Rect> {
-  Some(Rect::NOTHING)
 }
 
 const OFFSET_SPEED: f32 = 10.;
@@ -78,7 +73,6 @@ impl State {
       mode: Mode::Runtime,
       gui: Gui::new(ctx),
       gui_window_rect: Some(Rect::NOTHING),
-      // TODO: vector of tuples (name: String, img: Image)?
       resources: vec![],
     };
 
@@ -86,9 +80,7 @@ impl State {
 
     for item in resources {
       let path = item.to_str().unwrap().to_string();
-    
       let res = Resource::new(path, ctx);
-
       state.resources.push(res);
     }
 
@@ -140,6 +132,11 @@ impl State {
   // add new object to the game
   pub fn add_object(&mut self) {
     self.objects.push(Object::default());
+  }
+
+  // TODO: not used
+  pub fn get_resource_by(&self, path: String) -> Option<&Resource> {
+    self.resources.iter().find(|res| res.path == path)
   }
 
   // handle LMB runtime mode click
@@ -212,7 +209,7 @@ impl EventHandler<GameError> for State {
 
     // update objects
     for object in self.objects.iter_mut() {
-      object.update(ctx);
+      object.update();
     }
 
     // gui

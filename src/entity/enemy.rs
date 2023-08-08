@@ -24,7 +24,8 @@ pub struct Enemy {
   pub is_selected: bool,
   #[serde(skip)]
   pub path: Vec<Vec2>,
-  pub resource: Option<Resource>,
+  // TODO: serialize only res path and use state.get_resource_by(path)
+  pub resource: Option<Resource>, 
 }
 
 impl Default for Enemy {
@@ -104,6 +105,7 @@ impl Enemy {
 
   pub fn set_resource(&mut self, res: Resource) {
     self.resource = Some(res.clone());
+    // TODO: set_size()
     self.size.x = res.w;
     self.size.y = res.h;
   }

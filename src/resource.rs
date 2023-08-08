@@ -1,14 +1,16 @@
 use ggez::{graphics::Image, Context};
 use serde::{Deserialize, Serialize};
 
+// TODO: remove serde
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Resource {
   /// image path
   pub path: String,
 
   /// image
+  // TODO: this should not be Option
   #[serde(skip)]
-  pub image:Option<Image>,
+  pub image: Option<Image>,
 
   /// image width
   pub w: f32,

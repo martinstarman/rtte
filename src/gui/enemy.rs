@@ -45,11 +45,13 @@ pub fn draw_enemy_gui(ui: &mut Ui, state: &mut State) {
           }
         });
 
-        if !path.is_empty() {
-          let resrouce = &state.resources.iter().find(|res| res.path == path);
+        let resource = state.resources.iter().find(|res| res.path == path);
 
-          if resrouce.is_some() {
-            enemy.set_resource(resrouce.unwrap().clone());
+        if resource.is_some() {
+          if enemy.resource.is_none()
+            || enemy.resource.as_ref().unwrap().path != resource.unwrap().path
+          {
+            enemy.set_resource(resource.unwrap().clone());
           }
         }
       });

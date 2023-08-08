@@ -1,11 +1,11 @@
-use crate::{State, geometry::vec2::Vec2};
-use ggegui::egui::{Ui, TextEdit, ComboBox};
+use crate::{geometry::vec2::Vec2, State};
+use ggegui::egui::{ComboBox, TextEdit, Ui};
 
 pub fn draw_object_gui(ui: &mut Ui, state: &mut State) {
   for object in state.objects.iter_mut() {
     if object.is_selected {
       ui.separator();
-      ui.label("object");
+      ui.label("Object");
 
       let mut x = object.pos.x.to_string();
       let mut y = object.pos.y.to_string();
@@ -13,7 +13,7 @@ pub fn draw_object_gui(ui: &mut Ui, state: &mut State) {
       ui.horizontal(|ui| {
         ui.label("x:");
         ui.add(TextEdit::singleline(&mut x).desired_width(50.));
-        
+
         ui.label("y:");
         ui.add(TextEdit::singleline(&mut y).desired_width(50.));
       });
@@ -52,21 +52,31 @@ pub fn draw_object_gui(ui: &mut Ui, state: &mut State) {
         object.set_size(size);
       }
 
-    //   ui.horizontal(|ui| {
-    //     ui.label("texture:");
+      ui.horizontal(|ui| {
+        ui.label("Texture:");
 
-    //     let mut path = object.texture_path.clone();
+        let mut path = String::new();
 
-    //     ComboBox::from_label("").selected_text(path.clone()).show_ui(ui, |ui| {
-    //       for option in &state.resources {
-    //         ui.selectable_value(&mut path, option.into(), option);
-    //       }
-    //     });
+        if let Some(resource) = &object.resource {
+          path = resource.path.clone();
+        }
 
-    //     if path != object.texture_path {
-    //       object.set_texture_path(path);
-    //     }
-    //   });
+        ComboBox::from_label("").selected_text(path.clone()).show_ui(ui, |ui| {
+          for option in &state.resources {
+            ui.selectable_value(&mut path, option.path.clone().into(), option.path.clone());
+          }
+        });
+
+        let resource = state.resources.iter().find(|res| res.path == path);
+
+        if resource.is_some() {
+          if object.resource.is_none()
+            || object.resource.as_ref().unwrap().path != resource.unwrap().path
+          {
+            object.set_resource(resource.unwrap().clone());
+          }
+        }
+      });
     }
   }
 }
