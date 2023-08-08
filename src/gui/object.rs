@@ -55,26 +55,18 @@ pub fn draw_object_gui(ui: &mut Ui, state: &mut State) {
       ui.horizontal(|ui| {
         ui.label("Texture:");
 
-        let mut path = String::new();
+        let mut res_path = object.res_path.clone();
 
-        if let Some(resource) = &object.resource {
-          path = resource.path.clone();
-        }
-
-        ComboBox::from_label("").selected_text(path.clone()).show_ui(ui, |ui| {
+        ComboBox::from_label("").selected_text(res_path.clone()).show_ui(ui, |ui| {
           for option in &state.resources {
-            ui.selectable_value(&mut path, option.path.clone().into(), option.path.clone());
+            ui.selectable_value(&mut res_path, option.path.clone().into(), option.path.clone());
           }
         });
 
-        let resource = state.resources.iter().find(|res| res.path == path);
+        let resource = state.resources.iter().find(|res| res.path == res_path);
 
-        if resource.is_some() {
-          if object.resource.is_none()
-            || object.resource.as_ref().unwrap().path != resource.unwrap().path
-          {
-            object.set_resource(resource.unwrap().clone());
-          }
+        if resource.is_some() && object.res_path != resource.unwrap().path {
+          object.set_resource(resource.unwrap().clone());
         }
       });
     }

@@ -33,26 +33,18 @@ pub fn draw_enemy_gui(ui: &mut Ui, state: &mut State) {
       ui.horizontal(|ui| {
         ui.label("Texture:");
 
-        let mut path = String::new();
+        let mut res_path = enemy.res_path.clone();
 
-        if let Some(resource) = &enemy.resource {
-          path = resource.path.clone();
-        }
-
-        ComboBox::from_label("").selected_text(path.clone()).show_ui(ui, |ui| {
+        ComboBox::from_label("").selected_text(res_path.clone()).show_ui(ui, |ui| {
           for option in &state.resources {
-            ui.selectable_value(&mut path, option.path.clone().into(), option.path.clone());
+            ui.selectable_value(&mut res_path, option.path.clone().into(), option.path.clone());
           }
         });
 
-        let resource = state.resources.iter().find(|res| res.path == path);
+        let resource = state.resources.iter().find(|res| res.path == res_path);
 
-        if resource.is_some() {
-          if enemy.resource.is_none()
-            || enemy.resource.as_ref().unwrap().path != resource.unwrap().path
-          {
-            enemy.set_resource(resource.unwrap().clone());
-          }
+        if resource.is_some() && enemy.res_path != resource.unwrap().path {
+          enemy.set_resource(resource.unwrap().clone());
         }
       });
     }

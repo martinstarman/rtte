@@ -24,8 +24,7 @@ pub struct Enemy {
   pub is_selected: bool,
   #[serde(skip)]
   pub path: Vec<Vec2>,
-  // TODO: serialize only res path and use state.get_resource_by(path)
-  pub resource: Option<Resource>, 
+  pub res_path: String,
 }
 
 impl Default for Enemy {
@@ -45,7 +44,7 @@ impl Enemy {
       pov_dest: Vec2::new(pos.x + VIEW_DISTANCE, pos.y), // TODO: this shoud be editable trough gui
       is_selected: false,
       path: vec![],
-      resource: None,
+      res_path: String::new(),
     }
   }
 
@@ -61,13 +60,11 @@ impl Enemy {
 
   pub fn draw(&self, canvas: &mut Canvas, ctx: &mut Context, state: &State) {
     // draw texture
-    if let Some(resource) = &self.resource {
-      if let Some(image) = &resource.image {
-        // calculate position manually because Image uses relative offset
-        // @see https://github.com/ggez/ggez/blob/devel/docs/FAQ.md#offsets
-        let pos = (self.pos - state.offset - (self.size / 2.)) * state.scale.x;
-        canvas.draw(image, DrawParam::new().dest(pos).scale(state.scale));
-      }
+    if let Some(resource) = state.get_resource_by(self.res_path.clone()) {
+      // calculate position manually because Image uses relative offset
+      // @see https://github.com/ggez/ggez/blob/devel/docs/FAQ.md#offsets
+      let pos = (self.pos - state.offset - (self.size / 2.)) * state.scale.x;
+      canvas.draw(&resource.image, DrawParam::new().dest(pos).scale(state.scale));
     }
 
     // draw rectangle
@@ -104,7 +101,7 @@ impl Enemy {
   }
 
   pub fn set_resource(&mut self, res: Resource) {
-    self.resource = Some(res.clone());
+    self.res_path = res.path;
     // TODO: set_size()
     self.size.x = res.w;
     self.size.y = res.h;

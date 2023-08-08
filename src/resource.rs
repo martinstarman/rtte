@@ -1,16 +1,12 @@
 use ggez::{graphics::Image, Context};
-use serde::{Deserialize, Serialize};
 
-// TODO: remove serde
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Clone)]
 pub struct Resource {
   /// image path
   pub path: String,
 
   /// image
-  // TODO: this should not be Option
-  #[serde(skip)]
-  pub image: Option<Image>,
+  pub image: Image,
 
   /// image width
   pub w: f32,
@@ -25,11 +21,6 @@ impl Resource {
     let w = image.width() as f32;
     let h = image.height() as f32;
 
-    Resource {
-      path,
-      image: Some(image),
-      w,
-      h,
-    }
+    Resource { path, image, w, h }
   }
 }
