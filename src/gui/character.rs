@@ -1,7 +1,7 @@
 use crate::{geometry::vec2::Vec2, State};
 use ggegui::egui::{TextEdit, Ui};
 
-pub fn draw_character_gui(ui: &mut Ui, state: &mut State) {
+pub fn draw_gui(ui: &mut Ui, state: &mut State) {
   for character in state.characters.iter_mut() {
     if character.is_selected {
       ui.separator();

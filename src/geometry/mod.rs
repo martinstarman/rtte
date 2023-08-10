@@ -1,11 +1,11 @@
-///
+/// Mesh point
 pub mod vec2;
 
-///
-pub mod line_segment;
+/// Line segment
+pub mod line;
 
-///
+/// Mesh triangle
 pub mod triangle;
 
-///
+/// Mesh
 pub mod mesh;

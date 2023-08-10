@@ -1,4 +1,4 @@
-use crate::{geometry::vec2::Vec2, resource::Resource, State};
+use crate::{geometry::vec2::Vec2, resource::Resource, Mode, State};
 
 use ggez::{
   graphics::{Canvas, Color, DrawMode, DrawParam, Mesh, Rect},
@@ -39,9 +39,11 @@ impl Enemy {
       pos,
       size: Vec2::new(10., 10.),
       // TODO: default path can be also empty, if enemy stands
-      path_default: vec![pos, Vec2::new(200., 300.)], // TODO: this shoud be editable trough gui
+      // TODO: this shoud be editable trough gui
+      path_default: vec![pos, Vec2::new(200., 300.)],
       pov: vec![],
-      pov_dest: Vec2::new(pos.x + VIEW_DISTANCE, pos.y), // TODO: this shoud be editable trough gui
+      // TODO: this shoud be editable trough gui
+      pov_dest: Vec2::new(pos.x + VIEW_DISTANCE, pos.y),
       is_selected: false,
       path: vec![],
       res_path: String::new(),
@@ -59,25 +61,27 @@ impl Enemy {
   }
 
   pub fn draw(&self, canvas: &mut Canvas, ctx: &mut Context, state: &State) {
-    // draw texture
-    if let Some(resource) = state.get_resource_by(self.res_path.clone()) {
-      // calculate position manually because Image uses relative offset
-      // @see https://github.com/ggez/ggez/blob/devel/docs/FAQ.md#offsets
-      let pos = (self.pos - state.offset - (self.size / 2.)) * state.scale.x;
-      canvas.draw(&resource.image, DrawParam::new().dest(pos).scale(state.scale));
-    }
+    if state.mode == Mode::Runtime {
+      // draw texture
+      if let Some(resource) = state.get_resource_by(self.res_path.clone()) {
+        // calculate position manually because Image uses relative offset
+        // @see https://github.com/ggez/ggez/blob/devel/docs/FAQ.md#offsets
+        let pos = (self.pos - state.offset - (self.size / 2.)) * state.scale.x;
+        canvas.draw(&resource.image, DrawParam::new().dest(pos).scale(state.scale));
+      }
 
-    // draw rectangle
-    let color = if self.is_selected { Color::WHITE } else { Color::BLACK };
-    let mesh = Mesh::new_rectangle(ctx, DrawMode::stroke(1.), self.get_rect(), color).unwrap();
-    canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
-
-    // draw pov
-    if self.is_selected {
-      let mesh =
-        Mesh::new_polygon(ctx, DrawMode::fill(), &self.pov[..], Color::from_rgba(255, 0, 0, 127))
-          .unwrap();
+      // draw rectangle
+      let color = if self.is_selected { Color::WHITE } else { Color::BLACK };
+      let mesh = Mesh::new_rectangle(ctx, DrawMode::stroke(1.), self.get_rect(), color).unwrap();
       canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
+
+      // draw pov
+      if self.is_selected {
+        let mesh =
+          Mesh::new_polygon(ctx, DrawMode::fill(), &self.pov[..], Color::from_rgba(255, 0, 0, 127))
+            .unwrap();
+        canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
+      }
     }
   }
 

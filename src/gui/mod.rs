@@ -1,39 +1,24 @@
-///
-pub mod character;
-
-///
-pub mod enemy;
-
-///
-pub mod object;
-
-///
 pub mod base;
-
-///
+pub mod character;
+pub mod enemy;
 pub mod mesh;
 
-use crate::State;
-
-use ggegui::egui::{self, Rect};
-
-use self::{
-  base::draw_base_gui, character::draw_character_gui, enemy::draw_enemy_gui,
-  object::draw_object_gui, mesh::draw_mesh_gui,
-};
+use crate::{Mode, State};
+use ggegui::egui::{self, Id, Rect};
 
 pub fn update(state: &mut State) -> Option<Rect> {
   let gui_ctx = state.gui.ctx();
 
-  //
+  // dark visuals breaks gui on my laptot for some reason
   gui_ctx.set_visuals(egui::Visuals::light());
 
-  let resp = egui::Window::new("rtte").show(&gui_ctx, |ui| {
-    draw_base_gui(ui, state);
-    draw_character_gui(ui, state);
-    draw_enemy_gui(ui, state);
-    draw_object_gui(ui, state);
-    draw_mesh_gui(ui, state);
+  let title = if state.mode == Mode::Runtime { "rtte (runtime mode)" } else { "rtte (edit mode)" };
+
+  let resp = egui::Window::new(title).id(Id::from("rtte")).show(&gui_ctx, |ui| {
+    base::draw_gui(ui, state);
+    character::draw_gui(ui, state);
+    enemy::draw_gui(ui, state);
+    mesh::draw_gui(ui, state);
   });
 
   if resp.is_some() {

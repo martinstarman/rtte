@@ -1,5 +1,5 @@
 use crate::{
-  geometry::{line_segment::LineSegment, triangle::Triangle, vec2::Vec2},
+  geometry::{line::Line, triangle::Triangle, vec2::Vec2},
   Mode, State,
 };
 
@@ -15,12 +15,13 @@ use serde::{Deserialize, Serialize};
 
 const POINT_OF_VIEW_ANGLE: i32 = 60;
 
+// TODO: vec2 manipulation (remove, move?)
 #[derive(Serialize, Deserialize)]
 pub struct Mesh {
   pub rect: Rect,
   pub vectors: Vec<Vec2>,
   pub triangles: Vec<Triangle>,
-  pub pov_barriers: Vec<LineSegment>,
+  pub pov_barriers: Vec<Line>, // TODO: maybe remove?
 }
 
 impl Mesh {
@@ -53,7 +54,7 @@ impl Mesh {
     let mut is_straight = true;
 
     for triangle in &self.triangles {
-      if triangle.is_path_block && triangle.intersected(LineSegment::new(start, dest)) {
+      if triangle.is_path_block && triangle.intersected(Line::new(start, dest)) {
         is_straight = false; // we intersect some non walkable triangle
       }
     }
@@ -138,34 +139,47 @@ impl Mesh {
         let points = vec![triangle.a, triangle.b, triangle.c];
 
         // bg
-        if triangle.is_path_block || triangle.is_view_block {
+        let mut bg_color: Option<Color> = None;
+
+        if triangle.is_path_block == true && triangle.is_view_block == true {
+          bg_color = Some(Color::from_rgba(255, 255, 0, 127));
+        }
+
+        if triangle.is_path_block == true && triangle.is_view_block == false {
+          bg_color = Some(Color::from_rgba(255, 0, 0, 127));
+        }
+
+        if triangle.is_path_block == false && triangle.is_view_block == true {
+          bg_color = Some(Color::from_rgba(0, 255, 0, 127));
+        }
+
+        if bg_color.is_some() {
           let mesh =
-            graphics::Mesh::new_polygon(ctx, DrawMode::fill(), &points[..], Color::GREEN).unwrap();
+            graphics::Mesh::new_polygon(ctx, DrawMode::fill(), &points[..], bg_color.unwrap())
+              .unwrap();
           canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
         }
 
         // outline
-        let color = if triangle.is_selected {
-          Color::WHITE
-        } else {
-          Color::BLACK
-        };
+        let color = if triangle.is_selected { Color::WHITE } else { Color::BLACK };
+        let z = if triangle.is_selected { 2 } else { 1 };
         let mesh =
           graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], color).unwrap();
-        canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
+
+        canvas.draw(&mesh, DrawParam::new().z(z).offset(state.offset).scale(state.scale));
       }
     }
   }
 
   //
   pub fn update_pov_barriers(&mut self) {
-    let mut pov_barriers: Vec<LineSegment> = vec![];
+    let mut pov_barriers: Vec<Line> = vec![];
 
     for triangle in &self.triangles {
       if triangle.is_view_block {
-        let a = LineSegment::new(triangle.a, triangle.b);
-        let b = LineSegment::new(triangle.b, triangle.c);
-        let c = LineSegment::new(triangle.c, triangle.a);
+        let a = Line::new(triangle.a, triangle.b);
+        let b = Line::new(triangle.b, triangle.c);
+        let c = Line::new(triangle.c, triangle.a);
 
         pov_barriers.push(a);
         pov_barriers.push(b);
@@ -176,7 +190,7 @@ impl Mesh {
     self.pov_barriers = pov_barriers;
   }
 
-  //
+  // TODO: somehow preserve triangle settings
   fn triangulate(&mut self) {
     let mut triangles: Vec<Triangle> = vec![];
     let points: Vec<Point> = self.vectors.iter().map(|&v| v.into()).collect();

@@ -4,7 +4,7 @@ use ggegui::egui::{Slider, Ui};
 const W: f32 = 70.;
 const H: f32 = 20.;
 
-pub fn draw_base_gui(ui: &mut Ui, state: &mut State) {
+pub fn draw_gui(ui: &mut Ui, state: &mut State) {
   // 1st row
   ui.horizontal(|ui| {
     let btn_save = ui.add_sized([W, H], ggegui::egui::Button::new("Save"));
@@ -28,7 +28,6 @@ pub fn draw_base_gui(ui: &mut Ui, state: &mut State) {
   ui.horizontal(|ui| {
     let btn_character = ui.add_sized([W, H], ggegui::egui::Button::new("Character"));
     let btn_enemy = ui.add_sized([W, H], ggegui::egui::Button::new("Enemy"));
-    let btn_object = ui.add_sized([W, H], ggegui::egui::Button::new("Object"));
 
     if btn_character.clicked() {
       state.add_character();
@@ -36,10 +35,6 @@ pub fn draw_base_gui(ui: &mut Ui, state: &mut State) {
 
     if btn_enemy.clicked() {
       state.add_enemy();
-    }
-
-    if btn_object.clicked() {
-      state.add_object();
     }
   });
 

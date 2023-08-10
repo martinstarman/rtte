@@ -38,16 +38,18 @@ impl Character {
   }
 
   pub fn draw(&self, canvas: &mut Canvas, ctx: &mut Context, state: &State) {
-    // draw itself
-    let color = if self.is_selected { Color::WHITE } else { Color::BLACK };
+    if state.mode == Mode::Runtime {
+      // draw itself
+      let color = if self.is_selected { Color::WHITE } else { Color::BLACK };
 
-    let mesh = Mesh::new_rectangle(ctx, DrawMode::stroke(1.), self.get_rect(), color).unwrap();
-    canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
-
-    if state.mode == Mode::Edit && self.path.len() >= 2 {
-      let mesh =
-        Mesh::new_polyline(ctx, DrawMode::stroke(1.), &self.path[..], Color::BLACK).unwrap();
+      let mesh = Mesh::new_rectangle(ctx, DrawMode::stroke(1.), self.get_rect(), color).unwrap();
       canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
+
+      if state.mode == Mode::Edit && self.path.len() >= 2 {
+        let mesh =
+          Mesh::new_polyline(ctx, DrawMode::stroke(1.), &self.path[..], Color::BLACK).unwrap();
+        canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
+      }
     }
   }
 

@@ -1,7 +1,7 @@
 use crate::{geometry::vec2::Vec2, State};
 use ggegui::egui::{ComboBox, TextEdit, Ui};
 
-pub fn draw_enemy_gui(ui: &mut Ui, state: &mut State) {
+pub fn draw_gui(ui: &mut Ui, state: &mut State) {
   for enemy in state.enemies.iter_mut() {
     if enemy.is_selected {
       ui.separator();

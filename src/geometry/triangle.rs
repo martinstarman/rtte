@@ -1,4 +1,4 @@
-use crate::geometry::{line_segment::LineSegment, vec2::Vec2};
+use crate::geometry::{line::Line, vec2::Vec2};
 
 use maths_rs::{line_segment_vs_line_segment, point_inside_triangle, Vec2f};
 use serde::{Deserialize, Serialize};
@@ -31,12 +31,12 @@ impl Triangle {
     point_inside_triangle::<f32, Vec2f>(v.into(), self.a.into(), self.b.into(), self.c.into())
   }
 
-  // line segments intersect triangle
-  pub fn intersected(&self, l: LineSegment) -> bool {
-    let i1 = line_segment_vs_line_segment(l.a.into(), l.b.into(), self.a.into(), self.b.into());
-    let i2 = line_segment_vs_line_segment(l.a.into(), l.b.into(), self.b.into(), self.c.into());
-    let i3 = line_segment_vs_line_segment(l.a.into(), l.b.into(), self.c.into(), self.a.into());
-
-    i1.is_some() || i2.is_some() || i3.is_some()
+  // line segment intersect triangle
+  pub fn intersected(&self, l: Line) -> bool {
+    line_segment_vs_line_segment(l.a.into(), l.b.into(), self.a.into(), self.b.into()).is_some()
+      || line_segment_vs_line_segment(l.a.into(), l.b.into(), self.b.into(), self.c.into())
+        .is_some()
+      || line_segment_vs_line_segment(l.a.into(), l.b.into(), self.c.into(), self.a.into())
+        .is_some()
   }
 }

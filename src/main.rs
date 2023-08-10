@@ -11,7 +11,7 @@ pub mod gui;
 pub mod resource;
 
 use crate::{
-  entity::{character::Character, enemy::Enemy, object::Object},
+  entity::{character::Character, enemy::Enemy},
   geometry::{mesh::Mesh, vec2::Vec2},
 };
 
@@ -47,7 +47,6 @@ pub struct State {
   mesh: Mesh,
   characters: Vec<Character>,
   enemies: Vec<Enemy>,
-  objects: Vec<Object>,
   #[serde(skip)]
   mode: Mode,
   #[serde(skip)]
@@ -69,7 +68,6 @@ impl State {
       scale: Vec2::new(1., 1.),
       characters: vec![],
       enemies: vec![],
-      objects: vec![],
       mode: Mode::Runtime,
       gui: Gui::new(ctx),
       gui_window_rect: Some(Rect::NOTHING),
@@ -95,6 +93,7 @@ impl State {
   }
 
   // deserialize TOML file to game state
+  // TODO: make it more robust. when data changed it panicked.
   pub fn load(&mut self) {
     let mut data = String::new();
     let mut file = File::open("demo.toml").expect("Unable to open save file");
@@ -108,7 +107,7 @@ impl State {
     // TODO: if we deserialize enemy pos, pov_dest does not get updated...
     //       one solution should be serialized pov_dest
     self.enemies = deserialized.enemies;
-    self.objects = deserialized.objects;
+    // TODO: simple objects (x, y, w, h)
   }
 
   // toggle game modes
@@ -129,12 +128,7 @@ impl State {
     self.enemies.push(Enemy::default());
   }
 
-  // add new object to the game
-  pub fn add_object(&mut self) {
-    self.objects.push(Object::default());
-  }
-
-  // TODO: not used
+  //
   pub fn get_resource_by(&self, path: String) -> Option<&Resource> {
     self.resources.iter().find(|res| res.path == path)
   }
@@ -152,12 +146,6 @@ impl State {
       for enemy in self.enemies.iter_mut() {
         if enemy.get_rect().contains::<Point2<f32>>(v.into()) {
           enemy.is_selected = !enemy.is_selected;
-        }
-      }
-
-      for object in self.objects.iter_mut() {
-        if object.get_rect().contains::<Point2<f32>>(v.into()) {
-          object.is_selected = !object.is_selected;
         }
       }
     } else {
@@ -207,11 +195,6 @@ impl EventHandler<GameError> for State {
       enemy.pov = self.mesh.get_pov(enemy.pos, enemy.pov_dest); // TODO: move to enemy.update()
     }
 
-    // update objects
-    for object in self.objects.iter_mut() {
-      object.update();
-    }
-
     // gui
     self.gui_window_rect = gui::update(self);
     self.gui.update(ctx);
@@ -222,6 +205,8 @@ impl EventHandler<GameError> for State {
   // main draw fn
   fn draw(&mut self, ctx: &mut Context) -> GameResult {
     let mut canvas = Canvas::from_frame(ctx, Color::from_rgb(255, 0, 255));
+
+    // TODO: draw background image/map
 
     // draw mesh
     self.mesh.draw(&mut canvas, ctx, &self);
@@ -234,11 +219,6 @@ impl EventHandler<GameError> for State {
     // draw enemies
     for enemy in &self.enemies {
       enemy.draw(&mut canvas, ctx, &self);
-    }
-
-    // draw objects
-    for object in &self.objects {
-      object.draw(&mut canvas, ctx, &self);
     }
 
     // draw gui
