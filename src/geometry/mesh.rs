@@ -1,5 +1,9 @@
 use crate::{
-  geometry::{line::Line, triangle::Triangle, vec2::Vec2},
+  geometry::{
+    line::Line,
+    triangle::{self, Triangle},
+    vec2::Vec2,
+  },
   Mode, State,
 };
 
@@ -54,7 +58,7 @@ impl Mesh {
     let mut is_straight = true;
 
     for triangle in &self.triangles {
-      if triangle.is_path_block && triangle.intersected(Line::new(start, dest)) {
+      if triangle.is_blocking_path() && triangle.intersected(Line::new(start, dest)) {
         is_straight = false; // we intersect some non walkable triangle
       }
     }
@@ -67,7 +71,7 @@ impl Mesh {
     // dx and dy are always in map rect, so we have to find some triangle
     let triangle: &Triangle = self.triangles.iter().find(|t| t.contains(dest)).unwrap();
 
-    if !triangle.is_path_block {
+    if !triangle.is_blocking_path() {
       let path = dijkstra(
         &start.into(),
         |&point| self.get_point_neighbors(&point),
@@ -139,26 +143,17 @@ impl Mesh {
         let points = vec![triangle.a, triangle.b, triangle.c];
 
         // bg
-        let mut bg_color: Option<Color> = None;
+        let bg: Color = match triangle.kind {
+          triangle::Kind::GROUND => Color::GREEN,
+          triangle::Kind::WATER => Color::BLUE,
+          triangle::Kind::SNOW => Color::WHITE,
+          triangle::Kind::BLOCK => Color::RED,
+          triangle::Kind::TRANSPARENT => Color::YELLOW,
+        };
 
-        if triangle.is_path_block == true && triangle.is_view_block == true {
-          bg_color = Some(Color::from_rgba(255, 255, 0, 127));
-        }
-
-        if triangle.is_path_block == true && triangle.is_view_block == false {
-          bg_color = Some(Color::from_rgba(255, 0, 0, 127));
-        }
-
-        if triangle.is_path_block == false && triangle.is_view_block == true {
-          bg_color = Some(Color::from_rgba(0, 255, 0, 127));
-        }
-
-        if bg_color.is_some() {
-          let mesh =
-            graphics::Mesh::new_polygon(ctx, DrawMode::fill(), &points[..], bg_color.unwrap())
-              .unwrap();
-          canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
-        }
+        let mesh =
+          graphics::Mesh::new_polygon(ctx, DrawMode::fill(), &points[..], bg).unwrap();
+        canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
 
         // outline
         let color = if triangle.is_selected { Color::WHITE } else { Color::BLACK };
@@ -176,7 +171,7 @@ impl Mesh {
     let mut pov_barriers: Vec<Line> = vec![];
 
     for triangle in &self.triangles {
-      if triangle.is_view_block {
+      if triangle.is_blocking_view() {
         let a = Line::new(triangle.a, triangle.b);
         let b = Line::new(triangle.b, triangle.c);
         let c = Line::new(triangle.c, triangle.a);
@@ -201,7 +196,7 @@ impl Mesh {
       let b = self.vectors[res.triangles[i + 1]];
       let c = self.vectors[res.triangles[i + 2]];
 
-      triangles.push(Triangle::new(a, b, c));
+      triangles.push(Triangle::new(a, b, c, triangle::Kind::GROUND));
     }
 
     self.triangles = triangles;
@@ -214,7 +209,7 @@ impl Mesh {
     let mut neighbors: Vec<(Point2<i32>, usize)> = vec![];
 
     for triangle in &self.triangles {
-      if !triangle.is_path_block && triangle.contains((*point).into()) {
+      if !triangle.is_blocking_path() && triangle.contains((*point).into()) {
         neighbors
           .push((triangle.a.into(), distance::<f32, Vec2f>(v.into(), triangle.a.into()) as usize));
         neighbors

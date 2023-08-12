@@ -1,36 +1,41 @@
-pub use crate::{geometry::vec2::Vec2, State};
-use ggegui::egui::Ui;
+pub use crate::{
+  geometry::{triangle, vec2::Vec2},
+  State,
+};
+use ggegui::egui::{ComboBox, Ui};
 
 pub fn draw_gui(ui: &mut Ui, state: &mut State) {
-  let mut change = false;
+  let mut mesh_changed = false;
 
   for triangle in state.mesh.triangles.iter_mut() {
     if triangle.is_selected {
       ui.separator();
       ui.label("Triangle");
 
-      let mut is_path_block = triangle.is_path_block;
-      let mut is_view_block = triangle.is_view_block;
+      let mut selected = triangle.kind;
 
-      ui.horizontal(|ui| {
-        ui.label("Blocking: ");
-        ui.checkbox(&mut is_path_block, "path");
-        ui.checkbox(&mut is_view_block, "view");
+      ComboBox::from_label("Kind").selected_text(format!("{:?}", selected)).show_ui(ui, |ui| {
+        ui.selectable_value(&mut selected, triangle::Kind::GROUND, "Ground");
+        ui.selectable_value(&mut selected, triangle::Kind::WATER, "Water");
+        ui.selectable_value(&mut selected, triangle::Kind::SNOW, "Snow");
+        ui.selectable_value(&mut selected, triangle::Kind::BLOCK, "Block");
+        ui.selectable_value(&mut selected, triangle::Kind::TRANSPARENT, "Transparent");
       });
 
-      if triangle.is_path_block != is_path_block {
-        triangle.is_path_block = is_path_block;
-        change = true;
-      }
-
-      if triangle.is_view_block != is_view_block {
-        triangle.is_view_block = is_view_block;
-        change = true;
+      if selected != triangle.kind {
+        triangle.kind = selected;
+        mesh_changed = true;
       }
     }
+    // ui.label(".");
+    // ui.label(".");
+    // ui.label(".");
+    // ui.label(".");
+    // ui.label(".");
+    // ui.label(".");
   }
 
-  if change {
+  if mesh_changed {
     state.mesh.update_pov_barriers();
   }
 }
