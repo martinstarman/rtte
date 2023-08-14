@@ -1,37 +1,30 @@
 use crate::geometry::{line::Line, vec2::Vec2};
-
 use maths_rs::{line_segment_vs_line_segment, point_inside_triangle, Vec2f};
-use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Default, PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum Kind {
-  #[default]
+  // Ground. It does not block anything or leave any marks.
   GROUND = 0,
-  WATER = 1,
-  SNOW = 2,
-  BLOCK = 3,       // path and view block
-  TRANSPARENT = 4, // path block
+
+  // Any object that blocks enemy view and path finding (house, tree, rock, ...).
+  BLOCK = 1,
+
+  // Any object that blocks only path finding. Like fence.
+  TRANSPARENT = 2,
+  // TODO: water, snow, ...
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Triangle {
   pub a: Vec2,
   pub b: Vec2,
   pub c: Vec2,
   pub kind: Kind,
-  #[serde(skip)]
-  pub is_selected: bool,
 }
 
 impl Triangle {
   pub fn new(a: Vec2, b: Vec2, c: Vec2, kind: Kind) -> Self {
-    Triangle {
-      a,
-      b,
-      c,
-      kind,
-      is_selected: false,
-    }
+    Triangle { a, b, c, kind }
   }
 
   pub fn is_blocking_path(&self) -> bool {

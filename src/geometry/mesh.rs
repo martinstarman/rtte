@@ -4,7 +4,7 @@ use crate::{
     triangle::{self, Triangle},
     vec2::Vec2,
   },
-  Mode, State,
+  Game,
 };
 
 use delaunator::Point;
@@ -15,12 +15,9 @@ use ggez::{
 };
 use maths_rs::{deg_to_rad, distance, line_segment_vs_line_segment, rad_to_deg, Vec2f};
 use pathfinding::directed::dijkstra::dijkstra;
-use serde::{Deserialize, Serialize};
 
 const POINT_OF_VIEW_ANGLE: i32 = 60;
 
-// TODO: vec2 manipulation (remove, move?)
-#[derive(Serialize, Deserialize)]
 pub struct Mesh {
   pub rect: Rect,
   pub vectors: Vec<Vec2>,
@@ -45,12 +42,6 @@ impl Mesh {
     mesh.triangulate();
 
     mesh
-  }
-
-  //
-  pub fn add_vec2(&mut self, v: Vec2) {
-    self.vectors.push(v);
-    self.triangulate();
   }
 
   //
@@ -136,33 +127,27 @@ impl Mesh {
   }
 
   // draw mesh
-  pub fn draw(&self, canvas: &mut Canvas, ctx: &mut Context, state: &State) {
-    if state.mode == Mode::Edit {
-      // draw triangles
-      for triangle in &self.triangles {
-        let points = vec![triangle.a, triangle.b, triangle.c];
+  pub fn draw(&self, canvas: &mut Canvas, ctx: &mut Context, state: &Game) {
+    // draw triangles
+    for triangle in &self.triangles {
+      let points = vec![triangle.a, triangle.b, triangle.c];
 
-        // bg
-        let bg: Color = match triangle.kind {
-          triangle::Kind::GROUND => Color::GREEN,
-          triangle::Kind::WATER => Color::BLUE,
-          triangle::Kind::SNOW => Color::WHITE,
-          triangle::Kind::BLOCK => Color::RED,
-          triangle::Kind::TRANSPARENT => Color::YELLOW,
-        };
+      // bg
+      let bg: Color = match triangle.kind {
+        triangle::Kind::GROUND => Color::GREEN,
+        triangle::Kind::BLOCK => Color::RED,
+        triangle::Kind::TRANSPARENT => Color::WHITE,
+      };
 
-        let mesh =
-          graphics::Mesh::new_polygon(ctx, DrawMode::fill(), &points[..], bg).unwrap();
-        canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
+      let mesh = graphics::Mesh::new_polygon(ctx, DrawMode::fill(), &points[..], bg).unwrap();
+      canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
 
-        // outline
-        let color = if triangle.is_selected { Color::WHITE } else { Color::BLACK };
-        let z = if triangle.is_selected { 2 } else { 1 };
-        let mesh =
-          graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], color).unwrap();
+      // outline
+      let color = Color::BLACK;
+      let mesh =
+        graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], color).unwrap();
 
-        canvas.draw(&mesh, DrawParam::new().z(z).offset(state.offset).scale(state.scale));
-      }
+      canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
     }
   }
 

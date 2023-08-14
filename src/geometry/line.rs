@@ -1,8 +1,6 @@
 use crate::geometry::vec2::Vec2;
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy)]
 pub struct Line {
   pub a: Vec2,
   pub b: Vec2,

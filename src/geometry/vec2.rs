@@ -1,10 +1,9 @@
 use delaunator::Point;
 use ggez::mint::{Point2, Vector2};
 use maths_rs::{Vec2f, Vec3f};
-use serde::{Deserialize, Serialize};
 use std::ops::{Add, Div, Mul, Sub};
 
-#[derive(Copy, Clone, Serialize, Deserialize, Default)]
+#[derive(Copy, Clone, Default)]
 pub struct Vec2 {
   pub x: f32,
   pub y: f32,
