@@ -1,18 +1,6 @@
-use crate::{
-  geometry::{
-    line::Line,
-    triangle::{self, Triangle},
-    vec2::Vec2,
-  },
-  Game,
-};
+use crate::geometry::{triangle::Triangle, vec2::Vec2};
 
-use delaunator::Point;
-use ggez::{
-  graphics::{self, Canvas, Color, DrawMode, DrawParam, Rect},
-  mint::Point2,
-  Context,
-};
+use ggez::{graphics::Rect, mint::Point2};
 use maths_rs::{deg_to_rad, distance, line_segment_vs_line_segment, rad_to_deg, Vec2f};
 use pathfinding::directed::dijkstra::dijkstra;
 
@@ -20,28 +8,17 @@ const POINT_OF_VIEW_ANGLE: i32 = 60;
 
 pub struct Mesh {
   pub rect: Rect,
-  pub vectors: Vec<Vec2>,
   pub triangles: Vec<Triangle>,
-  pub pov_barriers: Vec<Line>, // TODO: maybe remove?
+  pub pov_barriers: Vec<(Vec2, Vec2)>,
 }
 
 impl Mesh {
   pub fn new(w: f32, h: f32) -> Self {
-    let v1 = Vec2::new(0., 0.);
-    let v2 = Vec2::new(w, 0.);
-    let v3 = Vec2::new(w, h);
-    let v4 = Vec2::new(0., h);
-
-    let mut mesh = Mesh {
+    Mesh {
       rect: Rect::new(0., 0., w, h),
-      vectors: vec![v1, v2, v3, v4],
       triangles: vec![],
       pov_barriers: vec![],
-    };
-
-    mesh.triangulate();
-
-    mesh
+    }
   }
 
   //
@@ -49,7 +26,7 @@ impl Mesh {
     let mut is_straight = true;
 
     for triangle in &self.triangles {
-      if triangle.is_blocking_path() && triangle.intersected(Line::new(start, dest)) {
+      if triangle.is_blocking_path() && triangle.intersected(start, dest) {
         is_straight = false; // we intersect some non walkable triangle
       }
     }
@@ -106,7 +83,7 @@ impl Mesh {
 
       for barrier in &self.pov_barriers {
         let intersection =
-          line_segment_vs_line_segment(pos.into(), v.into(), barrier.a.into(), barrier.b.into());
+          line_segment_vs_line_segment(pos.into(), v.into(), barrier.0.into(), barrier.1.into());
 
         if intersection.is_some() {
           let intersection = intersection.unwrap();
@@ -126,40 +103,15 @@ impl Mesh {
     point_of_view
   }
 
-  // draw mesh
-  pub fn draw(&self, canvas: &mut Canvas, ctx: &mut Context, state: &Game) {
-    // draw triangles
-    for triangle in &self.triangles {
-      let points = vec![triangle.a, triangle.b, triangle.c];
-
-      // bg
-      let bg: Color = match triangle.kind {
-        triangle::Kind::GROUND => Color::GREEN,
-        triangle::Kind::BLOCK => Color::RED,
-        triangle::Kind::TRANSPARENT => Color::WHITE,
-      };
-
-      let mesh = graphics::Mesh::new_polygon(ctx, DrawMode::fill(), &points[..], bg).unwrap();
-      canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
-
-      // outline
-      let color = Color::BLACK;
-      let mesh =
-        graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], color).unwrap();
-
-      canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
-    }
-  }
-
   //
   pub fn update_pov_barriers(&mut self) {
-    let mut pov_barriers: Vec<Line> = vec![];
+    let mut pov_barriers: Vec<(Vec2, Vec2)> = vec![];
 
     for triangle in &self.triangles {
       if triangle.is_blocking_view() {
-        let a = Line::new(triangle.a, triangle.b);
-        let b = Line::new(triangle.b, triangle.c);
-        let c = Line::new(triangle.c, triangle.a);
+        let a = (triangle.a, triangle.b);
+        let b = (triangle.b, triangle.c);
+        let c = (triangle.c, triangle.a);
 
         pov_barriers.push(a);
         pov_barriers.push(b);
@@ -168,24 +120,6 @@ impl Mesh {
     }
 
     self.pov_barriers = pov_barriers;
-  }
-
-  // TODO: somehow preserve triangle settings
-  fn triangulate(&mut self) {
-    let mut triangles: Vec<Triangle> = vec![];
-    let points: Vec<Point> = self.vectors.iter().map(|&v| v.into()).collect();
-    let res = delaunator::triangulate(&points);
-
-    for i in (0..res.triangles.len()).step_by(3) {
-      let a = self.vectors[res.triangles[i]];
-      let b = self.vectors[res.triangles[i + 1]];
-      let c = self.vectors[res.triangles[i + 2]];
-
-      triangles.push(Triangle::new(a, b, c, triangle::Kind::GROUND));
-    }
-
-    self.triangles = triangles;
-    self.update_pov_barriers();
   }
 
   //

@@ -1,30 +1,34 @@
 use super::{
   movable::Movable, position::Position, renderable::Renderable, selectable::Selectable, size::Size,
+  view::View,
 };
 use bevy_ecs::prelude::*;
 
-/// Player component.
+/// Enemy component.
 #[derive(Default, Component)]
-pub struct Player {}
+pub struct Enemy {}
 
-/// Player bundle.
+/// Enemy bundle.
 #[derive(Bundle, Default)]
-pub struct PlayerBundle {
-  /// Player movement.
+pub struct EnemyBundle {
+  /// Enemy.
+  pub enemy: Enemy,
+
+  /// Enemy movement.
   pub movable: Movable,
 
-  /// Player.
-  pub player: Player,
-
-  /// Player position.
+  /// Enemy position.
   pub position: Position,
 
-  /// Player rendering.
+  /// Enemy rendering.
   pub renderable: Renderable,
 
-  /// Player selection.
+  /// Enemy selection.
   pub selectable: Selectable,
 
-  /// Player size.
+  /// Enemy size.
   pub size: Size,
+
+  /// Point of view.
+  pub view: View,
 }

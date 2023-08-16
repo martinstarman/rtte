@@ -1,7 +1,6 @@
-use delaunator::Point;
 use ggez::mint::{Point2, Vector2};
 use maths_rs::{Vec2f, Vec3f};
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Sub};
 
 #[derive(Copy, Clone, Default)]
 pub struct Vec2 {
@@ -15,12 +14,6 @@ impl Vec2 {
   }
 }
 
-impl PartialEq for Vec2 {
-  fn eq(&self, other: &Self) -> bool {
-    self.x == other.x && self.y == other.y
-  }
-}
-
 impl Add for Vec2 {
   type Output = Self;
 
@@ -31,6 +24,7 @@ impl Add for Vec2 {
     }
   }
 }
+
 impl Sub for Vec2 {
   type Output = Self;
 
@@ -38,17 +32,6 @@ impl Sub for Vec2 {
     Self {
       x: self.x - other.x,
       y: self.y - other.y,
-    }
-  }
-}
-
-impl Mul<f32> for Vec2 {
-  type Output = Self;
-
-  fn mul(self, rhs: f32) -> Self::Output {
-    Self {
-      x: self.x * rhs,
-      y: self.y * rhs,
     }
   }
 }
@@ -69,15 +52,6 @@ impl Into<Point2<f32>> for Vec2 {
     Point2 {
       x: self.x,
       y: self.y,
-    }
-  }
-}
-
-impl Into<Point> for Vec2 {
-  fn into(self) -> Point {
-    Point {
-      x: self.x as f64,
-      y: self.y as f64,
     }
   }
 }

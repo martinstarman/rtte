@@ -1,17 +1,22 @@
-use crate::geometry::{line::Line, vec2::Vec2};
+use crate::geometry::vec2::Vec2;
 use maths_rs::{line_segment_vs_line_segment, point_inside_triangle, Vec2f};
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum Kind {
-  // Ground. It does not block anything or leave any marks.
+  /// Ground. It does not block anything or leave any marks.
   GROUND = 0,
 
-  // Any object that blocks enemy view and path finding (house, tree, rock, ...).
+  /// Any object that blocks enemy view and path finding (house, tree, rock, ...).
   BLOCK = 1,
 
-  // Any object that blocks only path finding. Like fence.
+  /// Any object that blocks only path finding. Like fence.
   TRANSPARENT = 2,
-  // TODO: water, snow, ...
+
+  /// Water.
+  WATER = 3,
+
+  /// Snow. Leave marks.
+  SNOW = 4,
 }
 
 #[derive(Clone, Copy)]
@@ -28,7 +33,8 @@ impl Triangle {
   }
 
   pub fn is_blocking_path(&self) -> bool {
-    self.kind == Kind::BLOCK || self.kind == Kind::TRANSPARENT
+    // TODO: water should not block for divers
+    self.kind == Kind::BLOCK || self.kind == Kind::TRANSPARENT || self.kind == Kind::WATER
   }
 
   pub fn is_blocking_view(&self) -> bool {
@@ -41,11 +47,9 @@ impl Triangle {
   }
 
   // line segment intersect triangle
-  pub fn intersected(&self, l: Line) -> bool {
-    line_segment_vs_line_segment(l.a.into(), l.b.into(), self.a.into(), self.b.into()).is_some()
-      || line_segment_vs_line_segment(l.a.into(), l.b.into(), self.b.into(), self.c.into())
-        .is_some()
-      || line_segment_vs_line_segment(l.a.into(), l.b.into(), self.c.into(), self.a.into())
-        .is_some()
+  pub fn intersected(&self, a: Vec2, b: Vec2) -> bool {
+    line_segment_vs_line_segment(a.into(), b.into(), self.a.into(), self.b.into()).is_some()
+      || line_segment_vs_line_segment(a.into(), b.into(), self.b.into(), self.c.into()).is_some()
+      || line_segment_vs_line_segment(a.into(), b.into(), self.c.into(), self.a.into()).is_some()
   }
 }

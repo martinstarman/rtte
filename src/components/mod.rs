@@ -13,5 +13,11 @@ pub mod selectable;
 /// Movable component.
 pub mod movable;
 
+/// View component.
+pub mod view;
+
 /// Player component.
 pub mod player;
+
+/// Enemy component.
+pub mod enemy;

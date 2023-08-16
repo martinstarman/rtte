@@ -1,34 +1,30 @@
 /// Components.
 pub mod components;
 
-// ---------------------
-pub mod entity;
 pub mod geometry;
 
-use crate::{
-  entity::enemy::Enemy,
-  geometry::{mesh::Mesh, vec2::Vec2},
-};
+use crate::geometry::{mesh::Mesh, vec2::Vec2};
 
 use bevy_ecs::{schedule::Schedule, system::Query, world::World};
 use components::{
+  enemy::EnemyBundle,
   movable::Movable,
   player::{Player, PlayerBundle},
   position::Position,
   renderable::Renderable,
   selectable::Selectable,
   size::Size,
+  view::View,
 };
 use ggez::{
   event::{self, EventHandler, MouseButton},
   graphics::{Canvas, Color, DrawMode, DrawParam, Image, Rect},
   input::keyboard::KeyCode,
-  input::keyboard::KeyMods,
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
 use maths_rs::{distance, Vec2f};
-use std::path;
+use std::{f32::consts::PI, path};
 
 pub struct Game {
   world: World,
@@ -36,9 +32,9 @@ pub struct Game {
   offset: Vec2,
   scale: Vec2,
   mesh: Mesh,
-  enemies: Vec<Enemy>,
 }
 
+const ONE_DEGREE: f32 = PI / 180.;
 const OFFSET_SPEED: f32 = 10.;
 
 impl Game {
@@ -54,52 +50,34 @@ impl Game {
       ..Default::default()
     });
 
-    world.spawn(Position { x: 0., y: 20. });
+    world.spawn(EnemyBundle {
+      position: Position { x: 100., y: 100. },
+      size: Size { w: 10., h: 23. },
+      renderable: Renderable {
+        sprite: String::from("/player.png"),
+      },
+      movable: Movable {
+        path: vec![],
+        path_default: vec![Vec2::new(200., 200.), Vec2::new(100., 100.)],
+      },
+      view: View { x: 125., y: 100. },
+      ..Default::default()
+    });
 
     let mut schedule = Schedule::default();
+
     schedule.add_systems(movement);
+    schedule.add_systems(view);
 
     let game = Game {
       world,
       schedule,
       mesh: Mesh::new(800., 600.),
       offset: Vec2::default(),
-      scale: Vec2::new(1., 1.),
-      enemies: vec![],
+      scale: Vec2::new(1., 1.), // TODO: mouse scroll
     };
 
     Ok(game)
-  }
-
-  // handle LMB runtime mode click
-  pub fn handle_runtime_mode_click(&mut self, ctx: &mut Context, _v: Vec2) {
-    let mut query = self.world.query::<&mut Selectable>();
-
-    // TODO
-    for mut selectable in query.iter_mut(&mut self.world) {
-      selectable.selected = !selectable.selected;
-    }
-
-    if ctx.keyboard.is_mod_active(KeyMods::SHIFT) {
-
-      // // TODO: same code for every entity
-      // for character in self.characters.iter_mut() {
-      //   if character.get_rect().contains::<Point2<f32>>(v.into()) {
-      //     character.is_selected = !character.is_selected
-      //   }
-      // }
-
-      // for enemy in self.enemies.iter_mut() {
-      //   if enemy.get_rect().contains::<Point2<f32>>(v.into()) {
-      //     enemy.is_selected = !enemy.is_selected;
-      //   }
-      // }
-    } else {
-      // for character in self.characters.iter_mut() {
-      //   if character.is_selected {
-      //     character.path = self.mesh.find_path(character.pos, v);
-      //   }
-    }
   }
 }
 
@@ -118,55 +96,21 @@ impl EventHandler<GameError> for Game {
       }
     }
 
-    // // update characters
-    // for character in self.characters.iter_mut() {
-    //   character.update();
-    // }
-
+    // TODO: can this be in view()?
     // update enemies
-    for enemy in self.enemies.iter_mut() {
-      enemy.update();
-      enemy.pov = self.mesh.get_pov(enemy.pos, enemy.pov_dest); // TODO: move to enemy.update()
-    }
+    // for enemy in self.enemies.iter_mut() {
+
+    //   enemy.pov = self.mesh.get_pov(enemy.pos, enemy.pov_dest); // TODO: move to enemy.update()
+    // }
 
     Ok(())
   }
 
-  // main draw fn
   fn draw(&mut self, ctx: &mut Context) -> GameResult {
     let mut canvas = Canvas::from_frame(ctx, Color::from_rgb(255, 0, 255));
 
-    // draw mesh
-    // TODO: draw background image/map
-    self.mesh.draw(&mut canvas, ctx, &self);
-
-    // draw player
-    let mut query = self.world.query::<(&Player, &Position, &Size, &Renderable, &Selectable)>();
-    for (_, position, size, renderable, selectable) in query.iter_mut(&mut self.world) {
-      let image = Image::from_path(ctx, renderable.sprite.clone()).unwrap();
-      let pos = Vec2::new(
-        (position.x - self.offset.x) * self.scale.x,
-        (position.y - self.offset.y) * self.scale.y,
-      );
-      canvas.draw(&image, DrawParam::new().dest(pos).scale(self.scale));
-
-      // TODO: debug
-      let rect = Rect::new(position.x, position.y, size.w, size.h);
-      let color = if selectable.selected { Color::WHITE } else { Color::BLACK };
-      let mesh =
-        ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, color).unwrap();
-      canvas.draw(&mesh, DrawParam::new().offset(self.offset).scale(self.scale));
-    }
-
-    // draw characters
-    // for character in &self.characters {
-    //   character.draw(&mut canvas, ctx, &self);
-    // }
-
-    // draw enemies
-    for enemy in &self.enemies {
-      enemy.draw(&mut canvas, ctx, &self);
-    }
+    draw_entity(self, ctx, &mut canvas);
+    draw_view(self, ctx, &mut canvas);
 
     canvas.finish(ctx)?;
 
@@ -182,17 +126,69 @@ impl EventHandler<GameError> for Game {
   ) -> Result<(), GameError> {
     let v = (Vec2::new(x, y) / self.scale.x) + self.offset;
 
-    if self.mesh.rect.contains::<Point2<f32>>(v.into()) {
-      match btn {
-        MouseButton::Left => self.handle_runtime_mode_click(ctx, v),
-        _ => {}
-      }
+    match btn {
+      MouseButton::Left => on_left_mouse_button_click(self, ctx, v),
+      MouseButton::Right => on_right_mouse_button_click(self, ctx, v),
+      _ => {}
     }
 
     Ok(())
   }
 }
 
+fn draw_entity(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+  let mut query = game.world.query::<(&Position, &Size, &Renderable, &Selectable)>();
+
+  for (position, size, renderable, selectable) in query.iter_mut(&mut game.world) {
+    let image = Image::from_path(ctx, renderable.sprite.clone()).unwrap();
+    let dest = Vec2::new(
+      (position.x - game.offset.x) * game.scale.x,
+      (position.y - game.offset.y) * game.scale.y,
+    );
+    let rect = Rect::new(position.x, position.y, size.w, size.h);
+    let color = if selectable.selected { Color::WHITE } else { Color::BLACK };
+    let mesh = ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, color).unwrap();
+
+    canvas.draw(&image, DrawParam::new().dest(dest).scale(game.scale));
+    canvas.draw(&mesh, DrawParam::new().offset(game.offset).scale(game.scale));
+  }
+}
+
+fn draw_view(_game: &mut Game, _ctx: &mut Context, _canvas: &mut Canvas) {
+  // TODO
+  // if self.is_selected {
+  //   let mesh =
+  //     Mesh::new_polygon(ctx, DrawMode::fill(), &self.pov[..], Color::from_rgba(255, 0, 0, 127))
+  //       .unwrap();
+  //   canvas.draw(&mesh, DrawParam::new().offset(state.offset).scale(state.scale));
+  // }
+}
+
+fn on_left_mouse_button_click(game: &mut Game, _ctx: &mut Context, v: Vec2) {
+  if game.mesh.rect.contains::<Point2<f32>>(v.into()) {
+    let mut query = game.world.query::<(&Player, &Position, &Selectable, &mut Movable)>();
+
+    for (_, position, selectable, mut movable) in query.iter_mut(&mut game.world) {
+      if selectable.selected {
+        movable.path = game.mesh.find_path(Vec2::new(position.x, position.y), v);
+      }
+    }
+  }
+}
+
+fn on_right_mouse_button_click(game: &mut Game, _ctx: &mut Context, v: Vec2) {
+  let mut query = game.world.query::<(&mut Selectable, &Position, &Size)>();
+
+  for (mut selectable, position, size) in query.iter_mut(&mut game.world) {
+    let rect = Rect::new(position.x, position.y, size.w, size.h);
+
+    if rect.contains::<Point2<f32>>(v.into()) {
+      selectable.selected = !selectable.selected;
+    }
+  }
+}
+
+/// Entity movement.
 fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
   for (mut movable, mut position) in &mut query {
     if movable.path.len() > 0 {
@@ -211,10 +207,25 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
         position.x = position.x + (dx / dist);
         position.y = position.y + (dy / dist);
       }
+    } else {
+      if movable.path_default.len() > 0 {
+        movable.path = movable.path_default.clone();
+      }
     }
   }
 }
 
+/// Entity view.
+fn view(mut query: Query<(&mut View, &Position)>) {
+  for (mut view, position) in &mut query {
+    let dx = view.x - position.x;
+    let dy = view.y - position.y;
+
+    // TODO: limits
+    view.x = f32::cos(ONE_DEGREE) * dx - f32::sin(ONE_DEGREE) * dy + position.x;
+    view.y = f32::sin(ONE_DEGREE) * dx + f32::cos(ONE_DEGREE) * dy + position.y;
+  }
+}
 /// Main function.
 fn main() -> GameResult {
   let resource_dir = path::PathBuf::from("./resources");

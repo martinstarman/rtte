@@ -6,7 +6,6 @@ version = "0.0.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-delaunator = "1.0.2"
 ggez = "0.9.3"
 maths-rs = "0.2.4"
 pathfinding = "4.3.1"
