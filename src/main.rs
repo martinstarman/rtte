@@ -9,7 +9,7 @@ use bevy_ecs::{schedule::Schedule, system::Query, world::World};
 use components::{
   enemy::EnemyBundle,
   movable::Movable,
-  object::ObjectBundle,
+  object::{Object, ObjectBundle},
   player::{Player, PlayerBundle},
   position::Position,
   renderable::Renderable,
@@ -51,7 +51,22 @@ impl Game {
       ..Default::default()
     });
 
-    // TODO: add some block
+    world.spawn(ObjectBundle {
+      position: Position { x: 250., y: 200. },
+      size: Size { w: 160., h: 236. },
+      renderable: Renderable {
+        sprite: Some(Image::from_path(ctx, "/block.png").unwrap()),
+      },
+      object: Object {
+        poly: vec![
+          Vec2::new(128., 236.),
+          Vec2::new(160., 219.),
+          Vec2::new(32., 154.),
+          Vec2::new(0., 171.),
+        ],
+        poly_type: components::object::PolyType::GROUND,
+      },
+    });
 
     world.spawn(PlayerBundle {
       position: Position { x: 1., y: 1. },
@@ -122,6 +137,7 @@ impl EventHandler<GameError> for Game {
     let mut canvas = Canvas::from_frame(ctx, Color::from_rgb(255, 0, 255));
 
     draw_entity(self, ctx, &mut canvas);
+    draw_object_poly(self, ctx, &mut canvas);
     draw_view(self, ctx, &mut canvas);
 
     canvas.finish(ctx)?;
@@ -162,6 +178,24 @@ fn draw_entity(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
 
     canvas.draw(renderable.sprite.as_ref().unwrap(), DrawParam::new().dest(dest).scale(game.scale));
     canvas.draw(&mesh, DrawParam::new().offset(game.offset).scale(game.scale));
+  }
+}
+
+fn draw_object_poly(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+  let mut query = game.world.query::<(&Object, &Position)>();
+  let mut points: Vec<Vec2> = vec![];
+
+  for (object, position) in query.iter_mut(&mut game.world) {
+    if object.poly.len() >= 3 {
+      for v in &object.poly {
+        points.push(Vec2::new(position.x + v.x, position.y + v.y));
+      }
+
+      let mesh =
+        ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
+          .unwrap();
+      canvas.draw(&mesh, DrawParam::new().offset(game.offset).scale(game.scale));
+    }
   }
 }
 

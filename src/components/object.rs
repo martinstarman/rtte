@@ -2,6 +2,7 @@ use super::{position::Position, renderable::Renderable, size::Size};
 use crate::geometry::vec2::Vec2;
 use bevy_ecs::prelude::*;
 
+/// Polygon types.
 #[derive(Default, PartialEq, Clone, Copy)]
 pub enum PolyType {
   /// Ground. It does not block anything or leave any marks.
@@ -25,10 +26,10 @@ pub enum PolyType {
 #[derive(Default, Component)]
 pub struct Object {
   /// Polygon. List of Vec2 relative to object position.
-  _poly: Vec<Vec2>,
+  pub poly: Vec<Vec2>,
 
   /// Polygon type.
-  _poly_type: PolyType,
+  pub poly_type: PolyType,
 }
 
 /// Player bundle.
