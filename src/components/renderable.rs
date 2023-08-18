@@ -1,8 +1,9 @@
 use bevy_ecs::prelude::*;
+use ggez::graphics::Image;
 
 // Renderable component.
 #[derive(Default, Component)]
 pub struct Renderable {
   /// Sprite path.
-  pub sprite: String,
+  pub sprite: Option<Image>, // TODO: remove option
 }

@@ -1,8 +1,17 @@
+/// Enemy component.
+pub mod enemy;
+
+/// Movable component.
+pub mod movable;
+
+/// Object component.
+pub mod object;
+
 /// Position component.
 pub mod position;
 
-/// Size component.
-pub mod size;
+/// Player component.
+pub mod player;
 
 /// Renderable component.
 pub mod renderable;
@@ -10,14 +19,8 @@ pub mod renderable;
 /// Selectable component.
 pub mod selectable;
 
-/// Movable component.
-pub mod movable;
+/// Size component.
+pub mod size;
 
 /// View component.
 pub mod view;
-
-/// Player component.
-pub mod player;
-
-/// Enemy component.
-pub mod enemy;

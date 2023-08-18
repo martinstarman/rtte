@@ -9,6 +9,7 @@ use bevy_ecs::{schedule::Schedule, system::Query, world::World};
 use components::{
   enemy::EnemyBundle,
   movable::Movable,
+  object::ObjectBundle,
   player::{Player, PlayerBundle},
   position::Position,
   renderable::Renderable,
@@ -38,14 +39,25 @@ const ONE_DEGREE: f32 = PI / 180.;
 const OFFSET_SPEED: f32 = 10.;
 
 impl Game {
-  pub fn new(_ctx: &mut Context) -> GameResult<Game> {
+  pub fn new(ctx: &mut Context) -> GameResult<Game> {
     let mut world = World::default();
+
+    world.spawn(ObjectBundle {
+      position: Position { x: 0., y: 0. },
+      size: Size { w: 1000., h: 800. },
+      renderable: Renderable {
+        sprite: Some(Image::from_path(ctx, "/ground.png").unwrap()),
+      },
+      ..Default::default()
+    });
+
+    // TODO: add some block
 
     world.spawn(PlayerBundle {
       position: Position { x: 1., y: 1. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
-        sprite: String::from("/player.png"),
+        sprite: Some(Image::from_path(ctx, "/player.png").unwrap()),
       },
       ..Default::default()
     });
@@ -54,7 +66,7 @@ impl Game {
       position: Position { x: 100., y: 100. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
-        sprite: String::from("/player.png"),
+        sprite: Some(Image::from_path(ctx, "/player.png").unwrap()),
       },
       movable: Movable {
         path: vec![],
@@ -137,19 +149,18 @@ impl EventHandler<GameError> for Game {
 }
 
 fn draw_entity(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
-  let mut query = game.world.query::<(&Position, &Size, &Renderable, &Selectable)>();
+  let mut query = game.world.query::<(&Position, &Size, &Renderable)>();
 
-  for (position, size, renderable, selectable) in query.iter_mut(&mut game.world) {
-    let image = Image::from_path(ctx, renderable.sprite.clone()).unwrap();
+  for (position, size, renderable) in query.iter_mut(&mut game.world) {
     let dest = Vec2::new(
       (position.x - game.offset.x) * game.scale.x,
       (position.y - game.offset.y) * game.scale.y,
     );
     let rect = Rect::new(position.x, position.y, size.w, size.h);
-    let color = if selectable.selected { Color::WHITE } else { Color::BLACK };
-    let mesh = ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, color).unwrap();
+    let mesh =
+      ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::BLACK).unwrap();
 
-    canvas.draw(&image, DrawParam::new().dest(dest).scale(game.scale));
+    canvas.draw(renderable.sprite.as_ref().unwrap(), DrawParam::new().dest(dest).scale(game.scale));
     canvas.draw(&mesh, DrawParam::new().offset(game.offset).scale(game.scale));
   }
 }
