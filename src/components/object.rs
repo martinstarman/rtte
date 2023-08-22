@@ -1,5 +1,5 @@
 use super::{position::Position, renderable::Renderable, size::Size};
-use crate::geometry::vec2::Vec2;
+use crate::vec2::Vec2;
 use bevy_ecs::prelude::*;
 
 /// Polygon types.
@@ -23,7 +23,7 @@ pub enum PolyType {
 }
 
 /// Object component.
-#[derive(Default, Component)]
+#[derive(Default, Component, Clone)]
 pub struct Object {
   /// Polygon. List of Vec2 relative to object position.
   pub poly: Vec<Vec2>,

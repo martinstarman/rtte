@@ -1,4 +1,4 @@
-use crate::geometry::vec2::Vec2;
+use crate::vec2::Vec2;
 use bevy_ecs::prelude::*;
 
 // Movable component.

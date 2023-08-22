@@ -8,5 +8,4 @@ version = "0.0.1"
 [dependencies]
 ggez = "0.9.3"
 maths-rs = "0.2.4"
-pathfinding = "4.3.1"
 bevy_ecs = "0.11.0"
