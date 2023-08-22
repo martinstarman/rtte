@@ -1,9 +1,7 @@
 /// Components.
 pub mod components;
-
 pub mod vec2;
 use crate::vec2::Vec2;
-
 use bevy_ecs::{schedule::Schedule, system::Query, world::World};
 use components::{
   enemy::EnemyBundle,
@@ -26,16 +24,26 @@ use ggez::{
 use maths_rs::{distance, Vec2f};
 use std::{f32::consts::PI, path};
 
+const WINDOW_WIDTH: f32 = 800.;
+const WINDOW_HEIGHT: f32 = 600.;
+const PAN_SPEED: f32 = 5.;
+const ONE_DEGREE: f32 = PI / 180.;
+
+/// Game data.
 pub struct Game {
+  /// Game world.
   world: World,
+
+  /// Bevy ECS scheduler.
   schedule: Schedule,
-  offset: Vec2,
+
+  /// Camera position.
+  camera: Vec2,
 }
 
-const ONE_DEGREE: f32 = PI / 180.;
-const OFFSET_SPEED: f32 = 10.;
-
+/// Game implementation.
 impl Game {
+  /// Create new game.
   pub fn new(ctx: &mut Context) -> GameResult<Game> {
     let mut world = World::default();
 
@@ -96,32 +104,56 @@ impl Game {
     let game = Game {
       world,
       schedule,
-      offset: Vec2::default(),
+      camera: Vec2::default(),
     };
 
     Ok(game)
   }
 }
 
+/// ggez event handler for Game.
 impl EventHandler<GameError> for Game {
-  // main update fn
+  /// Every tick update.
   fn update(&mut self, ctx: &mut Context) -> GameResult {
+    // Run bevy_ecs systems.
     self.schedule.run(&mut self.world);
 
+    // Change camera position by arrow keys.
     for key in ctx.keyboard.pressed_keys() {
       match key {
-        KeyCode::Left => self.offset.x -= OFFSET_SPEED,
-        KeyCode::Right => self.offset.x += OFFSET_SPEED,
-        KeyCode::Up => self.offset.y -= OFFSET_SPEED,
-        KeyCode::Down => self.offset.y += OFFSET_SPEED,
+        KeyCode::Left => self.camera.x -= PAN_SPEED,
+        KeyCode::Right => self.camera.x += PAN_SPEED,
+        KeyCode::Up => self.camera.y -= PAN_SPEED,
+        KeyCode::Down => self.camera.y += PAN_SPEED,
         _ => (),
       }
+    }
+
+    // Change camera position by mouse.
+    let pos = ctx.mouse.position();
+
+    if pos.x == 0. {
+      self.camera.x -= PAN_SPEED;
+    }
+
+    if pos.x == WINDOW_WIDTH - 1. {
+      self.camera.x += PAN_SPEED;
+    }
+
+    if pos.y == 0. {
+      self.camera.y -= PAN_SPEED;
+    }
+
+    if pos.y == WINDOW_HEIGHT - 1. {
+      self.camera.y += PAN_SPEED;
     }
 
     Ok(())
   }
 
+  /// Every tick draw.
   fn draw(&mut self, ctx: &mut Context) -> GameResult {
+    // Reset canvas.
     let mut canvas = Canvas::from_frame(ctx, Color::from_rgb(255, 0, 255));
 
     draw_entity(self, ctx, &mut canvas);
@@ -140,7 +172,7 @@ impl EventHandler<GameError> for Game {
     x: f32,
     y: f32,
   ) -> Result<(), GameError> {
-    let v = Vec2::new(x + self.offset.x, y + self.offset.y);
+    let v = Vec2::new(x + self.camera.x, y + self.camera.y);
 
     match btn {
       MouseButton::Left => on_left_mouse_button_click(self, ctx, v),
@@ -158,16 +190,13 @@ fn draw_entity(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   let mut query = game.world.query::<(&Position, &Size, &Renderable)>();
 
   for (position, size, renderable) in query.iter_mut(&mut game.world) {
-    let dest = Vec2::new(
-      position.x - game.offset.x,
-      position.y - game.offset.y,
-    );
+    let dest = Vec2::new(position.x - game.camera.x, position.y - game.camera.y);
     let rect = Rect::new(position.x, position.y, size.w, size.h);
     let mesh =
       ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::BLACK).unwrap();
 
     canvas.draw(renderable.sprite.as_ref().unwrap(), DrawParam::new().dest(dest));
-    canvas.draw(&mesh, DrawParam::new().offset(game.offset));
+    canvas.draw(&mesh, DrawParam::new().offset(game.camera));
   }
 }
 
@@ -185,7 +214,7 @@ fn draw_object_poly(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
       let mesh =
         ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
           .unwrap();
-      canvas.draw(&mesh, DrawParam::new().offset(game.offset));
+      canvas.draw(&mesh, DrawParam::new().offset(game.camera));
     }
   }
 }
@@ -274,11 +303,14 @@ fn main() -> GameResult {
 
   let context_builder = ContextBuilder::new("rtte", "rtte")
     .window_setup(ggez::conf::WindowSetup::default().title("rtte"))
-    .window_mode(ggez::conf::WindowMode::default().dimensions(800., 600.))
+    .window_mode(ggez::conf::WindowMode::default().dimensions(WINDOW_WIDTH, WINDOW_HEIGHT))
     .add_resource_path(resource_dir);
 
   let (mut ctx, event_loop) = context_builder.build()?;
   let state = Game::new(&mut ctx)?;
+
+  // Lock mouse to window.
+  ggez::input::mouse::set_cursor_grabbed(&mut ctx, true)?;
 
   event::run(ctx, event_loop, state)
 }
