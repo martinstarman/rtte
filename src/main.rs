@@ -24,6 +24,7 @@ use ggez::{
 use maths_rs::{distance, Vec2f};
 use std::{f32::consts::PI, path};
 
+const DEBUG: bool = true;
 const WINDOW_WIDTH: f32 = 800.;
 const WINDOW_HEIGHT: f32 = 600.;
 const PAN_SPEED: f32 = 5.;
@@ -190,8 +191,13 @@ impl EventHandler<GameError> for Game {
     // Reset canvas.
     let mut canvas = Canvas::from_frame(ctx, Color::from_rgb(255, 0, 255));
 
+    // Draw entities.
     draw_entity(self, ctx, &mut canvas);
-    draw_object_poly(self, ctx, &mut canvas);
+
+    // Draw debug stuff.
+    if DEBUG {
+      draw_entity_debug(self, ctx, &mut canvas);
+    }
 
     canvas.finish(ctx)?;
 
@@ -230,7 +236,7 @@ impl EventHandler<GameError> for Game {
 }
 
 /// Draw entity.
-fn draw_entity(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas) {
   let mut query = game.world.query::<(&Position, &Size, &Renderable)>();
   let mut entities: Vec<_> = query.iter_mut(&mut game.world).collect();
 
@@ -242,26 +248,33 @@ fn draw_entity(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
     (a_y_index).partial_cmp(&(&b_y_index)).unwrap()
   });
 
-  for (position, size, renderable) in entities {
+  for (position, _, renderable) in entities {
     let dest = Vec2::new(position.x - game.camera.x, position.y - game.camera.y);
-    let rect = Rect::new(position.x, position.y, size.w, size.h);
-    let mesh =
-      ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::BLACK).unwrap();
-
     canvas.draw(&renderable.sprite, DrawParam::new().dest(dest));
-    canvas.draw(&mesh, DrawParam::new().offset(game.camera));
   }
 }
 
-/// Draw objects polygon.
-fn draw_object_poly(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+/// Draw entity debug.
+fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+  // Draw entity rect.
+  let mut query = game.world.query::<(&Position, &Size)>();
+
+  for (position, size) in query.iter_mut(&mut game.world) {
+    let rect = Rect::new(position.x, position.y, size.w, size.h);
+    let mesh =
+      ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::WHITE).unwrap();
+    canvas.draw(&mesh, DrawParam::new().offset(game.camera));
+  }
+
+  // Draw object poly.
   let mut query = game.world.query::<(&Object, &Position)>();
-  let mut points: Vec<Vec2> = vec![];
 
   for (object, position) in query.iter_mut(&mut game.world) {
+    let mut points: Vec<Vec2> = vec![];
+
     if object.poly.len() >= 3 {
-      for v in &object.poly {
-        points.push(Vec2::new(position.x + v.x, position.y + v.y));
+      for point in &object.poly {
+        points.push(Vec2::new(position.x + point.x, position.y + point.y));
       }
 
       let mesh =
