@@ -18,6 +18,7 @@ I'm not game developer nor Rust developer.
 ## TODO
 - [x] panning
 - [x] single player selection
+- [x] Y sorting 
 - [ ] multiple player selection
 - [ ] enemy POV
 - [ ] pathfinding

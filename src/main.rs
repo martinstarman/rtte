@@ -52,6 +52,7 @@ impl Game {
       size: Size { w: 1000., h: 800. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/ground.png").unwrap(),
+        y_indexed: false,
       },
       object: Object {
         poly: vec![],
@@ -64,6 +65,7 @@ impl Game {
       size: Size { w: 160., h: 236. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/block.png").unwrap(),
+        y_indexed: true,
       },
       object: Object {
         poly: vec![
@@ -81,6 +83,7 @@ impl Game {
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/player.png").unwrap(),
+        y_indexed: true,
       },
       movable: Movable {
         path: vec![],
@@ -97,6 +100,7 @@ impl Game {
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/player.png").unwrap(),
+        y_indexed: true,
       },
       movable: Movable {
         path: vec![],
@@ -113,6 +117,7 @@ impl Game {
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/player.png").unwrap(),
+        y_indexed: true,
       },
       movable: Movable {
         path: vec![],
@@ -223,11 +228,19 @@ impl EventHandler<GameError> for Game {
 }
 
 /// Draw entity.
-// TODO: sort by Y index
 fn draw_entity(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   let mut query = game.world.query::<(&Position, &Size, &Renderable)>();
+  let mut entities: Vec<_> = query.iter_mut(&mut game.world).collect();
 
-  for (position, size, renderable) in query.iter_mut(&mut game.world) {
+  // Sort by Y index.
+  entities.sort_by(|(a_position, a_size, a_renderable), (b_position, b_size, b_renderable)| {
+    let a_y_index = if a_renderable.y_indexed { a_position.y + a_size.h } else { 0. };
+    let b_y_index = if b_renderable.y_indexed { b_position.y + b_size.h } else { 0. };
+
+    (a_y_index).partial_cmp(&(&b_y_index)).unwrap()
+  });
+
+  for (position, size, renderable) in entities {
     let dest = Vec2::new(position.x - game.camera.x, position.y - game.camera.y);
     let rect = Rect::new(position.x, position.y, size.w, size.h);
     let mesh =
@@ -319,7 +332,7 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
         movable.path.remove(0);
 
         position.x = next.x;
-        position.y = next.x;
+        position.y = next.y;
       } else {
         let dx = next.x - position.x;
         let dy = next.y - position.y;

@@ -6,4 +6,7 @@ use ggez::graphics::Image;
 pub struct Renderable {
   /// Sprite path.
   pub sprite: Image,
+
+  /// Should be Y indexed?
+  pub y_indexed: bool,
 }
