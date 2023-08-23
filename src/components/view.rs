@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::*;
 
 /// View component.
-#[derive(Default, Component)]
+#[derive(Component)]
 pub struct View {
   /// View x position.
   pub x: f32,

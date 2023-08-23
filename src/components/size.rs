@@ -1,7 +1,7 @@
 use bevy_ecs::prelude::*;
 
 // Size component.
-#[derive(Default, Component)]
+#[derive(Component)]
 pub struct Size {
   /// Width.
   pub w: f32,

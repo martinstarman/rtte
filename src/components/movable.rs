@@ -2,7 +2,7 @@ use crate::vec2::Vec2;
 use bevy_ecs::prelude::*;
 
 // Movable component.
-#[derive(Default, Component)]
+#[derive(Component)]
 pub struct Movable {
   /// Current movement path. This resets to default_path if empty.
   pub path: Vec<Vec2>,

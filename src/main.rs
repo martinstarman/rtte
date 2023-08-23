@@ -4,7 +4,7 @@ pub mod vec2;
 use crate::vec2::Vec2;
 use bevy_ecs::{component::ComponentId, schedule::Schedule, system::Query, world::World};
 use components::{
-  enemy::EnemyBundle,
+  enemy::{Enemy, EnemyBundle},
   movable::Movable,
   object::{Object, ObjectBundle},
   player::{Player, PlayerBundle},
@@ -51,16 +51,19 @@ impl Game {
       position: Position { x: 0., y: 0. },
       size: Size { w: 1000., h: 800. },
       renderable: Renderable {
-        sprite: Some(Image::from_path(ctx, "/ground.png").unwrap()),
+        sprite: Image::from_path(ctx, "/ground.png").unwrap(),
       },
-      ..Default::default()
+      object: Object {
+        poly: vec![],
+        poly_type: components::object::PolyType::GROUND,
+      },
     });
 
     world.spawn(ObjectBundle {
       position: Position { x: 250., y: 200. },
       size: Size { w: 160., h: 236. },
       renderable: Renderable {
-        sprite: Some(Image::from_path(ctx, "/block.png").unwrap()),
+        sprite: Image::from_path(ctx, "/block.png").unwrap(),
       },
       object: Object {
         poly: vec![
@@ -77,7 +80,7 @@ impl Game {
       position: Position { x: 1., y: 1. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
-        sprite: Some(Image::from_path(ctx, "/player.png").unwrap()),
+        sprite: Image::from_path(ctx, "/player.png").unwrap(),
       },
       movable: Movable {
         path: vec![],
@@ -93,7 +96,7 @@ impl Game {
       position: Position { x: 30., y: 1. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
-        sprite: Some(Image::from_path(ctx, "/player.png").unwrap()),
+        sprite: Image::from_path(ctx, "/player.png").unwrap(),
       },
       movable: Movable {
         path: vec![],
@@ -109,14 +112,15 @@ impl Game {
       position: Position { x: 100., y: 100. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
-        sprite: Some(Image::from_path(ctx, "/player.png").unwrap()),
+        sprite: Image::from_path(ctx, "/player.png").unwrap(),
       },
       movable: Movable {
         path: vec![],
         path_default: vec![Vec2::new(200., 200.), Vec2::new(100., 100.)],
       },
       view: View { x: 125., y: 100. },
-      ..Default::default()
+      enemy: Enemy {},
+      selectable: Selectable { selected: false },
     });
 
     let mut schedule = Schedule::default();
@@ -229,7 +233,7 @@ fn draw_entity(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
     let mesh =
       ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::BLACK).unwrap();
 
-    canvas.draw(renderable.sprite.as_ref().unwrap(), DrawParam::new().dest(dest));
+    canvas.draw(&renderable.sprite, DrawParam::new().dest(dest));
     canvas.draw(&mesh, DrawParam::new().offset(game.camera));
   }
 }

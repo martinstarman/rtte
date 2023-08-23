@@ -3,10 +3,9 @@ use crate::vec2::Vec2;
 use bevy_ecs::prelude::*;
 
 /// Polygon types.
-#[derive(Default, PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum PolyType {
   /// Ground. It does not block anything or leave any marks.
-  #[default]
   GROUND = 0,
 
   /// Any object that blocks enemy view and path finding (house, tree, rock, ...).
@@ -23,7 +22,7 @@ pub enum PolyType {
 }
 
 /// Object component.
-#[derive(Default, Component, Clone)]
+#[derive(Component, Clone)]
 pub struct Object {
   /// Polygon. List of Vec2 relative to object position.
   pub poly: Vec<Vec2>,
@@ -33,7 +32,7 @@ pub struct Object {
 }
 
 /// Player bundle.
-#[derive(Bundle, Default)]
+#[derive(Bundle)]
 pub struct ObjectBundle {
   /// Object.
   pub object: Object,

@@ -5,11 +5,11 @@ use super::{
 use bevy_ecs::prelude::*;
 
 /// Enemy component.
-#[derive(Default, Component)]
+#[derive(Component)]
 pub struct Enemy {}
 
 /// Enemy bundle.
-#[derive(Bundle, Default)]
+#[derive(Bundle)]
 pub struct EnemyBundle {
   /// Enemy.
   pub enemy: Enemy,
