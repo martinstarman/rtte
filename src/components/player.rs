@@ -1,14 +1,17 @@
 use super::{
   movable::Movable, position::Position, renderable::Renderable, selectable::Selectable, size::Size,
 };
-use bevy_ecs::prelude::*;
+use bevy_ecs::{prelude::*, component::ComponentId};
 
 /// Player component.
-#[derive(Default, Component)]
-pub struct Player {}
+#[derive(Component)]
+pub struct Player {
+  /// Player id.
+  pub id: ComponentId,
+}
 
 /// Player bundle.
-#[derive(Bundle, Default)]
+#[derive(Bundle)]
 pub struct PlayerBundle {
   /// Player movement.
   pub movable: Movable,

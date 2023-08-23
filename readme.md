@@ -11,6 +11,15 @@ I'm not game developer nor Rust developer.
 ```cargo run```
 
 ## Controls
+- ```Arrow keys/mouse on window edge``` - panning
+- ```LMB``` - select player/move player
+- ```RMB``` - stop player movement
 
-### Panning
-Use the arrow keys or move the mouse to the edge of the window.
+## TODO
+- [x] panning
+- [x] single player selection
+- [ ] multiple player selection
+- [ ] enemy POV
+- [ ] pathfinding
+- [ ] mission editor
+- [ ] cooperation

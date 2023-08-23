@@ -2,11 +2,11 @@
 pub mod components;
 pub mod vec2;
 use crate::vec2::Vec2;
-use bevy_ecs::{schedule::Schedule, system::Query, world::World};
+use bevy_ecs::{component::ComponentId, schedule::Schedule, system::Query, world::World};
 use components::{
   enemy::EnemyBundle,
   movable::Movable,
-  object::{Object, ObjectBundle, PolyType},
+  object::{Object, ObjectBundle},
   player::{Player, PlayerBundle},
   position::Position,
   renderable::Renderable,
@@ -79,7 +79,30 @@ impl Game {
       renderable: Renderable {
         sprite: Some(Image::from_path(ctx, "/player.png").unwrap()),
       },
-      ..Default::default()
+      movable: Movable {
+        path: vec![],
+        path_default: vec![],
+      },
+      player: Player {
+        id: ComponentId::new(1),
+      },
+      selectable: Selectable { selected: false },
+    });
+
+    world.spawn(PlayerBundle {
+      position: Position { x: 30., y: 1. },
+      size: Size { w: 10., h: 23. },
+      renderable: Renderable {
+        sprite: Some(Image::from_path(ctx, "/player.png").unwrap()),
+      },
+      movable: Movable {
+        path: vec![],
+        path_default: vec![],
+      },
+      player: Player {
+        id: ComponentId::new(2),
+      },
+      selectable: Selectable { selected: false },
     });
 
     world.spawn(EnemyBundle {
@@ -158,25 +181,36 @@ impl EventHandler<GameError> for Game {
 
     draw_entity(self, ctx, &mut canvas);
     draw_object_poly(self, ctx, &mut canvas);
-    draw_enemy_view(self, ctx, &mut canvas);
 
     canvas.finish(ctx)?;
 
     Ok(())
   }
 
+  fn mouse_button_down_event(
+    &mut self,
+    _ctx: &mut Context,
+    _button: MouseButton,
+    _x: f32,
+    _y: f32,
+  ) -> Result<(), GameError> {
+    // TODO: multiple player selection
+
+    Ok(())
+  }
   fn mouse_button_up_event(
     &mut self,
-    ctx: &mut Context,
+    _ctx: &mut Context,
     btn: MouseButton,
     x: f32,
     y: f32,
   ) -> Result<(), GameError> {
-    let v = Vec2::new(x + self.camera.x, y + self.camera.y);
+    let x = x + self.camera.x;
+    let y = y + self.camera.y;
 
     match btn {
-      MouseButton::Left => on_left_mouse_button_click(self, ctx, v),
-      MouseButton::Right => on_right_mouse_button_click(self, ctx, v),
+      MouseButton::Left => select_or_move_player(self, x, y),
+      MouseButton::Right => select_or_stop_player(self, x, y),
       _ => {}
     }
 
@@ -219,42 +253,54 @@ fn draw_object_poly(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   }
 }
 
-/// Draw enemy view.
-fn draw_enemy_view(_game: &mut Game, _ctx: &mut Context, _canvas: &mut Canvas) {
-  // TODO
-}
-
 /// Left mouse button click handler.
-fn on_left_mouse_button_click(game: &mut Game, _ctx: &mut Context, v: Vec2) {
-  let mut query = game.world.query::<&Object>();
-  let mut objects: Vec<Object> = vec![];
+fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
+  let mut selected_player_id: Option<ComponentId> = None;
 
-  for object in query.iter_mut(&mut game.world) {
-    if object.poly_type == PolyType::BLOCK || object.poly_type == PolyType::TRANSPARENT {
-      objects.push(object.clone());
+  // Try to select player.
+  let mut query = game.world.query::<(&Player, &mut Selectable, &Position, &Size)>();
+
+  for (player, mut selectable, position, size) in query.iter_mut(&mut game.world) {
+    let rect = Rect::new(position.x, position.y, size.w, size.h);
+
+    if rect.contains(Point2 { x, y }) {
+      selectable.selected = true;
+      selected_player_id = Some(player.id);
     }
   }
 
-  let mut query = game.world.query::<(&Player, &Position, &Selectable, &mut Movable)>();
+  // Deselect all players if some was selected.
+  if let Some(id) = selected_player_id {
+    let mut query = game.world.query::<(&Player, &mut Selectable)>();
 
-  for (_, _position, selectable, mut movable) in query.iter_mut(&mut game.world) {
-    if selectable.selected {
-      // TODO: check if intersects some block poly
-      movable.path = vec![v];
+    for (player, mut selectable) in query.iter_mut(&mut game.world) {
+      if player.id != id {
+        selectable.selected = false;
+      }
+    }
+  }
+
+  // Set path to selected player when no player was selected.
+  if selected_player_id.is_none() {
+    let mut query = game.world.query::<(&Player, &Selectable, &mut Movable)>();
+
+    for (_, selectable, mut movable) in query.iter_mut(&mut game.world) {
+      if selectable.selected {
+        movable.path = vec![Vec2::new(x, y)]; // TODO: check where is clicked
+      }
     }
   }
 }
 
 /// Right mouse button click handler.
-fn on_right_mouse_button_click(game: &mut Game, _ctx: &mut Context, v: Vec2) {
-  let mut query = game.world.query::<(&mut Selectable, &Position, &Size)>();
+fn select_or_stop_player(game: &mut Game, _x: f32, _y: f32) {
+  // TODO: multiple player selection
 
-  for (mut selectable, position, size) in query.iter_mut(&mut game.world) {
-    let rect = Rect::new(position.x, position.y, size.w, size.h);
+  // Stop player movement.
+  let mut query = game.world.query::<(&Player, &mut Movable)>();
 
-    if rect.contains::<Point2<f32>>(v.into()) {
-      selectable.selected = !selectable.selected;
-    }
+  for (_, mut movable) in query.iter_mut(&mut game.world) {
+    movable.path = vec![];
   }
 }
 
