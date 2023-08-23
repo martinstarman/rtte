@@ -2,11 +2,14 @@ use super::{
   movable::Movable, position::Position, renderable::Renderable, selectable::Selectable, size::Size,
   view::View,
 };
-use bevy_ecs::prelude::*;
+use bevy_ecs::{prelude::*, component::ComponentId};
 
 /// Enemy component.
 #[derive(Component)]
-pub struct Enemy {}
+pub struct Enemy {
+    /// Enemy id.
+    pub id: ComponentId,
+}
 
 /// Enemy bundle.
 #[derive(Bundle)]

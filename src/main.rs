@@ -124,7 +124,9 @@ impl Game {
         path_default: vec![Vec2::new(200., 200.), Vec2::new(100., 100.)],
       },
       view: View { x: 125., y: 100. },
-      enemy: Enemy {},
+      enemy: Enemy {
+        id: ComponentId::new(1),
+      },
       selectable: Selectable { selected: false },
     });
 
