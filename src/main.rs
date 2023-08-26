@@ -28,8 +28,8 @@ const DEBUG: bool = true;
 const WINDOW_WIDTH: f32 = 800.;
 const WINDOW_HEIGHT: f32 = 600.;
 const PAN_SPEED: f32 = 5.;
-const ONE_DEGREE: f32 = PI / 180.;
-const POV_ANGLE: i32 = 60;
+const ONE_DEG: f32 = PI / 180.;
+const POV_ANGLE_HALF: i32 = 30;
 
 /// Game data.
 pub struct Game {
@@ -115,7 +115,7 @@ impl Game {
     });
 
     world.spawn(EnemyBundle {
-      position: Position { x: 200., y: 380. },
+      position: Position { x: 200., y: 370. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/player.png").unwrap(),
@@ -128,7 +128,7 @@ impl Game {
       view: View {
         points: vec![],
         x: 350.,
-        y: 380.,
+        y: 370.,
       },
       enemy: Enemy {
         id: ComponentId::new(1),
@@ -391,71 +391,98 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
 }
 
 /// Entity view.
-// TODO: update view position when enemy position change. Use bevy ecs  change detection.
-fn view(mut query: Query<(&mut View, &Position)>) {
+// TODO: Update view position when enemy position change. Use bevy ecs change detection.
+fn view(mut query: Query<(&mut View, &Position)>, query2: Query<(&Object, &Position)>) {
+  // Build barriers from objects.
+  let mut barriers: Vec<(Point2<f32>, Point2<f32>)> = vec![];
+
+  for (object, position) in &query2 {
+    if object.poly.len() >= 3 {
+      for i in 0..object.poly.len() - 1 {
+        let curr = object.poly[i];
+        let next = object.poly[i + 1];
+
+        barriers.push((
+          Point2 {
+            x: curr.x + position.x,
+            y: curr.y + position.y,
+          },
+          Point2 {
+            x: next.x + position.x,
+            y: next.y + position.y,
+          },
+        ));
+      }
+
+      let first = object.poly.first().unwrap();
+      let last = object.poly.last().unwrap();
+
+      barriers.push((
+        Point2 {
+          x: last.x + position.x,
+          y: last.y + position.y,
+        },
+        Point2 {
+          x: first.x + position.x,
+          y: first.y + position.y,
+        },
+      ));
+    }
+  }
+
+  // Build view.
   for (mut view, position) in &mut query {
+    // Move view.
+    // TODO: limits
+    // TODO: slow down
     let dx = view.x - position.x;
     let dy = view.y - position.y;
 
-    // TODO: limits
-    // TODO: slow down
-    view.x = f32::cos(ONE_DEGREE) * dx - f32::sin(ONE_DEGREE) * dy + position.x;
-    view.y = f32::sin(ONE_DEGREE) * dx + f32::cos(ONE_DEGREE) * dy + position.y;
+    view.x = f32::cos(ONE_DEG) * dx - f32::sin(ONE_DEG) * dy + position.x;
+    view.y = f32::sin(ONE_DEG) * dx + f32::cos(ONE_DEG) * dy + position.y;
 
-    view.points = get_pov(position.x, position.y, view.x, view.y);
-  }
-}
+    // Get new view.
+    let mut points: Vec<Point2<f32>> = vec![Point2 {
+      x: position.x,
+      y: position.y,
+    }];
+    let dx = view.x - position.x;
+    let dy = view.y - position.y;
+    let deg = rad_to_deg(f32::atan2(dy, dx)) as i32;
 
-fn get_pov(x1: f32, y1: f32, x2: f32, y2: f32) -> Vec<Point2<f32>> {
-  // TODO: build barriers from world objects
-  let barriers: Vec<((f32, f32), (f32, f32))> = vec![
-    ((378., 436.), (410., 419.)),
-    ((410., 419.), (282., 354.)),
-    ((282., 354.), (250., 371.)),
-    ((250., 371.), (378., 436.)),
-  ];
-
-  let mut points: Vec<Point2<f32>> = vec![Point2 { x: x1, y: y1 }];
-
-  let dx = x2 - x1;
-  let dy = y2 - y1;
-
-  let curr_angle = rad_to_deg(f32::atan2(dy, dx)) as i32;
-  let min_angle = curr_angle - (POV_ANGLE / 2);
-  let max_angle = min_angle + POV_ANGLE;
-
-  for angle in min_angle..max_angle {
-    let mut min_dist = f32::MAX;
-    let rad = deg_to_rad(angle as f32);
-    let mut v = Vec2f::new(
-      f32::cos(rad) * dx - f32::sin(rad) * dy + x1,
-      f32::sin(rad) * dx + f32::cos(rad) * dy + y1,
-    );
-
-    for barrier in &barriers {
-      let intersection = line_segment_vs_line_segment(
-        Vec3f::new(x1, y1, 0.),
-        v.into(),
-        Vec3f::new(barrier.0 .0, barrier.0 .1, 0.),
-        Vec3f::new(barrier.1 .0, barrier.1 .1, 0.),
+    for angle in deg - POV_ANGLE_HALF..deg + POV_ANGLE_HALF {
+      let mut min_dist = f32::MAX;
+      let rad = deg_to_rad(angle as f32);
+      let mut v = Vec2f::new(
+        f32::cos(rad) * dx - f32::sin(rad) * dy + position.x,
+        f32::sin(rad) * dx + f32::cos(rad) * dy + position.y,
       );
 
-      if intersection.is_some() {
-        let intersection = intersection.unwrap();
-        let w = Vec2f::new(intersection.x, intersection.y);
-        let dist = distance::<f32, Vec2f>(Vec2f::new(x1, y1), w);
+      for barrier in &barriers {
+        let intersection = line_segment_vs_line_segment(
+          Vec3f::new(position.x, position.y, 0.),
+          v.into(),
+          Vec3f::new(barrier.0.x, barrier.0.y, 0.),
+          Vec3f::new(barrier.1.x, barrier.1.y, 0.),
+        );
 
-        if dist < min_dist {
-          v = w;
-          min_dist = dist;
+        if intersection.is_some() {
+          let intersection = intersection.unwrap();
+          let w = Vec2f::new(intersection.x, intersection.y);
+          let dist = distance::<f32, Vec2f>(Vec2f::new(position.x, position.y), w);
+
+          if dist < min_dist {
+            v = w;
+            min_dist = dist;
+          }
         }
       }
+
+      points.push(Point2 { x: v.x, y: v.y });
     }
 
-    points.push(Point2 { x: v.x, y: v.y });
+    view.points = points;
   }
-
-  points
 }
 
 /// Main function.
