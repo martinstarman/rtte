@@ -21,6 +21,7 @@ I'm not game developer nor Rust developer.
 - [x] Y sorting 
 - [ ] multiple player selection
 - [ ] enemy POV
+- [ ] enemy POV Y sorting
 - [ ] pathfinding
 - [ ] mission editor
 - [ ] cooperation
