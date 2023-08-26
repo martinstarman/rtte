@@ -140,7 +140,6 @@ impl Game {
 
     schedule.add_systems(movement);
     schedule.add_systems(view);
-    schedule.add_systems(view);
 
     let game = Game {
       world,
