@@ -8,10 +8,10 @@ pub enum PolyType {
   /// Ground. It does not block anything or leave any marks.
   GROUND = 0,
 
-  /// Any object that blocks enemy view and path finding (house, tree, rock, ...).
+  /// Any object that blocks enemy view and path. Like house, tree, rock, etc.
   BLOCK = 1,
 
-  /// Any object that blocks only path finding. Like fence.
+  /// Any object that blocks only path. Like fence.
   TRANSPARENT = 2,
 
   /// Water.

@@ -1,7 +1,5 @@
-/// Components.
 pub mod components;
-pub mod vec2;
-use crate::vec2::Vec2;
+
 use bevy_ecs::{component::ComponentId, schedule::Schedule, system::Query, world::World};
 use components::{
   enemy::{Enemy, EnemyBundle},
@@ -40,7 +38,7 @@ pub struct Game {
   schedule: Schedule,
 
   /// Camera position.
-  camera: Vec2,
+  camera: Point2<f32>,
 }
 
 /// Game implementation.
@@ -118,12 +116,12 @@ impl Game {
       position: Position { x: 200., y: 370. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
-        sprite: Image::from_path(ctx, "/player.png").unwrap(),
+        sprite: Image::from_path(ctx, "/player.png").unwrap(), // TODO: enemy.png
         y_indexed: true,
       },
       movable: Movable {
         path: vec![],
-        path_default: vec![/*Vec2::new(200., 200.), Vec2::new(100., 100.)*/],
+        path_default: vec![/*Point2 { x: 200., y: 200. }, Point2 { x: 100., y: 100. }*/],
       },
       view: View {
         points: vec![],
@@ -144,7 +142,7 @@ impl Game {
     let game = Game {
       world,
       schedule,
-      camera: Vec2::default(),
+      camera: Point2 { x: 0., y: 0. },
     };
 
     Ok(game)
@@ -258,7 +256,10 @@ fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas) {
   });
 
   for (position, _, renderable) in entities {
-    let dest = Vec2::new(position.x - game.camera.x, position.y - game.camera.y);
+    let dest = Point2 {
+      x: position.x - game.camera.x,
+      y: position.y - game.camera.y,
+    };
     canvas.draw(&renderable.sprite, DrawParam::new().dest(dest));
   }
 }
@@ -297,11 +298,14 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   let mut query = game.world.query::<(&Object, &Position)>();
 
   for (object, position) in query.iter_mut(&mut game.world) {
-    let mut points: Vec<Vec2> = vec![];
+    let mut points: Vec<Point2<f32>> = vec![];
 
     if object.poly.len() >= 3 {
       for point in &object.poly {
-        points.push(Vec2::new(position.x + point.x, position.y + point.y));
+        points.push(Point2 {
+          x: position.x + point.x,
+          y: position.y + point.y,
+        });
       }
 
       let mesh =
@@ -345,7 +349,7 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
 
     for (_, selectable, mut movable) in query.iter_mut(&mut game.world) {
       if selectable.selected {
-        movable.path = vec![Vec2::new(x, y)]; // TODO: check where is clicked
+        movable.path = vec![Point2 { x, y }]; // TODO: check where is clicked
       }
     }
   }
@@ -368,7 +372,8 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
   for (mut movable, mut position) in &mut query {
     if movable.path.len() > 0 {
       let next = movable.path[0];
-      let dist = distance::<f32, Vec2f>(next.into(), Vec2f::new(position.x, position.y));
+      let dist =
+        distance::<f32, Vec2f>(Vec2f::new(next.x, next.y), Vec2f::new(position.x, position.y));
 
       if dist < 1. {
         movable.path.remove(0);
