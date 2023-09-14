@@ -19,15 +19,15 @@ use ggez::{
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
-use maths_rs::{deg_to_rad, distance, line_segment_vs_line_segment, rad_to_deg, Vec2f, Vec3f};
+use maths_rs::{distance, line_segment_vs_line_segment, Vec2f, Vec3f};
 use std::{f32::consts::PI, path};
 
 const DEBUG: bool = true;
 const WINDOW_WIDTH: f32 = 800.;
 const WINDOW_HEIGHT: f32 = 600.;
 const PAN_SPEED: f32 = 5.;
-const ONE_DEG: f32 = PI / 180.;
-const POV_ANGLE_HALF: i32 = 30;
+const RADIAN: f32 = PI / 180.;
+const VIEW_ANGLE: f32 = 60. * RADIAN;
 
 /// Game data.
 pub struct Game {
@@ -435,16 +435,16 @@ fn view(mut query: Query<(&mut View, &Position)>, query2: Query<(&Object, &Posit
     }
   }
 
+  // TODO: limits
+  // TODO: slow down
   // Build view.
   for (mut view, position) in &mut query {
     // Move view.
-    // TODO: limits
-    // TODO: slow down
     let dx = view.x - position.x;
     let dy = view.y - position.y;
 
-    view.x = f32::cos(ONE_DEG) * dx - f32::sin(ONE_DEG) * dy + position.x;
-    view.y = f32::sin(ONE_DEG) * dx + f32::cos(ONE_DEG) * dy + position.y;
+    view.x = f32::cos(RADIAN) * dx - f32::sin(RADIAN) * dy + position.x;
+    view.y = f32::sin(RADIAN) * dx + f32::cos(RADIAN) * dy + position.y;
 
     // Get new view.
     let mut points: Vec<Point2<f32>> = vec![Point2 {
@@ -453,37 +453,37 @@ fn view(mut query: Query<(&mut View, &Position)>, query2: Query<(&Object, &Posit
     }];
     let dx = view.x - position.x;
     let dy = view.y - position.y;
-    let deg = rad_to_deg(f32::atan2(dy, dx)) as i32;
+    let mut curr_rad = f32::atan2(dy, dx) - (VIEW_ANGLE / 2.);
+    let max_rad = curr_rad + VIEW_ANGLE;
 
-    for angle in deg - POV_ANGLE_HALF..deg + POV_ANGLE_HALF {
+    while curr_rad < max_rad {
       let mut min_dist = f32::MAX;
-      let rad = deg_to_rad(angle as f32);
       let mut v = Vec2f::new(
-        f32::cos(rad) * dx - f32::sin(rad) * dy + position.x,
-        f32::sin(rad) * dx + f32::cos(rad) * dy + position.y,
+        f32::cos(curr_rad) * dx - f32::sin(curr_rad) * dy + position.x,
+        f32::sin(curr_rad) * dx + f32::cos(curr_rad) * dy + position.y,
       );
 
       for barrier in &barriers {
-        let intersection = line_segment_vs_line_segment(
+        let res = line_segment_vs_line_segment(
           Vec3f::new(position.x, position.y, 0.),
           v.into(),
           Vec3f::new(barrier.0.x, barrier.0.y, 0.),
           Vec3f::new(barrier.1.x, barrier.1.y, 0.),
         );
 
-        if intersection.is_some() {
-          let intersection = intersection.unwrap();
-          let w = Vec2f::new(intersection.x, intersection.y);
-          let dist = distance::<f32, Vec2f>(Vec2f::new(position.x, position.y), w);
+        if let Some(intersection) = res {
+          let dist =
+            distance::<f32, Vec2f>(Vec2f::new(position.x, position.y), intersection.into());
 
           if dist < min_dist {
-            v = w;
+            v = intersection.into();
             min_dist = dist;
           }
         }
       }
 
       points.push(Point2 { x: v.x, y: v.y });
+      curr_rad += RADIAN;
     }
 
     view.points = points;
