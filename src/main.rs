@@ -113,7 +113,7 @@ impl Game {
     });
 
     world.spawn(EnemyBundle {
-      position: Position { x: 200., y: 370. },
+      position: Position { x: 450., y: 370. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/player.png").unwrap(), // TODO: enemy.png
@@ -125,7 +125,7 @@ impl Game {
       },
       view: View {
         points: vec![],
-        x: 350.,
+        x: 600.,
         y: 370.,
       },
       enemy: Enemy {
@@ -194,11 +194,14 @@ impl EventHandler<GameError> for Game {
     // Reset canvas.
     let mut canvas = Canvas::from_frame(ctx, Color::from_rgb(255, 0, 255));
 
-    // Draw entities.
-    draw_entity(self, ctx, &mut canvas);
+    // Draw non Y indexed entities.
+    draw_entity(self, ctx, &mut canvas, false);
 
     // Draw view.
     draw_view(self, ctx, &mut canvas);
+
+    // Draw Y indexed entities.
+    draw_entity(self, ctx, &mut canvas, true);
 
     // Draw debug stuff.
     if DEBUG {
@@ -243,29 +246,33 @@ impl EventHandler<GameError> for Game {
 }
 
 /// Draw entity.
-fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas) {
+fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, y_indexed: bool) {
   let mut query = game.world.query::<(&Position, &Size, &Renderable)>();
-  let mut entities: Vec<_> = query.iter_mut(&mut game.world).collect();
+  let mut entities: Vec<_> = query
+    .iter_mut(&mut game.world)
+    .filter(|(_, _, renderable)| renderable.y_indexed == y_indexed)
+    .collect();
 
   // Sort by Y index.
-  entities.sort_by(|(a_position, a_size, a_renderable), (b_position, b_size, b_renderable)| {
-    let a_y_index = if a_renderable.y_indexed { a_position.y + a_size.h } else { 0. };
-    let b_y_index = if b_renderable.y_indexed { b_position.y + b_size.h } else { 0. };
-
-    (a_y_index).partial_cmp(&(&b_y_index)).unwrap()
-  });
+  if y_indexed {
+    entities.sort_by(|(a_pos, a_size, _), (b_pos, b_size, _)| {
+      (a_pos.y + a_size.h).partial_cmp(&(b_pos.y + b_size.h)).unwrap()
+    });
+  }
 
   for (position, _, renderable) in entities {
     let dest = Point2 {
       x: position.x - game.camera.x,
       y: position.y - game.camera.y,
     };
+
     canvas.draw(&renderable.sprite, DrawParam::new().dest(dest));
   }
 }
 
 /// Draw view.
 fn draw_view(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+  // TODO: show view only for 1 selected enemy
   let mut query = game.world.query::<&View>();
 
   for view in query.iter_mut(&mut game.world) {
@@ -396,12 +403,12 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
 }
 
 /// Entity view.
-// TODO: Update view position when enemy position change. Use bevy ecs change detection.
-fn view(mut query: Query<(&mut View, &Position)>, query2: Query<(&Object, &Position)>) {
+// TODO: update view position when enemy position change. Use bevy ecs change detection.
+fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Position)>, ) {
   // Build barriers from objects.
   let mut barriers: Vec<(Point2<f32>, Point2<f32>)> = vec![];
 
-  for (object, position) in &query2 {
+  for (object, position) in &query1 {
     if object.poly.len() >= 3 {
       for i in 0..object.poly.len() - 1 {
         let curr = object.poly[i];
@@ -438,7 +445,7 @@ fn view(mut query: Query<(&mut View, &Position)>, query2: Query<(&Object, &Posit
   // TODO: limits
   // TODO: slow down
   // Build view.
-  for (mut view, position) in &mut query {
+  for (mut view, position) in &mut query2 {
     // Move view.
     let dx = view.x - position.x;
     let dy = view.y - position.y;
