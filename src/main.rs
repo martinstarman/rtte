@@ -4,13 +4,13 @@ use bevy_ecs::{component::ComponentId, schedule::Schedule, system::Query, world:
 use components::{
   enemy::{Enemy, EnemyBundle},
   movable::Movable,
-  object::{Object, ObjectBundle},
+  object::{Object, ObjectBundle, PolygonType},
   player::{Player, PlayerBundle},
   position::Position,
   renderable::Renderable,
   selectable::Selectable,
   size::Size,
-  view::View,
+  view::{View, ViewMovement},
 };
 use ggez::{
   event::{self, EventHandler, MouseButton},
@@ -22,12 +22,29 @@ use ggez::{
 use maths_rs::{distance, line_segment_vs_line_segment, Vec2f, Vec3f};
 use std::{f32::consts::PI, path};
 
+/// Show debug stuff?
 const DEBUG: bool = true;
+
+/// Window width.
 const WINDOW_WIDTH: f32 = 800.;
+
+/// Window height.
 const WINDOW_HEIGHT: f32 = 600.;
+
+/// Panning speed,
 const PAN_SPEED: f32 = 5.;
+
+/// 1 radian.
 const RADIAN: f32 = PI / 180.;
-const VIEW_ANGLE: f32 = 60. * RADIAN;
+
+/// View distance.
+const VIEW_DISTANCE: f32 = 150.;
+
+/// View inner angle.
+const VIEW_INNER_ANGLE: f32 = 60. * RADIAN;
+
+/// View movement angle. Maximum view movement left and right.
+const VIEW_MOVEMENT_ANGLE: f32 = 30. * RADIAN;
 
 /// Game data.
 pub struct Game {
@@ -55,8 +72,8 @@ impl Game {
         y_indexed: false,
       },
       object: Object {
-        poly: vec![],
-        poly_type: components::object::PolyType::GROUND,
+        polygon: vec![],
+        polygon_type: PolygonType::GROUND,
       },
     });
 
@@ -68,13 +85,13 @@ impl Game {
         y_indexed: true,
       },
       object: Object {
-        poly: vec![
+        polygon: vec![
           Point2 { x: 128., y: 236. },
           Point2 { x: 160., y: 219. },
           Point2 { x: 32., y: 154. },
           Point2 { x: 0., y: 171. },
         ],
-        poly_type: components::object::PolyType::GROUND,
+        polygon_type: PolygonType::GROUND,
       },
     });
 
@@ -113,7 +130,7 @@ impl Game {
     });
 
     world.spawn(EnemyBundle {
-      position: Position { x: 450., y: 370. },
+      position: Position { x: 450., y: 400. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/player.png").unwrap(), // TODO: enemy.png
@@ -125,8 +142,9 @@ impl Game {
       },
       view: View {
         points: vec![],
-        x: 600.,
-        y: 370.,
+        current_direction: 180. * RADIAN,
+        direction: 180. * RADIAN,
+        movement: ViewMovement::LEFT,
       },
       enemy: Enemy {
         id: ComponentId::new(1),
@@ -307,8 +325,8 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   for (object, position) in query.iter_mut(&mut game.world) {
     let mut points: Vec<Point2<f32>> = vec![];
 
-    if object.poly.len() >= 3 {
-      for point in &object.poly {
+    if object.polygon.len() >= 3 {
+      for point in &object.polygon {
         points.push(Point2 {
           x: position.x + point.x,
           y: position.y + point.y,
@@ -404,15 +422,15 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
 
 /// Entity view.
 // TODO: update view position when enemy position change. Use bevy ecs change detection.
-fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Position)>, ) {
+fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Position)>) {
   // Build barriers from objects.
   let mut barriers: Vec<(Point2<f32>, Point2<f32>)> = vec![];
 
   for (object, position) in &query1 {
-    if object.poly.len() >= 3 {
-      for i in 0..object.poly.len() - 1 {
-        let curr = object.poly[i];
-        let next = object.poly[i + 1];
+    if object.polygon.len() >= 3 {
+      for i in 0..object.polygon.len() - 1 {
+        let curr = object.polygon[i];
+        let next = object.polygon[i + 1];
 
         barriers.push((
           Point2 {
@@ -426,8 +444,8 @@ fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Posi
         ));
       }
 
-      let first = object.poly.first().unwrap();
-      let last = object.poly.last().unwrap();
+      let first = object.polygon.first().unwrap();
+      let last = object.polygon.last().unwrap();
 
       barriers.push((
         Point2 {
@@ -442,55 +460,61 @@ fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Posi
     }
   }
 
-  // TODO: limits
-  // TODO: slow down
   // Build view.
   for (mut view, position) in &mut query2 {
-    // Move view.
-    let dx = view.x - position.x;
-    let dy = view.y - position.y;
+    // Change view movement.
+    let d = view.current_direction - view.direction;
 
-    view.x = f32::cos(RADIAN) * dx - f32::sin(RADIAN) * dy + position.x;
-    view.y = f32::sin(RADIAN) * dx + f32::cos(RADIAN) * dy + position.y;
+    if d > VIEW_MOVEMENT_ANGLE || d < -VIEW_MOVEMENT_ANGLE {
+      view.movement =
+        if view.movement == ViewMovement::LEFT { ViewMovement::RIGHT } else { ViewMovement::LEFT };
+    }
+
+    // Move view.
+    view.direction += if view.movement == ViewMovement::LEFT { -RADIAN } else { RADIAN };
 
     // Get new view.
     let mut points: Vec<Point2<f32>> = vec![Point2 {
       x: position.x,
       y: position.y,
     }];
-    let dx = view.x - position.x;
-    let dy = view.y - position.y;
-    let mut curr_rad = f32::atan2(dy, dx) - (VIEW_ANGLE / 2.);
-    let max_rad = curr_rad + VIEW_ANGLE;
 
-    while curr_rad < max_rad {
-      let mut min_dist = f32::MAX;
-      let mut v = Vec2f::new(
-        f32::cos(curr_rad) * dx - f32::sin(curr_rad) * dy + position.x,
-        f32::sin(curr_rad) * dx + f32::cos(curr_rad) * dy + position.y,
+    let min = view.direction - (VIEW_INNER_ANGLE / 2.);
+    let max = view.direction + (VIEW_INNER_ANGLE / 2.);
+    let mut current = min;
+
+    while current < max {
+      let mut min_dist = VIEW_DISTANCE;
+
+      // View point.
+      let mut p = Vec2f::new(
+        f32::cos(current) * VIEW_DISTANCE + position.x,
+        f32::sin(current) * VIEW_DISTANCE + position.y,
       );
 
       for barrier in &barriers {
+        // Ray from entity position to view point vs barriers.
         let res = line_segment_vs_line_segment(
           Vec3f::new(position.x, position.y, 0.),
-          v.into(),
+          p.into(),
           Vec3f::new(barrier.0.x, barrier.0.y, 0.),
           Vec3f::new(barrier.1.x, barrier.1.y, 0.),
         );
 
+        // Ray was intersected by some barrier.
         if let Some(intersection) = res {
           let dist =
             distance::<f32, Vec2f>(Vec2f::new(position.x, position.y), intersection.into());
 
           if dist < min_dist {
-            v = intersection.into();
+            p = intersection.into();
             min_dist = dist;
           }
         }
       }
 
-      points.push(Point2 { x: v.x, y: v.y });
-      curr_rad += RADIAN;
+      points.push(Point2 { x: p.x, y: p.y });
+      current += RADIAN;
     }
 
     view.points = points;

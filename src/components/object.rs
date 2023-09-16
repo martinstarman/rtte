@@ -4,7 +4,7 @@ use ggez::mint::Point2;
 
 /// Polygon types.
 #[derive(PartialEq, Clone, Copy)]
-pub enum PolyType {
+pub enum PolygonType {
   /// Ground. It does not block anything or leave any marks.
   GROUND = 0,
 
@@ -24,11 +24,11 @@ pub enum PolyType {
 /// Object component.
 #[derive(Component, Clone)]
 pub struct Object {
-  /// Polygon. List of points relative to object position.
-  pub poly: Vec<Point2<f32>>,
+  /// List of points relative to object position.
+  pub polygon: Vec<Point2<f32>>,
 
   /// Polygon type.
-  pub poly_type: PolyType,
+  pub polygon_type: PolygonType,
 }
 
 /// Player bundle.
