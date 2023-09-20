@@ -1,6 +1,8 @@
 pub mod components;
 
-use bevy_ecs::{component::ComponentId, schedule::Schedule, system::Query, world::World};
+use bevy_ecs::{
+  component::ComponentId, query::Changed, schedule::Schedule, system::Query, world::World,
+};
 use components::{
   enemy::{Enemy, EnemyBundle},
   movable::Movable,
@@ -138,12 +140,17 @@ impl Game {
       },
       movable: Movable {
         path: vec![],
-        path_default: vec![/*Point2 { x: 200., y: 200. }, Point2 { x: 100., y: 100. }*/],
+        path_default: vec![
+          Point2 { x: 550., y: 400. },
+          Point2 { x: 650., y: 500. },
+          Point2 { x: 450., y: 500. },
+          Point2 { x: 450., y: 400. },
+        ],
       },
       view: View {
         points: vec![],
-        current_direction: 180. * RADIAN,
-        direction: 180. * RADIAN,
+        current_direction: 0.,
+        direction: 0.,
         movement: ViewMovement::LEFT,
       },
       enemy: Enemy {
@@ -156,6 +163,7 @@ impl Game {
 
     schedule.add_systems(movement);
     schedule.add_systems(view);
+    schedule.add_systems(view_direction);
 
     let game = Game {
       world,
@@ -421,9 +429,10 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
 }
 
 /// Entity view.
-// TODO: update view position when enemy position change. Use bevy ecs change detection.
 fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Position)>) {
   // Build barriers from objects.
+  // TODO: re/build barriers on startup and when some object change its position
+  //       or come up with something better.
   let mut barriers: Vec<(Point2<f32>, Point2<f32>)> = vec![];
 
   for (object, position) in &query1 {
@@ -518,6 +527,24 @@ fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Posi
     }
 
     view.points = points;
+  }
+}
+
+/// View direction. Update view direction when movement change its direction.
+// TODO: It would be nice if the transition is smooth.
+fn view_direction(mut query: Query<(&mut View, &Movable, &Position), Changed<Movable>>) {
+  for (mut view, movable, position) in &mut query {
+    if movable.path.len() > 0 {
+      let next = movable.path[0];
+
+      let dx = next.x - position.x;
+      let dy = next.y - position.y;
+
+      let a = f32::atan2(dy, dx);
+
+      view.direction = a;
+      view.current_direction = a;
+    }
   }
 }
 
