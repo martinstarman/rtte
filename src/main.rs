@@ -1,7 +1,11 @@
 pub mod components;
 
 use bevy_ecs::{
-  component::ComponentId, query::Changed, schedule::Schedule, system::Query, world::World,
+  component::ComponentId,
+  query::{Changed, With},
+  schedule::Schedule,
+  system::Query,
+  world::World,
 };
 use components::{
   enemy::{Enemy, EnemyBundle},
@@ -17,7 +21,7 @@ use components::{
 use ggez::{
   event::{self, EventHandler, MouseButton},
   graphics::{Canvas, Color, DrawMode, DrawParam, Image, Rect},
-  input::keyboard::KeyCode,
+  input::keyboard::{KeyCode, KeyMods},
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
@@ -159,6 +163,29 @@ impl Game {
       selectable: Selectable { selected: false },
     });
 
+    world.spawn(EnemyBundle {
+      position: Position { x: 200., y: 400. },
+      size: Size { w: 10., h: 23. },
+      renderable: Renderable {
+        sprite: Image::from_path(ctx, "/player.png").unwrap(), // TODO: enemy.png
+        y_indexed: true,
+      },
+      movable: Movable {
+        path: vec![],
+        path_default: vec![],
+      },
+      view: View {
+        points: vec![],
+        current_direction: 0.,
+        direction: 0.,
+        movement: ViewMovement::LEFT,
+      },
+      enemy: Enemy {
+        id: ComponentId::new(2),
+      },
+      selectable: Selectable { selected: false },
+    });
+
     let mut schedule = Schedule::default();
 
     schedule.add_systems(movement);
@@ -253,7 +280,7 @@ impl EventHandler<GameError> for Game {
 
   fn mouse_button_up_event(
     &mut self,
-    _ctx: &mut Context,
+    ctx: &mut Context,
     btn: MouseButton,
     x: f32,
     y: f32,
@@ -262,7 +289,13 @@ impl EventHandler<GameError> for Game {
     let y = y + self.camera.y;
 
     match btn {
-      MouseButton::Left => select_or_move_player(self, x, y),
+      MouseButton::Left => {
+        if ctx.keyboard.is_mod_active(KeyMods::SHIFT) {
+          select_enemy_or_place_view_mark(self, x, y);
+        } else {
+          select_or_move_player(self, x, y);
+        }
+      }
       MouseButton::Right => select_or_stop_player(self, x, y),
       _ => {}
     }
@@ -298,11 +331,10 @@ fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, y_index
 
 /// Draw view.
 fn draw_view(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
-  // TODO: show view only for 1 selected enemy
-  let mut query = game.world.query::<&View>();
+  let mut query = game.world.query_filtered::<(&Selectable, &View), With<Enemy>>();
 
-  for view in query.iter_mut(&mut game.world) {
-    if view.points.len() >= 3 {
+  for (selectable, view) in query.iter_mut(&mut game.world) {
+    if selectable.selected && view.points.len() >= 3 {
       let mesh = ggez::graphics::Mesh::new_polygon(
         ctx,
         DrawMode::fill(),
@@ -346,6 +378,43 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
           .unwrap();
       canvas.draw(&mesh, DrawParam::new().offset(game.camera));
     }
+  }
+}
+
+/// Shift + left mouse button click handler.
+fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
+  let mut current_selected_enemy_id: Option<ComponentId> = None;
+  let mut new_enemy_selected: bool = false;
+
+  // Try to select enemy
+  let mut query = game.world.query::<(&Enemy, &mut Selectable, &Position, &Size)>();
+
+  for (enemy, mut selectable, position, size) in query.iter_mut(&mut game.world) {
+    let rect = Rect::new(position.x, position.y, size.w, size.h);
+
+    if selectable.selected {
+      current_selected_enemy_id = Some(enemy.id);
+    }
+
+    if rect.contains(Point2 { x, y }) && !selectable.selected {
+      selectable.selected = true;
+      new_enemy_selected = true;
+    }
+  }
+
+  // Deselect current selected enemy.
+  if new_enemy_selected {
+    if let Some(id) = current_selected_enemy_id {
+      let mut query = game.world.query::<(&Enemy, &mut Selectable)>();
+
+      for (enemy, mut selectable) in query.iter_mut(&mut game.world) {
+        if enemy.id == id {
+          selectable.selected = false;
+        }
+      }
+    }
+  } else {
+    // TODO: View mark.
   }
 }
 

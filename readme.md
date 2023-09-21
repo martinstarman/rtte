@@ -14,3 +14,4 @@ I'm not game developer nor Rust developer.
 - ```Arrow keys/mouse on window edge``` - panning
 - ```LMB``` - select player/move player
 - ```RMB``` - stop player movement
+- ```Shift + LMB``` - show enemy field of view
