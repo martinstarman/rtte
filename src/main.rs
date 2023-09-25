@@ -1,10 +1,11 @@
 pub mod components;
+pub mod resources;
 
 use bevy_ecs::{
   component::ComponentId,
   query::{Changed, With},
   schedule::Schedule,
-  system::Query,
+  system::{Query, ResMut},
   world::World,
 };
 use components::{
@@ -25,7 +26,10 @@ use ggez::{
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
-use maths_rs::{distance, line_segment_vs_line_segment, Vec2f, Vec3f};
+use maths_rs::{
+  distance, line_segment_vs_line_segment, point_inside_polygon, vec::Vec2, Vec2f, Vec3f,
+};
+use resources::view_mark::ViewMark;
 use std::{f32::consts::PI, path};
 
 /// Show debug stuff?
@@ -186,11 +190,18 @@ impl Game {
       selectable: Selectable { selected: false },
     });
 
+    world.insert_resource(ViewMark {
+      active: false,
+      x: 0.,
+      y: 0.,
+    });
+
     let mut schedule = Schedule::default();
 
     schedule.add_systems(movement);
     schedule.add_systems(view);
     schedule.add_systems(view_direction);
+    schedule.add_systems(view_mark);
 
     let game = Game {
       world,
@@ -255,6 +266,9 @@ impl EventHandler<GameError> for Game {
 
     // Draw Y indexed entities.
     draw_entity(self, ctx, &mut canvas, true);
+
+    // Draw view mark.
+    draw_view_mark(self, ctx, &mut canvas);
 
     // Draw debug stuff.
     if DEBUG {
@@ -326,6 +340,18 @@ fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, y_index
     };
 
     canvas.draw(&renderable.sprite, DrawParam::new().dest(dest));
+  }
+}
+
+/// Draw view mark.
+fn draw_view_mark(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+  if let Some(view_mark) = game.world.get_resource::<ViewMark>() {
+    if view_mark.active {
+      let rect = Rect::new(view_mark.x - 10., view_mark.y - 10., 20., 20.);
+      let mesh =
+        ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::WHITE).unwrap();
+      canvas.draw(&mesh, DrawParam::new().offset(game.camera));
+    }
   }
 }
 
@@ -414,7 +440,11 @@ fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
       }
     }
   } else {
-    // TODO: View mark.
+    if let Some(mut view_mark) = game.world.get_resource_mut::<ViewMark>() {
+      view_mark.active = true;
+      view_mark.x = x;
+      view_mark.y = y;
+    }
   }
 }
 
@@ -613,6 +643,36 @@ fn view_direction(mut query: Query<(&mut View, &Movable, &Position), Changed<Mov
 
       view.direction = a;
       view.current_direction = a;
+    }
+  }
+}
+
+/// View mark.
+fn view_mark(
+  mut view_mark: ResMut<ViewMark>,
+  mut query: Query<(&View, &mut Selectable, &Enemy)>,
+) {
+  let mut view_mark_enemy_id: Option<ComponentId> = None;
+
+  if view_mark.active {
+    for (view, mut selectable, enemy) in &mut query {
+      if point_inside_polygon(
+        Vec2::new(view_mark.x, view_mark.y),
+        &view.points.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
+      ) {
+        view_mark.active = false;
+        selectable.selected = true;
+        view_mark_enemy_id = Some(enemy.id);
+      }
+    }
+  }
+
+  // Deselect enemy if view mark was taken by another enemy.
+  if let Some(id) = view_mark_enemy_id {
+    for (_, mut selectable, enemy) in &mut query {
+      if selectable.selected && enemy.id != id {
+        selectable.selected = false;
+      }
     }
   }
 }
