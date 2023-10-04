@@ -11,6 +11,7 @@ I'm not game developer nor Rust developer.
 ```cargo run```
 
 ## Controls
+- ```Esc``` - exit
 - ```Arrow keys/mouse on window edge``` - panning
 - ```LMB``` - select player/move player
 - ```RMB``` - stop player movement
