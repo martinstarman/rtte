@@ -96,10 +96,10 @@ impl Game {
       },
       object: Object {
         polygon: vec![
-          Point2 { x: 128., y: 236. },
-          Point2 { x: 160., y: 219. },
-          Point2 { x: 32., y: 154. },
-          Point2 { x: 0., y: 171. },
+          (Point2 { x: 128., y: 236. }, Point2 { x: 160., y: 219. }),
+          (Point2 { x: 160., y: 219. }, Point2 { x: 32., y: 154. }),
+          (Point2 { x: 32., y: 154. }, Point2 { x: 0., y: 171. }),
+          (Point2 { x: 0., y: 171. }, Point2 { x: 128., y: 236. }),
         ],
         polygon_type: PolygonType::GROUND,
       },
@@ -168,7 +168,7 @@ impl Game {
     });
 
     world.spawn(EnemyBundle {
-      position: Position { x: 200., y: 400. },
+      position: Position { x: 280., y: 450. },
       size: Size { w: 10., h: 23. },
       renderable: Renderable {
         sprite: Image::from_path(ctx, "/player.png").unwrap(), // TODO: enemy.png
@@ -180,8 +180,8 @@ impl Game {
       },
       view: View {
         points: vec![],
-        current_direction: 0.,
-        direction: 0.,
+        current_direction: 3. * PI / 2., // TODO: constants
+        direction: 3. * PI / 2.,
         movement: ViewMovement::LEFT,
       },
       enemy: Enemy {
@@ -389,15 +389,15 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   let mut query = game.world.query::<(&Object, &Position)>();
 
   for (object, position) in query.iter_mut(&mut game.world) {
-    let mut points: Vec<Point2<f32>> = vec![];
-
     if object.polygon.len() >= 3 {
-      for point in &object.polygon {
-        points.push(Point2 {
-          x: position.x + point.x,
-          y: position.y + point.y,
-        });
-      }
+      let points: Vec<Point2<f32>> = object
+        .polygon
+        .iter()
+        .map(|(p1, _)| Point2 {
+          x: p1.x + position.x,
+          y: p1.y + position.y,
+        })
+        .collect();
 
       let mesh =
         ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
@@ -528,48 +528,11 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
 }
 
 /// Entity view.
-fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Position)>) {
-  // Build barriers from objects.
-  // TODO: re/build barriers on startup and when some object change its position
-  //       or come up with something better.
-  let mut barriers: Vec<(Point2<f32>, Point2<f32>)> = vec![];
-
-  for (object, position) in &query1 {
-    if object.polygon.len() >= 3 {
-      for i in 0..object.polygon.len() - 1 {
-        let curr = object.polygon[i];
-        let next = object.polygon[i + 1];
-
-        barriers.push((
-          Point2 {
-            x: curr.x + position.x,
-            y: curr.y + position.y,
-          },
-          Point2 {
-            x: next.x + position.x,
-            y: next.y + position.y,
-          },
-        ));
-      }
-
-      let first = object.polygon.first().unwrap();
-      let last = object.polygon.last().unwrap();
-
-      barriers.push((
-        Point2 {
-          x: last.x + position.x,
-          y: last.y + position.y,
-        },
-        Point2 {
-          x: first.x + position.x,
-          y: first.y + position.y,
-        },
-      ));
-    }
-  }
+fn view(q1: Query<(&Object, &Position)>, mut q2: Query<(&mut View, &Position)>) {
+  let objects: Vec<(&Object, &Position)> = q1.iter().collect();
 
   // Build view.
-  for (mut view, position) in &mut query2 {
+  for (mut view, view_position) in &mut q2 {
     // Change view movement.
     let d = view.current_direction - view.direction;
 
@@ -583,8 +546,8 @@ fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Posi
 
     // Get new view.
     let mut points: Vec<Point2<f32>> = vec![Point2 {
-      x: position.x,
-      y: position.y,
+      x: view_position.x,
+      y: view_position.y,
     }];
 
     let min = view.direction - (VIEW_INNER_ANGLE / 2.);
@@ -592,37 +555,43 @@ fn view(query1: Query<(&Object, &Position)>, mut query2: Query<(&mut View, &Posi
     let mut current = min;
 
     while current < max {
-      let mut min_dist = VIEW_DISTANCE;
+      for (object, object_position) in &objects {
+        if object.polygon.len() >= 3 {
+          let mut min_dist = VIEW_DISTANCE;
 
-      // View point.
-      let mut p = Vec2f::new(
-        f32::cos(current) * VIEW_DISTANCE + position.x,
-        f32::sin(current) * VIEW_DISTANCE + position.y,
-      );
+          // View point.
+          let mut p = Vec2f::new(
+            f32::cos(current) * VIEW_DISTANCE + view_position.x,
+            f32::sin(current) * VIEW_DISTANCE + view_position.y,
+          );
 
-      for barrier in &barriers {
-        // Ray from entity position to view point vs barriers.
-        let res = line_segment_vs_line_segment(
-          Vec3f::new(position.x, position.y, 0.),
-          p.into(),
-          Vec3f::new(barrier.0.x, barrier.0.y, 0.),
-          Vec3f::new(barrier.1.x, barrier.1.y, 0.),
-        );
+          for line in &object.polygon {
+            // Ray from entity position to view point vs barriers.
+            let res = line_segment_vs_line_segment(
+              Vec3f::new(view_position.x, view_position.y, 0.),
+              p.into(),
+              Vec3f::new(line.0.x + object_position.x, line.0.y + object_position.y, 0.),
+              Vec3f::new(line.1.x + object_position.x, line.1.y + object_position.y, 0.),
+            );
 
-        // Ray was intersected by some barrier.
-        if let Some(intersection) = res {
-          let dist =
-            distance::<f32, Vec2f>(Vec2f::new(position.x, position.y), intersection.into());
+            // Ray was intersected by some barrier.
+            if let Some(intersection) = res {
+              let dist = distance::<f32, Vec2f>(
+                Vec2f::new(view_position.x, view_position.y),
+                intersection.into(),
+              );
 
-          if dist < min_dist {
-            p = intersection.into();
-            min_dist = dist;
+              if dist < min_dist {
+                p = intersection.into();
+                min_dist = dist;
+              }
+            }
           }
+
+          points.push(Point2 { x: p.x, y: p.y });
+          current += RADIAN;
         }
       }
-
-      points.push(Point2 { x: p.x, y: p.y });
-      current += RADIAN;
     }
 
     view.points = points;
@@ -648,10 +617,7 @@ fn view_direction(mut query: Query<(&mut View, &Movable, &Position), Changed<Mov
 }
 
 /// View mark.
-fn view_mark(
-  mut view_mark: ResMut<ViewMark>,
-  mut query: Query<(&View, &mut Selectable, &Enemy)>,
-) {
+fn view_mark(mut view_mark: ResMut<ViewMark>, mut query: Query<(&View, &mut Selectable, &Enemy)>) {
   let mut view_mark_enemy_id: Option<ComponentId> = None;
 
   if view_mark.active {

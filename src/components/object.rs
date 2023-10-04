@@ -24,8 +24,8 @@ pub enum PolygonType {
 /// Object component.
 #[derive(Component, Clone)]
 pub struct Object {
-  /// List of points relative to object position.
-  pub polygon: Vec<Point2<f32>>,
+  /// List of line segments relative to object position. Must be closed polygon!
+  pub polygon: Vec<(Point2<f32>, Point2<f32>)>,
 
   /// Polygon type.
   pub polygon_type: PolygonType,
