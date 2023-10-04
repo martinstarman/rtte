@@ -82,7 +82,12 @@ impl Game {
         y_indexed: false,
       },
       object: Object {
-        polygon: vec![],
+        polygon: vec![
+          (Point2 { x: 0., y: 0. }, Point2 { x: 1000., y: 0. }),
+          (Point2 { x: 1000., y: 0. }, Point2 { x: 1000., y: 800. }),
+          (Point2 { x: 1000., y: 800. }, Point2 { x: 0., y: 800. }),
+          (Point2 { x: 0., y: 800. }, Point2 { x: 0., y: 0. }),
+        ],
         polygon_type: PolygonType::GROUND,
       },
     });
@@ -101,7 +106,7 @@ impl Game {
           (Point2 { x: 32., y: 154. }, Point2 { x: 0., y: 171. }),
           (Point2 { x: 0., y: 171. }, Point2 { x: 128., y: 236. }),
         ],
-        polygon_type: PolygonType::GROUND,
+        polygon_type: PolygonType::BLOCK,
       },
     });
 
@@ -389,21 +394,19 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   let mut query = game.world.query::<(&Object, &Position)>();
 
   for (object, position) in query.iter_mut(&mut game.world) {
-    if object.polygon.len() >= 3 {
-      let points: Vec<Point2<f32>> = object
-        .polygon
-        .iter()
-        .map(|(p1, _)| Point2 {
-          x: p1.x + position.x,
-          y: p1.y + position.y,
-        })
-        .collect();
+    let points: Vec<Point2<f32>> = object
+      .polygon
+      .iter()
+      .map(|(p1, _)| Point2 {
+        x: p1.x + position.x,
+        y: p1.y + position.y,
+      })
+      .collect();
 
-      let mesh =
-        ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
-          .unwrap();
-      canvas.draw(&mesh, DrawParam::new().offset(game.camera));
-    }
+    let mesh =
+      ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
+        .unwrap();
+    canvas.draw(&mesh, DrawParam::new().offset(game.camera));
   }
 }
 
@@ -529,7 +532,8 @@ fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
 
 /// Entity view.
 fn view(q1: Query<(&Object, &Position)>, mut q2: Query<(&mut View, &Position)>) {
-  let objects: Vec<(&Object, &Position)> = q1.iter().collect();
+  let blocks: Vec<(&Object, &Position)> =
+    q1.iter().filter(|(object, _)| object.polygon_type == PolygonType::BLOCK).collect();
 
   // Build view.
   for (mut view, view_position) in &mut q2 {
@@ -550,48 +554,49 @@ fn view(q1: Query<(&Object, &Position)>, mut q2: Query<(&mut View, &Position)>) 
       y: view_position.y,
     }];
 
-    let min = view.direction - (VIEW_INNER_ANGLE / 2.);
-    let max = view.direction + (VIEW_INNER_ANGLE / 2.);
-    let mut current = min;
+    // View limits.
+    let mut rad = view.direction - (VIEW_INNER_ANGLE / 2.);
+    let max_rad = view.direction + (VIEW_INNER_ANGLE / 2.);
 
-    while current < max {
-      for (object, object_position) in &objects {
-        if object.polygon.len() >= 3 {
-          let mut min_dist = VIEW_DISTANCE;
+    while rad < max_rad {
+      let mut min_dist = VIEW_DISTANCE;
+      let mut view_point = Vec2f::new(
+        f32::cos(rad) * VIEW_DISTANCE + view_position.x,
+        f32::sin(rad) * VIEW_DISTANCE + view_position.y,
+      );
 
-          // View point.
-          let mut p = Vec2f::new(
-            f32::cos(current) * VIEW_DISTANCE + view_position.x,
-            f32::sin(current) * VIEW_DISTANCE + view_position.y,
-          );
-
-          for line in &object.polygon {
-            // Ray from entity position to view point vs barriers.
-            let res = line_segment_vs_line_segment(
-              Vec3f::new(view_position.x, view_position.y, 0.),
-              p.into(),
-              Vec3f::new(line.0.x + object_position.x, line.0.y + object_position.y, 0.),
-              Vec3f::new(line.1.x + object_position.x, line.1.y + object_position.y, 0.),
+      for (object, object_position) in &blocks {
+        // Test all objects polygon lines vs ray (from entity position to view_point).
+        for line in &object.polygon {
+          if let Some(intersection) = line_segment_vs_line_segment(
+            Vec3f::new(view_position.x, view_position.y, 0.),
+            view_point.into(),
+            Vec3f::new(line.0.x + object_position.x, line.0.y + object_position.y, 0.),
+            Vec3f::new(line.1.x + object_position.x, line.1.y + object_position.y, 0.),
+          ) {
+            // Ray was intersected by some line.
+            let dist = distance::<f32, Vec2f>(
+              Vec2f::new(view_position.x, view_position.y),
+              intersection.into(),
             );
 
-            // Ray was intersected by some barrier.
-            if let Some(intersection) = res {
-              let dist = distance::<f32, Vec2f>(
-                Vec2f::new(view_position.x, view_position.y),
-                intersection.into(),
-              );
-
-              if dist < min_dist {
-                p = intersection.into();
-                min_dist = dist;
-              }
+            // If the intersection is closer to entity save it.
+            if dist < min_dist {
+              view_point = intersection.into();
+              min_dist = dist;
             }
           }
-
-          points.push(Point2 { x: p.x, y: p.y });
-          current += RADIAN;
         }
       }
+
+      // Add closest point to entity.
+      points.push(Point2 {
+        x: view_point.x,
+        y: view_point.y,
+      });
+
+      // Move current angle by 1 radian.
+      rad += RADIAN;
     }
 
     view.points = points;
