@@ -1,37 +1,21 @@
 use super::{
-  movable::Movable, position::Position, renderable::Renderable, selectable::Selectable, size::Size,
+  movement::Movement, position::Position, selectable::Selectable, size::Size, sprite::Sprite,
   view::View,
 };
-use bevy_ecs::{prelude::*, component::ComponentId};
+use bevy_ecs::{component::ComponentId, prelude::*};
 
-/// Enemy component.
 #[derive(Component)]
 pub struct Enemy {
-    /// Enemy id.
-    pub id: ComponentId,
+  pub id: ComponentId,
 }
 
-/// Enemy bundle.
 #[derive(Bundle)]
 pub struct EnemyBundle {
-  /// Enemy.
   pub enemy: Enemy,
-
-  /// Enemy movement.
-  pub movable: Movable,
-
-  /// Enemy position.
+  pub movement: Movement,
   pub position: Position,
-
-  /// Enemy rendering.
-  pub renderable: Renderable,
-
-  /// Enemy selection.
   pub selectable: Selectable,
-
-  /// Enemy size.
   pub size: Size,
-
-  /// Point of view.
+  pub sprite: Sprite,
   pub view: View,
 }

@@ -1,48 +1,26 @@
-use super::{position::Position, renderable::Renderable, size::Size};
+use super::{position::Position, size::Size, sprite::Sprite};
 use bevy_ecs::prelude::*;
 use ggez::mint::Point2;
 
-/// Polygon types.
 #[derive(PartialEq, Clone, Copy)]
 pub enum PolygonType {
-  /// Ground. It does not block anything or leave any marks.
-  GROUND = 0,
-
-  /// Any object that blocks enemy view and path. Like house, tree, rock, etc.
-  BLOCK = 1,
-
-  /// Any object that blocks only path. Like fence.
-  TRANSPARENT = 2,
-
-  /// Water.
-  WATER = 3,
-
-  /// Snow. Leave marks.
-  SNOW = 4,
+  GROUND = 0,      // it does not block anything or leave any marks
+  BLOCK = 1,       // any object that blocks enemy view and path (house, tree, rock, ...)
+  TRANSPARENT = 2, // any object that blocks only path (fence, ...)
+  WATER = 3,       //
+  SNOW = 4,        // leave marks
 }
 
-/// Object component.
 #[derive(Component, Clone)]
 pub struct Object {
-  /// List of line segments relative to object position. Must be closed polygon!
-  pub polygon: Vec<(Point2<f32>, Point2<f32>)>,
-
-  /// Polygon type.
+  pub polygon: Vec<(Point2<f32>, Point2<f32>)>, // list of line segments relative to object position. must be closed polygon.
   pub polygon_type: PolygonType,
 }
 
-/// Player bundle.
 #[derive(Bundle)]
 pub struct ObjectBundle {
-  /// Object.
   pub object: Object,
-
-  /// Object position.
   pub position: Position,
-
-  /// Object rendering.
-  pub renderable: Renderable,
-
-  /// Player size.
   pub size: Size,
+  pub sprite: Sprite,
 }

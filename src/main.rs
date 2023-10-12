@@ -1,23 +1,19 @@
 pub mod components;
+pub mod entity;
 pub mod resources;
+pub mod systems;
 
-use bevy_ecs::{
-  component::ComponentId,
-  query::{Changed, With},
-  schedule::Schedule,
-  system::{Query, ResMut},
-  world::World,
-};
+use bevy_ecs::{component::ComponentId, query::With, schedule::Schedule, world::World};
 use components::{
   enemy::{Enemy, EnemyBundle},
-  movable::Movable,
+  movement::Movement,
   object::{Object, ObjectBundle, PolygonType},
-  player::{Player, PlayerBundle},
+  player::Player,
   position::Position,
-  renderable::Renderable,
   selectable::Selectable,
   size::Size,
-  view::{View, ViewMovement},
+  sprite::Sprite,
+  view::{Shift, View},
 };
 use ggez::{
   event::{self, EventHandler, MouseButton},
@@ -26,59 +22,33 @@ use ggez::{
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
-use maths_rs::{
-  distance, line_segment_vs_line_segment, point_inside_polygon, vec::Vec2, Vec2f, Vec3f,
-};
 use resources::view_mark::ViewMark;
 use std::{f32::consts::PI, path};
 
-/// Show debug stuff?
 const DEBUG: bool = true;
-
-/// Window width.
 const WINDOW_WIDTH: f32 = 800.;
-
-/// Window height.
 const WINDOW_HEIGHT: f32 = 600.;
-
-/// Panning speed,
 const PAN_SPEED: f32 = 5.;
+const VIEW_DIRECTION_TOP: f32 = 3. * PI / 2.;
 
-/// 1 radian.
-const RADIAN: f32 = PI / 180.;
-
-/// View distance.
-const VIEW_DISTANCE: f32 = 150.;
-
-/// View inner angle.
-const VIEW_INNER_ANGLE: f32 = 60. * RADIAN;
-
-/// View movement angle. Maximum view movement left and right.
-const VIEW_MOVEMENT_ANGLE: f32 = 30. * RADIAN;
-
-/// Game data.
 pub struct Game {
-  /// Game world.
   world: World,
-
-  /// Bevy ECS scheduler.
   schedule: Schedule,
-
-  /// Camera position.
   camera: Point2<f32>,
 }
 
-/// Game implementation.
 impl Game {
-  /// Create new game.
   pub fn new(ctx: &mut Context) -> GameResult<Game> {
     let mut world = World::default();
 
     world.spawn(ObjectBundle {
       position: Position { x: 0., y: 0. },
-      size: Size { w: 1000., h: 800. },
-      renderable: Renderable {
-        sprite: Image::from_path(ctx, "/ground.png").unwrap(),
+      size: Size {
+        width: 1000.,
+        height: 800.,
+      },
+      sprite: Sprite {
+        image: Image::from_path(ctx, "/ground.png").unwrap(),
         y_indexed: false,
       },
       object: Object {
@@ -94,9 +64,12 @@ impl Game {
 
     world.spawn(ObjectBundle {
       position: Position { x: 250., y: 200. },
-      size: Size { w: 160., h: 236. },
-      renderable: Renderable {
-        sprite: Image::from_path(ctx, "/block.png").unwrap(),
+      size: Size {
+        width: 160.,
+        height: 236.,
+      },
+      sprite: Sprite {
+        image: Image::from_path(ctx, "/block.png").unwrap(),
         y_indexed: true,
       },
       object: Object {
@@ -110,50 +83,31 @@ impl Game {
       },
     });
 
-    world.spawn(PlayerBundle {
-      position: Position { x: 1., y: 1. },
-      size: Size { w: 10., h: 23. },
-      renderable: Renderable {
-        sprite: Image::from_path(ctx, "/player.png").unwrap(),
-        y_indexed: true,
-      },
-      movable: Movable {
-        path: vec![],
-        path_default: vec![],
-      },
-      player: Player {
-        id: ComponentId::new(1),
-      },
-      selectable: Selectable { selected: false },
-    });
+    world.spawn(entity::player::new(
+      1,
+      Position { x: 1., y: 1. },
+      Image::from_path(ctx, "/player.png").unwrap(),
+    ));
 
-    world.spawn(PlayerBundle {
-      position: Position { x: 30., y: 1. },
-      size: Size { w: 10., h: 23. },
-      renderable: Renderable {
-        sprite: Image::from_path(ctx, "/player.png").unwrap(),
-        y_indexed: true,
-      },
-      movable: Movable {
-        path: vec![],
-        path_default: vec![],
-      },
-      player: Player {
-        id: ComponentId::new(2),
-      },
-      selectable: Selectable { selected: false },
-    });
+    world.spawn(entity::player::new(
+      2,
+      Position { x: 30., y: 1. },
+      Image::from_path(ctx, "/player.png").unwrap(),
+    ));
 
     world.spawn(EnemyBundle {
       position: Position { x: 450., y: 400. },
-      size: Size { w: 10., h: 23. },
-      renderable: Renderable {
-        sprite: Image::from_path(ctx, "/player.png").unwrap(), // TODO: enemy.png
+      size: Size {
+        width: 10.,
+        height: 23.,
+      },
+      sprite: Sprite {
+        image: Image::from_path(ctx, "/enemy.png").unwrap(),
         y_indexed: true,
       },
-      movable: Movable {
-        path: vec![],
-        path_default: vec![
+      movement: Movement {
+        current_path: vec![],
+        default_path: vec![
           Point2 { x: 550., y: 400. },
           Point2 { x: 650., y: 500. },
           Point2 { x: 450., y: 500. },
@@ -163,8 +117,8 @@ impl Game {
       view: View {
         points: vec![],
         current_direction: 0.,
-        direction: 0.,
-        movement: ViewMovement::LEFT,
+        default_direction: 0.,
+        shift: Shift::LEFT,
       },
       enemy: Enemy {
         id: ComponentId::new(1),
@@ -174,20 +128,23 @@ impl Game {
 
     world.spawn(EnemyBundle {
       position: Position { x: 280., y: 450. },
-      size: Size { w: 10., h: 23. },
-      renderable: Renderable {
-        sprite: Image::from_path(ctx, "/player.png").unwrap(), // TODO: enemy.png
+      size: Size {
+        width: 10.,
+        height: 23.,
+      },
+      sprite: Sprite {
+        image: Image::from_path(ctx, "/enemy.png").unwrap(),
         y_indexed: true,
       },
-      movable: Movable {
-        path: vec![],
-        path_default: vec![],
+      movement: Movement {
+        current_path: vec![],
+        default_path: vec![],
       },
       view: View {
         points: vec![],
-        current_direction: 3. * PI / 2., // TODO: constants
-        direction: 3. * PI / 2.,
-        movement: ViewMovement::LEFT,
+        current_direction: VIEW_DIRECTION_TOP,
+        default_direction: VIEW_DIRECTION_TOP,
+        shift: Shift::LEFT,
       },
       enemy: Enemy {
         id: ComponentId::new(2),
@@ -203,10 +160,12 @@ impl Game {
 
     let mut schedule = Schedule::default();
 
-    schedule.add_systems(movement);
-    schedule.add_systems(view);
-    schedule.add_systems(view_direction);
-    schedule.add_systems(view_mark);
+    schedule.add_systems(systems::movement::r#move);
+    schedule.add_systems(systems::view::shift);
+    schedule.add_systems(systems::view::view);
+    schedule.add_systems(systems::view::current_direction);
+    schedule.add_systems(systems::view::direction);
+    schedule.add_systems(systems::view::mark);
 
     let game = Game {
       world,
@@ -218,14 +177,10 @@ impl Game {
   }
 }
 
-/// ggez event handler for Game.
 impl EventHandler<GameError> for Game {
-  /// Every tick update.
   fn update(&mut self, ctx: &mut Context) -> GameResult {
-    // Run bevy_ecs systems.
     self.schedule.run(&mut self.world);
 
-    // Change camera position by arrow keys.
     for key in ctx.keyboard.pressed_keys() {
       match key {
         KeyCode::Left => self.camera.x -= PAN_SPEED,
@@ -236,7 +191,6 @@ impl EventHandler<GameError> for Game {
       }
     }
 
-    // Change camera position by mouse.
     let pos = ctx.mouse.position();
 
     if pos.x == 0. {
@@ -258,24 +212,14 @@ impl EventHandler<GameError> for Game {
     Ok(())
   }
 
-  /// Every tick draw.
   fn draw(&mut self, ctx: &mut Context) -> GameResult {
-    // Reset canvas.
     let mut canvas = Canvas::from_frame(ctx, Color::from_rgb(255, 0, 255));
 
-    // Draw non Y indexed entities.
-    draw_entity(self, ctx, &mut canvas, false);
-
-    // Draw view.
+    draw_entity(self, ctx, &mut canvas, false); // Draw non Y indexed entities.
     draw_view(self, ctx, &mut canvas);
-
-    // Draw Y indexed entities.
-    draw_entity(self, ctx, &mut canvas, true);
-
-    // Draw view mark.
+    draw_entity(self, ctx, &mut canvas, true); // Draw Y indexed entities.
     draw_view_mark(self, ctx, &mut canvas);
 
-    // Draw debug stuff.
     if DEBUG {
       draw_entity_debug(self, ctx, &mut canvas);
     }
@@ -323,32 +267,29 @@ impl EventHandler<GameError> for Game {
   }
 }
 
-/// Draw entity.
 fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, y_indexed: bool) {
-  let mut query = game.world.query::<(&Position, &Size, &Renderable)>();
+  let mut query = game.world.query::<(&Position, &Size, &Sprite)>();
   let mut entities: Vec<_> = query
     .iter_mut(&mut game.world)
-    .filter(|(_, _, renderable)| renderable.y_indexed == y_indexed)
+    .filter(|(_, _, sprite)| sprite.y_indexed == y_indexed)
     .collect();
 
-  // Sort by Y index.
   if y_indexed {
     entities.sort_by(|(a_pos, a_size, _), (b_pos, b_size, _)| {
-      (a_pos.y + a_size.h).partial_cmp(&(b_pos.y + b_size.h)).unwrap()
+      (a_pos.y + a_size.height).partial_cmp(&(b_pos.y + b_size.height)).unwrap()
     });
   }
 
-  for (position, _, renderable) in entities {
+  for (position, _, sprite) in entities {
     let dest = Point2 {
       x: position.x - game.camera.x,
       y: position.y - game.camera.y,
     };
 
-    canvas.draw(&renderable.sprite, DrawParam::new().dest(dest));
+    canvas.draw(&sprite.image, DrawParam::new().dest(dest));
   }
 }
 
-/// Draw view mark.
 fn draw_view_mark(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   if let Some(view_mark) = game.world.get_resource::<ViewMark>() {
     if view_mark.active {
@@ -360,7 +301,6 @@ fn draw_view_mark(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   }
 }
 
-/// Draw view.
 fn draw_view(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   let mut query = game.world.query_filtered::<(&Selectable, &View), With<Enemy>>();
 
@@ -378,19 +318,18 @@ fn draw_view(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   }
 }
 
-/// Draw entity debug.
 fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
-  // Draw entity rect.
+  // rect
   let mut query = game.world.query::<(&Position, &Size)>();
 
   for (position, size) in query.iter_mut(&mut game.world) {
-    let rect = Rect::new(position.x, position.y, size.w, size.h);
+    let rect = Rect::new(position.x, position.y, size.width, size.height);
     let mesh =
       ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::WHITE).unwrap();
     canvas.draw(&mesh, DrawParam::new().offset(game.camera));
   }
 
-  // Draw object poly.
+  // polygon
   let mut query = game.world.query::<(&Object, &Position)>();
 
   for (object, position) in query.iter_mut(&mut game.world) {
@@ -410,16 +349,15 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   }
 }
 
-/// Shift + left mouse button click handler.
 fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
   let mut current_selected_enemy_id: Option<ComponentId> = None;
   let mut new_enemy_selected: bool = false;
 
-  // Try to select enemy
+  // try to select enemy
   let mut query = game.world.query::<(&Enemy, &mut Selectable, &Position, &Size)>();
 
   for (enemy, mut selectable, position, size) in query.iter_mut(&mut game.world) {
-    let rect = Rect::new(position.x, position.y, size.w, size.h);
+    let rect = Rect::new(position.x, position.y, size.width, size.height);
 
     if selectable.selected {
       current_selected_enemy_id = Some(enemy.id);
@@ -431,7 +369,7 @@ fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
     }
   }
 
-  // Deselect current selected enemy.
+  // deselect current selected enemy
   if new_enemy_selected {
     if let Some(id) = current_selected_enemy_id {
       let mut query = game.world.query::<(&Enemy, &mut Selectable)>();
@@ -451,15 +389,14 @@ fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
   }
 }
 
-/// Left mouse button click handler.
 fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
   let mut selected_player_id: Option<ComponentId> = None;
 
-  // Try to select player.
+  // try to select player
   let mut query = game.world.query::<(&Player, &mut Selectable, &Position, &Size)>();
 
   for (player, mut selectable, position, size) in query.iter_mut(&mut game.world) {
-    let rect = Rect::new(position.x, position.y, size.w, size.h);
+    let rect = Rect::new(position.x, position.y, size.width, size.height);
 
     if rect.contains(Point2 { x, y }) {
       selectable.selected = true;
@@ -467,7 +404,7 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
     }
   }
 
-  // Deselect all players if some was selected.
+  // deselect all players if some was selected
   if let Some(id) = selected_player_id {
     let mut query = game.world.query::<(&Player, &mut Selectable)>();
 
@@ -478,177 +415,29 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
     }
   }
 
-  // Set path to selected player when no player was selected.
+  // set path to selected player when no player was selected
   if selected_player_id.is_none() {
-    let mut query = game.world.query::<(&Player, &Selectable, &mut Movable)>();
+    let mut query = game.world.query::<(&Player, &Selectable, &mut Movement)>();
 
-    for (_, selectable, mut movable) in query.iter_mut(&mut game.world) {
+    for (_, selectable, mut movement) in query.iter_mut(&mut game.world) {
       if selectable.selected {
-        movable.path = vec![Point2 { x, y }]; // TODO: check where is clicked
+        movement.current_path = vec![Point2 { x, y }]; // TODO: is target walkable?
       }
     }
   }
 }
 
-/// Right mouse button click handler.
 fn select_or_stop_player(game: &mut Game, _x: f32, _y: f32) {
   // TODO: multiple player selection
 
-  // Stop player movement.
-  let mut query = game.world.query::<(&Player, &mut Movable)>();
+  // stop player movement
+  let mut query = game.world.query::<(&Player, &mut Movement)>();
 
-  for (_, mut movable) in query.iter_mut(&mut game.world) {
-    movable.path = vec![];
+  for (_, mut movement) in query.iter_mut(&mut game.world) {
+    movement.current_path = vec![];
   }
 }
 
-/// Entity movement.
-fn movement(mut query: Query<(&mut Movable, &mut Position)>) {
-  for (mut movable, mut position) in &mut query {
-    if movable.path.len() > 0 {
-      let next = movable.path[0];
-      let dist =
-        distance::<f32, Vec2f>(Vec2f::new(next.x, next.y), Vec2f::new(position.x, position.y));
-
-      if dist < 1. {
-        movable.path.remove(0);
-
-        position.x = next.x;
-        position.y = next.y;
-      } else {
-        let dx = next.x - position.x;
-        let dy = next.y - position.y;
-
-        position.x = position.x + (dx / dist);
-        position.y = position.y + (dy / dist);
-      }
-    } else {
-      if movable.path_default.len() > 0 {
-        movable.path = movable.path_default.clone();
-      }
-    }
-  }
-}
-
-/// Entity view.
-fn view(q1: Query<(&Object, &Position)>, mut q2: Query<(&mut View, &Position)>) {
-  let blocks: Vec<(&Object, &Position)> =
-    q1.iter().filter(|(object, _)| object.polygon_type == PolygonType::BLOCK).collect();
-
-  // Build view.
-  for (mut view, view_position) in &mut q2 {
-    // Change view movement.
-    let d = view.current_direction - view.direction;
-
-    if d > VIEW_MOVEMENT_ANGLE || d < -VIEW_MOVEMENT_ANGLE {
-      view.movement =
-        if view.movement == ViewMovement::LEFT { ViewMovement::RIGHT } else { ViewMovement::LEFT };
-    }
-
-    // Move view.
-    view.direction += if view.movement == ViewMovement::LEFT { -RADIAN } else { RADIAN };
-
-    // Get new view.
-    let mut points: Vec<Point2<f32>> = vec![Point2 {
-      x: view_position.x,
-      y: view_position.y,
-    }];
-
-    // View limits.
-    let mut rad = view.direction - (VIEW_INNER_ANGLE / 2.);
-    let max_rad = view.direction + (VIEW_INNER_ANGLE / 2.);
-
-    while rad < max_rad {
-      let mut min_dist = VIEW_DISTANCE;
-      let mut view_point = Vec2f::new(
-        f32::cos(rad) * VIEW_DISTANCE + view_position.x,
-        f32::sin(rad) * VIEW_DISTANCE + view_position.y,
-      );
-
-      for (object, object_position) in &blocks {
-        // Test all objects polygon lines vs ray (from entity position to view_point).
-        for line in &object.polygon {
-          if let Some(intersection) = line_segment_vs_line_segment(
-            Vec3f::new(view_position.x, view_position.y, 0.),
-            view_point.into(),
-            Vec3f::new(line.0.x + object_position.x, line.0.y + object_position.y, 0.),
-            Vec3f::new(line.1.x + object_position.x, line.1.y + object_position.y, 0.),
-          ) {
-            // Ray was intersected by some line.
-            let dist = distance::<f32, Vec2f>(
-              Vec2f::new(view_position.x, view_position.y),
-              intersection.into(),
-            );
-
-            // If the intersection is closer to entity save it.
-            if dist < min_dist {
-              view_point = intersection.into();
-              min_dist = dist;
-            }
-          }
-        }
-      }
-
-      // Add closest point to entity.
-      points.push(Point2 {
-        x: view_point.x,
-        y: view_point.y,
-      });
-
-      // Move current angle by 1 radian.
-      rad += RADIAN;
-    }
-
-    view.points = points;
-  }
-}
-
-/// View direction. Update view direction when movement change its direction.
-// TODO: It would be nice if the transition is smooth.
-fn view_direction(mut query: Query<(&mut View, &Movable, &Position), Changed<Movable>>) {
-  for (mut view, movable, position) in &mut query {
-    if movable.path.len() > 0 {
-      let next = movable.path[0];
-
-      let dx = next.x - position.x;
-      let dy = next.y - position.y;
-
-      let a = f32::atan2(dy, dx);
-
-      view.direction = a;
-      view.current_direction = a;
-    }
-  }
-}
-
-/// View mark.
-fn view_mark(mut view_mark: ResMut<ViewMark>, mut query: Query<(&View, &mut Selectable, &Enemy)>) {
-  let mut view_mark_enemy_id: Option<ComponentId> = None;
-
-  if view_mark.active {
-    for (view, mut selectable, enemy) in &mut query {
-      if point_inside_polygon(
-        Vec2::new(view_mark.x, view_mark.y),
-        &view.points.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
-      ) {
-        view_mark.active = false;
-        selectable.selected = true;
-        view_mark_enemy_id = Some(enemy.id);
-      }
-    }
-  }
-
-  // Deselect enemy if view mark was taken by another enemy.
-  if let Some(id) = view_mark_enemy_id {
-    for (_, mut selectable, enemy) in &mut query {
-      if selectable.selected && enemy.id != id {
-        selectable.selected = false;
-      }
-    }
-  }
-}
-
-/// Main function.
 fn main() -> GameResult {
   let resource_dir = path::PathBuf::from("./resources");
 
@@ -660,8 +449,7 @@ fn main() -> GameResult {
   let (mut ctx, event_loop) = context_builder.build()?;
   let state = Game::new(&mut ctx)?;
 
-  // Lock mouse to window.
-  ggez::input::mouse::set_cursor_grabbed(&mut ctx, true)?;
+  ggez::input::mouse::set_cursor_grabbed(&mut ctx, true)?; // lock mouse to window
 
   event::run(ctx, event_loop, state)
 }
