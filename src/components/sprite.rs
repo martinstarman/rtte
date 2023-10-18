@@ -4,5 +4,5 @@ use ggez::graphics::Image;
 #[derive(Component)]
 pub struct Sprite {
   pub image: Image,
-  pub y_indexed: bool,
+  pub ysorted: bool,
 }

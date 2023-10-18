@@ -1,5 +1,5 @@
 use super::{
-  movement::Movement, position::Position, selectable::Selectable, size::Size, sprite::Sprite,
+  movement::Movement, position::Position, selection::Selection, size::Size, sprite::Sprite,
   view::View,
 };
 use bevy_ecs::{component::ComponentId, prelude::*};
@@ -14,7 +14,7 @@ pub struct EnemyBundle {
   pub enemy: Enemy,
   pub movement: Movement,
   pub position: Position,
-  pub selectable: Selectable,
+  pub selection: Selection,
   pub size: Size,
   pub sprite: Sprite,
   pub view: View,

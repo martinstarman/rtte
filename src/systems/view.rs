@@ -4,7 +4,7 @@ use crate::{
     movement::Movement,
     object::{Object, PolygonType},
     position::Position,
-    selectable::Selectable,
+    selection::Selection,
     view::{Shift, View},
   },
   resources::view_mark::ViewMark,
@@ -114,31 +114,31 @@ pub fn view(mut query: Query<(&mut View, &Position)>, blocks_query: Query<(&Obje
       y: position.y,
     });
 
-    view.points = points;
+    view.polygon = points;
   }
 }
 
-pub fn mark(mut query: Query<(&View, &mut Selectable, &Enemy)>, mut view_mark: ResMut<ViewMark>) {
-  let mut view_mark_enemy_id: Option<ComponentId> = None;
+pub fn mark(mut query: Query<(&View, &mut Selection, &Enemy)>, mut view_mark: ResMut<ViewMark>) {
+  let mut enemy_id: Option<ComponentId> = None;
 
   if view_mark.active {
-    for (view, mut selectable, enemy) in &mut query {
+    for (view, mut selection, enemy) in &mut query {
       if maths_rs::point_inside_polygon(
         Vec2::new(view_mark.x, view_mark.y),
-        &view.points.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
+        &view.polygon.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
       ) {
         view_mark.active = false;
-        selectable.selected = true;
-        view_mark_enemy_id = Some(enemy.id);
+        selection.active = true;
+        enemy_id = Some(enemy.id);
       }
     }
   }
 
   // deselect enemy if view mark was taken by another enemy
-  if let Some(id) = view_mark_enemy_id {
-    for (_, mut selectable, enemy) in &mut query {
-      if selectable.selected && enemy.id != id {
-        selectable.selected = false;
+  if let Some(id) = enemy_id {
+    for (_, mut selection, enemy) in &mut query {
+      if enemy.id != id {
+        selection.active = false;
       }
     }
   }

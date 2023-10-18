@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - view mark
 - enemy selection
 - view direction matches movement direction
-- view movement limits
+- view shift limits
 
 ## [0.1.0] - 2023-09-15
 

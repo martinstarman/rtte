@@ -2,7 +2,7 @@ use crate::components::{
   movement::Movement,
   player::{Player, PlayerBundle},
   position::Position,
-  selectable::Selectable,
+  selection::Selection,
   size::Size,
   sprite::Sprite,
 };
@@ -19,14 +19,14 @@ pub fn new(index: usize, position: Position, sprite: Image) -> PlayerBundle {
       id: ComponentId::new(index),
     },
     position,
-    selectable: Selectable { selected: false },
+    selection: Selection { active: false },
     size: Size {
       width: 10.,
       height: 23.,
     },
     sprite: Sprite {
       image: sprite,
-      y_indexed: true,
+      ysorted: true,
     },
   }
 }

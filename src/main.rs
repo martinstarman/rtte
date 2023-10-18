@@ -10,7 +10,7 @@ use components::{
   object::{Object, ObjectBundle, PolygonType},
   player::Player,
   position::Position,
-  selectable::Selectable,
+  selection::Selection,
   size::Size,
   sprite::Sprite,
   view::{Shift, View},
@@ -49,7 +49,7 @@ impl Game {
       },
       sprite: Sprite {
         image: Image::from_path(ctx, "/ground.png").unwrap(),
-        y_indexed: false,
+        ysorted: false,
       },
       object: Object {
         polygon: vec![
@@ -70,7 +70,7 @@ impl Game {
       },
       sprite: Sprite {
         image: Image::from_path(ctx, "/block.png").unwrap(),
-        y_indexed: true,
+        ysorted: true,
       },
       object: Object {
         polygon: vec![
@@ -103,7 +103,7 @@ impl Game {
       },
       sprite: Sprite {
         image: Image::from_path(ctx, "/enemy.png").unwrap(),
-        y_indexed: true,
+        ysorted: true,
       },
       movement: Movement {
         current_path: vec![],
@@ -115,7 +115,7 @@ impl Game {
         ],
       },
       view: View {
-        points: vec![],
+        polygon: vec![],
         current_direction: 0.,
         default_direction: 0.,
         shift: Shift::LEFT,
@@ -123,7 +123,7 @@ impl Game {
       enemy: Enemy {
         id: ComponentId::new(1),
       },
-      selectable: Selectable { selected: false },
+      selection: Selection { active: false },
     });
 
     world.spawn(EnemyBundle {
@@ -134,14 +134,14 @@ impl Game {
       },
       sprite: Sprite {
         image: Image::from_path(ctx, "/enemy.png").unwrap(),
-        y_indexed: true,
+        ysorted: true,
       },
       movement: Movement {
         current_path: vec![],
         default_path: vec![],
       },
       view: View {
-        points: vec![],
+        polygon: vec![],
         current_direction: VIEW_DIRECTION_TOP,
         default_direction: VIEW_DIRECTION_TOP,
         shift: Shift::LEFT,
@@ -149,7 +149,7 @@ impl Game {
       enemy: Enemy {
         id: ComponentId::new(2),
       },
-      selectable: Selectable { selected: false },
+      selection: Selection { active: false },
     });
 
     world.insert_resource(ViewMark {
@@ -267,16 +267,14 @@ impl EventHandler<GameError> for Game {
   }
 }
 
-fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, y_indexed: bool) {
+fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, ysorted: bool) {
   let mut query = game.world.query::<(&Position, &Size, &Sprite)>();
-  let mut entities: Vec<_> = query
-    .iter_mut(&mut game.world)
-    .filter(|(_, _, sprite)| sprite.y_indexed == y_indexed)
-    .collect();
+  let mut entities: Vec<_> =
+    query.iter_mut(&mut game.world).filter(|(_, _, sprite)| sprite.ysorted == ysorted).collect();
 
-  if y_indexed {
-    entities.sort_by(|(a_pos, a_size, _), (b_pos, b_size, _)| {
-      (a_pos.y + a_size.height).partial_cmp(&(b_pos.y + b_size.height)).unwrap()
+  if ysorted {
+    entities.sort_by(|(a_position, a_size, _), (b_position, b_size, _)| {
+      (a_position.y + a_size.height).partial_cmp(&(b_position.y + b_size.height)).unwrap()
     });
   }
 
@@ -302,14 +300,14 @@ fn draw_view_mark(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
 }
 
 fn draw_view(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
-  let mut query = game.world.query_filtered::<(&Selectable, &View), With<Enemy>>();
+  let mut query = game.world.query_filtered::<(&Selection, &View), With<Enemy>>();
 
-  for (selectable, view) in query.iter_mut(&mut game.world) {
-    if selectable.selected && view.points.len() >= 3 {
+  for (selection, view) in query.iter_mut(&mut game.world) {
+    if selection.active && view.polygon.len() >= 3 {
       let mesh = ggez::graphics::Mesh::new_polygon(
         ctx,
         DrawMode::fill(),
-        &view.points[..],
+        &view.polygon[..],
         Color::from_rgba(255, 0, 0, 127),
       )
       .unwrap();
@@ -354,17 +352,17 @@ fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
   let mut new_enemy_selected: bool = false;
 
   // try to select enemy
-  let mut query = game.world.query::<(&Enemy, &mut Selectable, &Position, &Size)>();
+  let mut query = game.world.query::<(&Enemy, &mut Selection, &Position, &Size)>();
 
-  for (enemy, mut selectable, position, size) in query.iter_mut(&mut game.world) {
+  for (enemy, mut selection, position, size) in query.iter_mut(&mut game.world) {
     let rect = Rect::new(position.x, position.y, size.width, size.height);
 
-    if selectable.selected {
+    if selection.active {
       current_selected_enemy_id = Some(enemy.id);
     }
 
-    if rect.contains(Point2 { x, y }) && !selectable.selected {
-      selectable.selected = true;
+    if rect.contains(Point2 { x, y }) && !selection.active {
+      selection.active = true;
       new_enemy_selected = true;
     }
   }
@@ -372,11 +370,11 @@ fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
   // deselect current selected enemy
   if new_enemy_selected {
     if let Some(id) = current_selected_enemy_id {
-      let mut query = game.world.query::<(&Enemy, &mut Selectable)>();
+      let mut query = game.world.query::<(&Enemy, &mut Selection)>();
 
-      for (enemy, mut selectable) in query.iter_mut(&mut game.world) {
+      for (enemy, mut selection) in query.iter_mut(&mut game.world) {
         if enemy.id == id {
-          selectable.selected = false;
+          selection.active = false;
         }
       }
     }
@@ -393,34 +391,34 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
   let mut selected_player_id: Option<ComponentId> = None;
 
   // try to select player
-  let mut query = game.world.query::<(&Player, &mut Selectable, &Position, &Size)>();
+  let mut query = game.world.query::<(&Player, &mut Selection, &Position, &Size)>();
 
-  for (player, mut selectable, position, size) in query.iter_mut(&mut game.world) {
+  for (player, mut selection, position, size) in query.iter_mut(&mut game.world) {
     let rect = Rect::new(position.x, position.y, size.width, size.height);
 
     if rect.contains(Point2 { x, y }) {
-      selectable.selected = true;
+      selection.active = true;
       selected_player_id = Some(player.id);
     }
   }
 
   // deselect all players if some was selected
   if let Some(id) = selected_player_id {
-    let mut query = game.world.query::<(&Player, &mut Selectable)>();
+    let mut query = game.world.query::<(&Player, &mut Selection)>();
 
-    for (player, mut selectable) in query.iter_mut(&mut game.world) {
+    for (player, mut selection) in query.iter_mut(&mut game.world) {
       if player.id != id {
-        selectable.selected = false;
+        selection.active = false;
       }
     }
   }
 
   // set path to selected player when no player was selected
   if selected_player_id.is_none() {
-    let mut query = game.world.query::<(&Player, &Selectable, &mut Movement)>();
+    let mut query = game.world.query::<(&Player, &Selection, &mut Movement)>();
 
-    for (_, selectable, mut movement) in query.iter_mut(&mut game.world) {
-      if selectable.selected {
+    for (_, selection, mut movement) in query.iter_mut(&mut game.world) {
+      if selection.active {
         movement.current_path = vec![Point2 { x, y }]; // TODO: is target walkable?
       }
     }
