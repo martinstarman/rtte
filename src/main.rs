@@ -5,7 +5,7 @@ pub mod systems;
 
 use bevy_ecs::{component::ComponentId, query::With, schedule::Schedule, world::World};
 use components::{
-  enemy::{Enemy, EnemyBundle},
+  enemy::Enemy,
   movement::Movement,
   object::{Object, ObjectBundle, PolygonType},
   player::Player,
@@ -13,7 +13,7 @@ use components::{
   selection::Selection,
   size::Size,
   sprite::Sprite,
-  view::{Shift, View},
+  view::View,
 };
 use ggez::{
   event::{self, EventHandler, MouseButton},
@@ -95,62 +95,26 @@ impl Game {
       Image::from_path(ctx, "/player.png").unwrap(),
     ));
 
-    world.spawn(EnemyBundle {
-      position: Position { x: 450., y: 400. },
-      size: Size {
-        width: 10.,
-        height: 23.,
-      },
-      sprite: Sprite {
-        image: Image::from_path(ctx, "/enemy.png").unwrap(),
-        ysorted: true,
-      },
-      movement: Movement {
-        current_path: vec![],
-        default_path: vec![
-          Point2 { x: 550., y: 400. },
-          Point2 { x: 650., y: 500. },
-          Point2 { x: 450., y: 500. },
-          Point2 { x: 450., y: 400. },
-        ],
-      },
-      view: View {
-        polygon: vec![],
-        current_direction: 0.,
-        default_direction: 0.,
-        shift: Shift::LEFT,
-      },
-      enemy: Enemy {
-        id: ComponentId::new(1),
-      },
-      selection: Selection { active: false },
-    });
+    world.spawn(entity::enemy::new(
+      1,
+      Position { x: 450., y: 400. },
+      Image::from_path(ctx, "/enemy.png").unwrap(),
+      vec![
+        Point2 { x: 550., y: 400. },
+        Point2 { x: 650., y: 500. },
+        Point2 { x: 450., y: 500. },
+        Point2 { x: 450., y: 400. },
+      ],
+      0.,
+    ));
 
-    world.spawn(EnemyBundle {
-      position: Position { x: 280., y: 450. },
-      size: Size {
-        width: 10.,
-        height: 23.,
-      },
-      sprite: Sprite {
-        image: Image::from_path(ctx, "/enemy.png").unwrap(),
-        ysorted: true,
-      },
-      movement: Movement {
-        current_path: vec![],
-        default_path: vec![],
-      },
-      view: View {
-        polygon: vec![],
-        current_direction: VIEW_DIRECTION_TOP,
-        default_direction: VIEW_DIRECTION_TOP,
-        shift: Shift::LEFT,
-      },
-      enemy: Enemy {
-        id: ComponentId::new(2),
-      },
-      selection: Selection { active: false },
-    });
+    world.spawn(entity::enemy::new(
+      2,
+      Position { x: 280., y: 450. },
+      Image::from_path(ctx, "/enemy.png").unwrap(),
+      vec![],
+      VIEW_DIRECTION_TOP,
+    ));
 
     world.insert_resource(ViewMark {
       active: false,
@@ -160,12 +124,12 @@ impl Game {
 
     let mut schedule = Schedule::default();
 
-    schedule.add_systems(systems::movement::r#move);
-    schedule.add_systems(systems::view::shift);
-    schedule.add_systems(systems::view::view);
-    schedule.add_systems(systems::view::current_direction);
-    schedule.add_systems(systems::view::direction);
-    schedule.add_systems(systems::view::mark);
+    schedule.add_systems(systems::movement::update);
+    schedule.add_systems(systems::view::update_shift);
+    schedule.add_systems(systems::view::update_current_direction);
+    schedule.add_systems(systems::view::update_default_direction);
+    schedule.add_systems(systems::view::view_mark_in_view);
+    schedule.add_systems(systems::view::update);
 
     let game = Game {
       world,

@@ -9,7 +9,7 @@ use crate::components::{
 use bevy_ecs::component::ComponentId;
 use ggez::graphics::Image;
 
-pub fn new(index: usize, position: Position, sprite: Image) -> PlayerBundle {
+pub fn new(index: usize, position: Position, image: Image) -> PlayerBundle {
   PlayerBundle {
     movement: Movement {
       current_path: vec![],
@@ -21,11 +21,11 @@ pub fn new(index: usize, position: Position, sprite: Image) -> PlayerBundle {
     position,
     selection: Selection { active: false },
     size: Size {
-      width: 10.,
-      height: 23.,
+      width: image.width() as f32,
+      height: image.height() as f32,
     },
     sprite: Sprite {
-      image: sprite,
+      image,
       ysorted: true,
     },
   }

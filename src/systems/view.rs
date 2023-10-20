@@ -22,7 +22,7 @@ const DISTANCE: f32 = 150.;
 const INNER_ANGLE: f32 = 60. * RADIAN;
 const SHIFT_ANGLE: f32 = 30. * RADIAN;
 
-pub fn current_direction(mut query: Query<&mut View>) {
+pub fn update_current_direction(mut query: Query<&mut View>) {
   for mut view in &mut query {
     if view.shift == Shift::LEFT {
       view.current_direction += RADIAN;
@@ -33,8 +33,7 @@ pub fn current_direction(mut query: Query<&mut View>) {
 }
 
 // TODO: smooth transition
-// update view direction when path changed
-pub fn direction(mut query: Query<(&mut View, &Movement, &Position), Changed<Movement>>) {
+pub fn update_default_direction(mut query: Query<(&mut View, &Movement, &Position), Changed<Movement>>) {
   for (mut view, movement, position) in &mut query {
     if movement.current_path.len() > 0 {
       let rad = f32::atan2(
@@ -48,7 +47,7 @@ pub fn direction(mut query: Query<(&mut View, &Movement, &Position), Changed<Mov
   }
 }
 
-pub fn shift(mut query: Query<&mut View>) {
+pub fn update_shift(mut query: Query<&mut View>) {
   for mut view in &mut query {
     let rad = view.current_direction - view.default_direction;
 
@@ -62,7 +61,33 @@ pub fn shift(mut query: Query<&mut View>) {
   }
 }
 
-pub fn view(mut query: Query<(&mut View, &Position)>, blocks_query: Query<(&Object, &Position)>) {
+pub fn view_mark_in_view(mut query: Query<(&View, &mut Selection, &Enemy)>, mut view_mark: ResMut<ViewMark>) {
+  let mut enemy_id: Option<ComponentId> = None;
+
+  if view_mark.active {
+    for (view, mut selection, enemy) in &mut query {
+      if maths_rs::point_inside_polygon(
+        Vec2::new(view_mark.x, view_mark.y),
+        &view.polygon.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
+      ) {
+        view_mark.active = false;
+        selection.active = true;
+        enemy_id = Some(enemy.id);
+      }
+    }
+  }
+
+  // deselect enemy if view mark was taken by another enemy
+  if let Some(id) = enemy_id {
+    for (_, mut selection, enemy) in &mut query {
+      if enemy.id != id {
+        selection.active = false;
+      }
+    }
+  }
+}
+
+pub fn update(mut query: Query<(&mut View, &Position)>, blocks_query: Query<(&Object, &Position)>) {
   let blocks: Vec<(&Object, &Position)> =
     blocks_query.iter().filter(|(object, _)| object.polygon_type == PolygonType::BLOCK).collect();
 
@@ -115,31 +140,5 @@ pub fn view(mut query: Query<(&mut View, &Position)>, blocks_query: Query<(&Obje
     });
 
     view.polygon = points;
-  }
-}
-
-pub fn mark(mut query: Query<(&View, &mut Selection, &Enemy)>, mut view_mark: ResMut<ViewMark>) {
-  let mut enemy_id: Option<ComponentId> = None;
-
-  if view_mark.active {
-    for (view, mut selection, enemy) in &mut query {
-      if maths_rs::point_inside_polygon(
-        Vec2::new(view_mark.x, view_mark.y),
-        &view.polygon.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
-      ) {
-        view_mark.active = false;
-        selection.active = true;
-        enemy_id = Some(enemy.id);
-      }
-    }
-  }
-
-  // deselect enemy if view mark was taken by another enemy
-  if let Some(id) = enemy_id {
-    for (_, mut selection, enemy) in &mut query {
-      if enemy.id != id {
-        selection.active = false;
-      }
-    }
   }
 }
