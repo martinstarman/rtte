@@ -1,4 +1,4 @@
-use crate::components::{movement::Movement, position::Position};
+use crate::component::{movement::Movement, position::Position};
 use bevy_ecs::system::Query;
 use maths_rs::Vec2f;
 

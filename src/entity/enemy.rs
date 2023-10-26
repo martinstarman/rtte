@@ -1,4 +1,4 @@
-use crate::components::{
+use crate::component::{
   enemy::{Enemy, EnemyBundle},
   movement::Movement,
   position::Position,

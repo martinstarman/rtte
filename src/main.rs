@@ -1,13 +1,13 @@
-pub mod components;
+pub mod component;
 pub mod entity;
-pub mod resources;
-pub mod systems;
+pub mod resource;
+pub mod system;
 
 use bevy_ecs::{component::ComponentId, query::With, schedule::Schedule, world::World};
-use components::{
+use component::{
   enemy::Enemy,
   movement::Movement,
-  object::{Object, ObjectBundle, PolygonType},
+  object::{Object, PolygonType},
   player::Player,
   position::Position,
   selection::Selection,
@@ -22,7 +22,7 @@ use ggez::{
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
-use resources::view_mark::ViewMark;
+use resource::mark::Mark;
 use std::{f32::consts::PI, path};
 
 const DEBUG: bool = true;
@@ -41,47 +41,29 @@ impl Game {
   pub fn new(ctx: &mut Context) -> GameResult<Game> {
     let mut world = World::default();
 
-    world.spawn(ObjectBundle {
-      position: Position { x: 0., y: 0. },
-      size: Size {
-        width: 1000.,
-        height: 800.,
-      },
-      sprite: Sprite {
-        image: Image::from_path(ctx, "/ground.png").unwrap(),
-        ysorted: false,
-      },
-      object: Object {
-        polygon: vec![
-          (Point2 { x: 0., y: 0. }, Point2 { x: 1000., y: 0. }),
-          (Point2 { x: 1000., y: 0. }, Point2 { x: 1000., y: 800. }),
-          (Point2 { x: 1000., y: 800. }, Point2 { x: 0., y: 800. }),
-          (Point2 { x: 0., y: 800. }, Point2 { x: 0., y: 0. }),
-        ],
-        polygon_type: PolygonType::GROUND,
-      },
-    });
+    world.spawn(entity::object::new(
+      Position { x: 0., y: 0. },
+      Image::from_path(ctx, "/ground.png").unwrap(),
+      vec![
+        Point2 { x: 0., y: 0. },
+        Point2 { x: 1000., y: 0. },
+        Point2 { x: 1000., y: 800. },
+        Point2 { x: 0., y: 800. },
+      ],
+      PolygonType::GROUND,
+    ));
 
-    world.spawn(ObjectBundle {
-      position: Position { x: 250., y: 200. },
-      size: Size {
-        width: 160.,
-        height: 236.,
-      },
-      sprite: Sprite {
-        image: Image::from_path(ctx, "/block.png").unwrap(),
-        ysorted: true,
-      },
-      object: Object {
-        polygon: vec![
-          (Point2 { x: 128., y: 236. }, Point2 { x: 160., y: 219. }),
-          (Point2 { x: 160., y: 219. }, Point2 { x: 32., y: 154. }),
-          (Point2 { x: 32., y: 154. }, Point2 { x: 0., y: 171. }),
-          (Point2 { x: 0., y: 171. }, Point2 { x: 128., y: 236. }),
-        ],
-        polygon_type: PolygonType::BLOCK,
-      },
-    });
+    world.spawn(entity::object::new(
+      Position { x: 250., y: 200. },
+      Image::from_path(ctx, "/block.png").unwrap(),
+      vec![
+        Point2 { x: 128., y: 236. },
+        Point2 { x: 160., y: 219. },
+        Point2 { x: 32., y: 154. },
+        Point2 { x: 0., y: 171. },
+      ],
+      PolygonType::BLOCK,
+    ));
 
     world.spawn(entity::player::new(
       1,
@@ -116,7 +98,7 @@ impl Game {
       VIEW_DIRECTION_TOP,
     ));
 
-    world.insert_resource(ViewMark {
+    world.insert_resource(Mark {
       active: false,
       x: 0.,
       y: 0.,
@@ -124,12 +106,12 @@ impl Game {
 
     let mut schedule = Schedule::default();
 
-    schedule.add_systems(systems::movement::update);
-    schedule.add_systems(systems::view::update_shift);
-    schedule.add_systems(systems::view::update_current_direction);
-    schedule.add_systems(systems::view::update_default_direction);
-    schedule.add_systems(systems::view::view_mark_in_view);
-    schedule.add_systems(systems::view::update);
+    schedule.add_systems(system::movement::update);
+    schedule.add_systems(system::view::update_shift);
+    schedule.add_systems(system::view::update_current_direction);
+    schedule.add_systems(system::view::update_default_direction);
+    schedule.add_systems(system::view::mark_in_view);
+    schedule.add_systems(system::view::update);
 
     let game = Game {
       world,
@@ -182,7 +164,7 @@ impl EventHandler<GameError> for Game {
     draw_entity(self, ctx, &mut canvas, false); // Draw non Y indexed entities.
     draw_view(self, ctx, &mut canvas);
     draw_entity(self, ctx, &mut canvas, true); // Draw Y indexed entities.
-    draw_view_mark(self, ctx, &mut canvas);
+    draw_mark(self, ctx, &mut canvas);
 
     if DEBUG {
       draw_entity_debug(self, ctx, &mut canvas);
@@ -218,7 +200,7 @@ impl EventHandler<GameError> for Game {
     match btn {
       MouseButton::Left => {
         if ctx.keyboard.is_mod_active(KeyMods::SHIFT) {
-          select_enemy_or_place_view_mark(self, x, y);
+          select_enemy_or_place_mark(self, x, y);
         } else {
           select_or_move_player(self, x, y);
         }
@@ -252,10 +234,10 @@ fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, ysorted
   }
 }
 
-fn draw_view_mark(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
-  if let Some(view_mark) = game.world.get_resource::<ViewMark>() {
-    if view_mark.active {
-      let rect = Rect::new(view_mark.x - 10., view_mark.y - 10., 20., 20.);
+fn draw_mark(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+  if let Some(mark) = game.world.get_resource::<Mark>() {
+    if mark.active {
+      let rect = Rect::new(mark.x - 10., mark.y - 10., 20., 20.);
       let mesh =
         ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::WHITE).unwrap();
       canvas.draw(&mesh, DrawParam::new().offset(game.camera));
@@ -311,7 +293,7 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   }
 }
 
-fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
+fn select_enemy_or_place_mark(game: &mut Game, x: f32, y: f32) {
   let mut current_selected_enemy_id: Option<ComponentId> = None;
   let mut new_enemy_selected: bool = false;
 
@@ -343,10 +325,10 @@ fn select_enemy_or_place_view_mark(game: &mut Game, x: f32, y: f32) {
       }
     }
   } else {
-    if let Some(mut view_mark) = game.world.get_resource_mut::<ViewMark>() {
-      view_mark.active = true;
-      view_mark.x = x;
-      view_mark.y = y;
+    if let Some(mut mark) = game.world.get_resource_mut::<Mark>() {
+      mark.active = true;
+      mark.x = x;
+      mark.y = y;
     }
   }
 }

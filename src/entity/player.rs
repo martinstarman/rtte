@@ -1,4 +1,4 @@
-use crate::components::{
+use crate::component::{
   movement::Movement,
   player::{Player, PlayerBundle},
   position::Position,

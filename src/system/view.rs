@@ -1,5 +1,5 @@
 use crate::{
-  components::{
+  component::{
     enemy::Enemy,
     movement::Movement,
     object::{Object, PolygonType},
@@ -7,7 +7,7 @@ use crate::{
     selection::Selection,
     view::{Shift, View},
   },
-  resources::view_mark::ViewMark,
+  resource::mark::Mark,
 };
 use bevy_ecs::{
   component::ComponentId,
@@ -61,16 +61,16 @@ pub fn update_shift(mut query: Query<&mut View>) {
   }
 }
 
-pub fn view_mark_in_view(mut query: Query<(&View, &mut Selection, &Enemy)>, mut view_mark: ResMut<ViewMark>) {
+pub fn mark_in_view(mut query: Query<(&View, &mut Selection, &Enemy)>, mut mark: ResMut<Mark>) {
   let mut enemy_id: Option<ComponentId> = None;
 
-  if view_mark.active {
+  if mark.active {
     for (view, mut selection, enemy) in &mut query {
       if maths_rs::point_inside_polygon(
-        Vec2::new(view_mark.x, view_mark.y),
+        Vec2::new(mark.x, mark.y),
         &view.polygon.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
       ) {
-        view_mark.active = false;
+        mark.active = false;
         selection.active = true;
         enemy_id = Some(enemy.id);
       }
