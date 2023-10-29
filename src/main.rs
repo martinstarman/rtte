@@ -1,5 +1,6 @@
 pub mod component;
 pub mod entity;
+pub mod mission;
 pub mod resource;
 pub mod system;
 
@@ -41,6 +42,12 @@ impl Game {
   pub fn new(ctx: &mut Context) -> GameResult<Game> {
     let mut world = World::default();
 
+    let mission = mission::load("resources/demo.toml");
+
+    for (i, player) in mission.player.iter().enumerate() {
+      world.spawn(player.new(i, ctx));
+    }
+
     world.spawn(entity::object::new(
       Position { x: 0., y: 0. },
       Image::from_path(ctx, "/ground.png").unwrap(),
@@ -63,18 +70,6 @@ impl Game {
         Point2 { x: 0., y: 171. },
       ],
       PolygonType::BLOCK,
-    ));
-
-    world.spawn(entity::player::new(
-      1,
-      Position { x: 1., y: 1. },
-      Image::from_path(ctx, "/player.png").unwrap(),
-    ));
-
-    world.spawn(entity::player::new(
-      2,
-      Position { x: 30., y: 1. },
-      Image::from_path(ctx, "/player.png").unwrap(),
     ));
 
     world.spawn(entity::enemy::new(

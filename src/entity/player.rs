@@ -7,26 +7,37 @@ use crate::component::{
   sprite::Sprite,
 };
 use bevy_ecs::component::ComponentId;
-use ggez::graphics::Image;
+use ggez::{graphics::Image, Context};
+use serde::Deserialize;
 
-pub fn new(index: usize, position: Position, image: Image) -> PlayerBundle {
-  PlayerBundle {
-    movement: Movement {
-      current_path: vec![],
-      default_path: vec![],
-    },
-    player: Player {
-      id: ComponentId::new(index),
-    },
-    position,
-    selection: Selection { active: false },
-    size: Size {
-      width: image.width() as f32,
-      height: image.height() as f32,
-    },
-    sprite: Sprite {
-      image,
-      ysorted: true,
-    },
+#[derive(Deserialize)]
+pub struct PlayerEntity {
+  image: String,
+  position: Vec<f32>,
+}
+
+impl PlayerEntity {
+  pub fn new(&self, index: usize, ctx: &mut Context) -> PlayerBundle {
+    let image = Image::from_path(ctx, self.image.clone()).unwrap();
+
+    PlayerBundle {
+      movement: Movement {
+        current_path: vec![],
+        default_path: vec![],
+      },
+      player: Player {
+        id: ComponentId::new(index),
+      },
+      position: Position { x: self.position[0], y: self.position[1] },
+      selection: Selection { active: false },
+      size: Size {
+        width: image.width() as f32,
+        height: image.height() as f32,
+      },
+      sprite: Sprite {
+        image,
+        ysorted: true,
+      },
+    }
   }
 }
