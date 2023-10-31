@@ -24,13 +24,12 @@ use ggez::{
   Context, ContextBuilder, GameError, GameResult,
 };
 use resource::mark::Mark;
-use std::{f32::consts::PI, path};
+use std::path;
 
 const DEBUG: bool = true;
 const WINDOW_WIDTH: f32 = 800.;
 const WINDOW_HEIGHT: f32 = 600.;
 const PAN_SPEED: f32 = 5.;
-const VIEW_DIRECTION_TOP: f32 = 3. * PI / 2.;
 
 pub struct Game {
   world: World,
@@ -45,7 +44,11 @@ impl Game {
     let mission = mission::load("resources/demo.toml");
 
     for (i, player) in mission.player.iter().enumerate() {
-      world.spawn(player.new(i, ctx));
+      world.spawn(player.to_component(i, ctx));
+    }
+
+    for (i, enemy) in mission.enemy.iter().enumerate() {
+      world.spawn(enemy.to_component(i, ctx));
     }
 
     world.spawn(entity::object::new(
@@ -70,27 +73,6 @@ impl Game {
         Point2 { x: 0., y: 171. },
       ],
       PolygonType::BLOCK,
-    ));
-
-    world.spawn(entity::enemy::new(
-      1,
-      Position { x: 450., y: 400. },
-      Image::from_path(ctx, "/enemy.png").unwrap(),
-      vec![
-        Point2 { x: 550., y: 400. },
-        Point2 { x: 650., y: 500. },
-        Point2 { x: 450., y: 500. },
-        Point2 { x: 450., y: 400. },
-      ],
-      0.,
-    ));
-
-    world.spawn(entity::enemy::new(
-      2,
-      Position { x: 280., y: 450. },
-      Image::from_path(ctx, "/enemy.png").unwrap(),
-      vec![],
-      VIEW_DIRECTION_TOP,
     ));
 
     world.insert_resource(Mark {

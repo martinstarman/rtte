@@ -7,25 +7,25 @@ image = "/player.png"
 position = [30, 1]
 
 [[enemy]]
-image = "enemy.png"
+image = "/enemy.png"
 path = [[550, 400], [650, 500], [450, 500], [450, 400]]
 position = [450, 400]
 view_direction = 0
 
 [[enemy]]
-image = "enemy.png"
+image = "/enemy.png"
 path = []
 position = [280, 450]
 view_direction = 4.7123
 
 [[object]]
-image = "ground.png"
+image = "/ground.png"
 polygon = [[0, 0], [1000, 0], [1000, 800], [0, 800]]
 polygon_type = "ground"
 position = [0, 0]
 
 [[object]]
-image = "block.png"
+image = "/block.png"
 polygon = [[128, 236], [160, 219], [32, 154], [0, 171]]
 polygon_type = "block"
 position = [250, 200]

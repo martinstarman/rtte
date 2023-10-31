@@ -13,11 +13,11 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub struct PlayerEntity {
   image: String,
-  position: Vec<f32>,
+  position: (f32, f32),
 }
 
 impl PlayerEntity {
-  pub fn new(&self, index: usize, ctx: &mut Context) -> PlayerBundle {
+  pub fn to_component(&self, index: usize, ctx: &mut Context) -> PlayerBundle {
     let image = Image::from_path(ctx, self.image.clone()).unwrap();
 
     PlayerBundle {
@@ -28,7 +28,10 @@ impl PlayerEntity {
       player: Player {
         id: ComponentId::new(index),
       },
-      position: Position { x: self.position[0], y: self.position[1] },
+      position: Position {
+        x: self.position.0,
+        y: self.position.1,
+      },
       selection: Selection { active: false },
       size: Size {
         width: image.width() as f32,
