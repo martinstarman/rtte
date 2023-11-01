@@ -6,19 +6,12 @@ pub mod system;
 
 use bevy_ecs::{component::ComponentId, query::With, schedule::Schedule, world::World};
 use component::{
-  enemy::Enemy,
-  movement::Movement,
-  object::{Object, PolygonType},
-  player::Player,
-  position::Position,
-  selection::Selection,
-  size::Size,
-  sprite::Sprite,
-  view::View,
+  enemy::Enemy, movement::Movement, object::Object, player::Player, position::Position,
+  selection::Selection, size::Size, sprite::Sprite, view::View,
 };
 use ggez::{
   event::{self, EventHandler, MouseButton},
-  graphics::{Canvas, Color, DrawMode, DrawParam, Image, Rect},
+  graphics::{Canvas, Color, DrawMode, DrawParam, Rect},
   input::keyboard::{KeyCode, KeyMods},
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
@@ -51,29 +44,9 @@ impl Game {
       world.spawn(enemy.to_component(i, ctx));
     }
 
-    world.spawn(entity::object::new(
-      Position { x: 0., y: 0. },
-      Image::from_path(ctx, "/ground.png").unwrap(),
-      vec![
-        Point2 { x: 0., y: 0. },
-        Point2 { x: 1000., y: 0. },
-        Point2 { x: 1000., y: 800. },
-        Point2 { x: 0., y: 800. },
-      ],
-      PolygonType::GROUND,
-    ));
-
-    world.spawn(entity::object::new(
-      Position { x: 250., y: 200. },
-      Image::from_path(ctx, "/block.png").unwrap(),
-      vec![
-        Point2 { x: 128., y: 236. },
-        Point2 { x: 160., y: 219. },
-        Point2 { x: 32., y: 154. },
-        Point2 { x: 0., y: 171. },
-      ],
-      PolygonType::BLOCK,
-    ));
+    for (i, object) in mission.object.iter().enumerate() {
+      world.spawn(object.to_component(i, ctx));
+    }
 
     world.insert_resource(Mark {
       active: false,

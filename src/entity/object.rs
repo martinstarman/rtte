@@ -4,43 +4,80 @@ use crate::component::{
   size::Size,
   sprite::Sprite,
 };
-use ggez::{graphics::Image, mint::Point2};
+use bevy_ecs::component::ComponentId;
+use ggez::{graphics::Image, mint::Point2, Context};
+use serde::Deserialize;
 
-pub fn new(
-  position: Position,
-  image: Image,
-  polygon: Vec<Point2<f32>>,
-  polygon_type: PolygonType,
-) -> ObjectBundle {
-  let mut closed_polygon: Vec<(Point2<f32>, Point2<f32>)> = vec![];
+#[derive(Deserialize)]
+pub struct ObjectEntity {
+  image: String,
+  position: (f32, f32),
+  polygon: Vec<(f32, f32)>,
+  polygon_type: String,
+}
 
-  if polygon.len() >= 3 {
-    for i in 0..polygon.len() - 1 {
-      let curr = polygon[i];
-      let next = polygon[i + 1];
+impl ObjectEntity {
+  pub fn to_component(&self, index: usize, ctx: &mut Context) -> ObjectBundle {
+    let image = Image::from_path(ctx, self.image.clone()).unwrap();
+    let mut closed_polygon: Vec<(Point2<f32>, Point2<f32>)> = vec![];
+    let polygon_type = match self.polygon_type.as_str() {
+      "block" => PolygonType::BLOCK,
+      "transparent" => PolygonType::TRANSPARENT,
+      "water" => PolygonType::WATER,
+      "snow" => PolygonType::SNOW,
+      _ => PolygonType::GROUND,
+    };
 
-      closed_polygon.push((curr, next));
+    if self.polygon.len() >= 3 {
+      for i in 0..self.polygon.len() - 1 {
+        let curr = self.polygon[i];
+        let next = self.polygon[i + 1];
+
+        closed_polygon.push((
+          Point2 {
+            x: curr.0,
+            y: curr.1,
+          },
+          Point2 {
+            x: next.0,
+            y: next.1,
+          },
+        ));
+      }
+
+      let first = self.polygon.first().unwrap();
+      let last = self.polygon.last().unwrap();
+
+      closed_polygon.push((
+        Point2 {
+          x: last.0,
+          y: last.1,
+        },
+        Point2 {
+          x: first.0,
+          y: first.1,
+        },
+      ));
     }
 
-    let first = polygon.first().unwrap();
-    let last = polygon.last().unwrap();
-
-    closed_polygon.push((*last, *first))
-  }
-
-  ObjectBundle {
-    position,
-    size: Size {
-      width: image.width() as f32,
-      height: image.height() as f32,
-    },
-    sprite: Sprite {
-      image,
-      ysorted: polygon_type != PolygonType::GROUND,
-    },
-    object: Object {
-      polygon: closed_polygon,
-      polygon_type,
-    },
+    ObjectBundle {
+      position: Position {
+        x: self.position.0,
+        y: self.position.1,
+      },
+      size: Size {
+        width: image.width() as f32,
+        height: image.height() as f32,
+      },
+      sprite: Sprite {
+        image,
+        ysorted: polygon_type != PolygonType::GROUND,
+      },
+      object: Object {
+        id: ComponentId::new(index),
+        polygon: closed_polygon,
+        polygon_type,
+      },
+    }
   }
 }

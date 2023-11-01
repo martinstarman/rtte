@@ -1,5 +1,5 @@
 use super::{position::Position, size::Size, sprite::Sprite};
-use bevy_ecs::prelude::*;
+use bevy_ecs::{prelude::*, component::ComponentId};
 use ggez::mint::Point2;
 
 #[derive(PartialEq, Clone, Copy)]
@@ -13,6 +13,7 @@ pub enum PolygonType {
 
 #[derive(Component, Clone)]
 pub struct Object {
+  pub id: ComponentId,
   pub polygon: Vec<(Point2<f32>, Point2<f32>)>, // list of line segments relative to object position. must be closed polygon.
   pub polygon_type: PolygonType,
 }
