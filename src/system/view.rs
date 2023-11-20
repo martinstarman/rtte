@@ -33,7 +33,9 @@ pub fn update_current_direction(mut query: Query<&mut View>) {
 }
 
 // TODO: smooth transition
-pub fn update_default_direction(mut query: Query<(&mut View, &Movement, &Position), Changed<Movement>>) {
+pub fn update_default_direction(
+  mut query: Query<(&mut View, &Movement, &Position), Changed<Movement>>,
+) {
   for (mut view, movement, position) in &mut query {
     if movement.current_path.len() > 0 {
       let rad = f32::atan2(
@@ -87,9 +89,9 @@ pub fn mark_in_view(mut query: Query<(&View, &mut Selection, &Enemy)>, mut mark:
   }
 }
 
-pub fn update(mut query: Query<(&mut View, &Position)>, blocks_query: Query<(&Object, &Position)>) {
-  let blocks: Vec<(&Object, &Position)> =
-    blocks_query.iter().filter(|(object, _)| object.polygon_type == PolygonType::BLOCK).collect();
+pub fn update(mut query: Query<(&mut View, &Position)>, objects_query: Query<&Object>) {
+  let objects: Vec<&Object> =
+    objects_query.iter().filter(|object| object.polygon_type == PolygonType::BLOCK).collect();
 
   for (mut view, position) in &mut query {
     let mut points: Vec<Point2<f32>> = vec![];
@@ -100,14 +102,14 @@ pub fn update(mut query: Query<(&mut View, &Position)>, blocks_query: Query<(&Ob
       let mut point =
         Vec2f::new(f32::cos(rad) * DISTANCE + position.x, f32::sin(rad) * DISTANCE + position.y);
 
-      for (object, object_position) in &blocks {
+      for object in &objects {
         // test all objects polygon lines vs ray (from entity position to view_point)
         for line in &object.polygon {
           if let Some(intersection) = maths_rs::line_segment_vs_line_segment(
             Vec3f::new(position.x, position.y, 0.),
             point.into(),
-            Vec3f::new(line.0.x + object_position.x, line.0.y + object_position.y, 0.),
-            Vec3f::new(line.1.x + object_position.x, line.1.y + object_position.y, 0.),
+            Vec3f::new(line.0.x, line.0.y, 0.),
+            Vec3f::new(line.1.x, line.1.y, 0.),
           ) {
             // ray was intersected by some line
             let distance = maths_rs::distance::<f32, Vec2f>(

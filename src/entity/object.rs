@@ -35,12 +35,12 @@ impl ObjectEntity {
 
         closed_polygon.push((
           Point2 {
-            x: curr.0,
-            y: curr.1,
+            x: curr.0 + self.position.0,
+            y: curr.1 + self.position.1,
           },
           Point2 {
-            x: next.0,
-            y: next.1,
+            x: next.0 + self.position.0,
+            y: next.1 + self.position.1,
           },
         ));
       }
@@ -50,12 +50,12 @@ impl ObjectEntity {
 
       closed_polygon.push((
         Point2 {
-          x: last.0,
-          y: last.1,
+          x: last.0 + self.position.0,
+          y: last.1 + self.position.1,
         },
         Point2 {
-          x: first.0,
-          y: first.1,
+          x: first.0 + self.position.0,
+          y: first.1 + self.position.1,
         },
       ));
     }

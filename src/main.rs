@@ -6,8 +6,15 @@ pub mod system;
 
 use bevy_ecs::{component::ComponentId, query::With, schedule::Schedule, world::World};
 use component::{
-  enemy::Enemy, movement::Movement, object::Object, player::Player, position::Position,
-  selection::Selection, size::Size, sprite::Sprite, view::View,
+  enemy::Enemy,
+  movement::Movement,
+  object::{Object, PolygonType},
+  player::Player,
+  position::Position,
+  selection::Selection,
+  size::Size,
+  sprite::Sprite,
+  view::View,
 };
 use ggez::{
   event::{self, EventHandler, MouseButton},
@@ -16,6 +23,7 @@ use ggez::{
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
+use maths_rs::vec::Vec2;
 use resource::mark::Mark;
 use std::path;
 
@@ -224,18 +232,12 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   }
 
   // polygon
-  let mut query = game.world.query::<(&Object, &Position)>();
+  let mut query = game.world.query::<&Object>();
 
-  for (object, position) in query.iter_mut(&mut game.world) {
+  for object in query.iter_mut(&mut game.world) {
     if object.polygon.len() >= 3 {
-      let points: Vec<Point2<f32>> = object
-        .polygon
-        .iter()
-        .map(|(p1, _)| Point2 {
-          x: p1.x + position.x,
-          y: p1.y + position.y,
-        })
-        .collect();
+      let points: Vec<Point2<f32>> =
+        object.polygon.iter().map(|(p, _)| Point2 { x: p.x, y: p.y }).collect();
 
       let mesh =
         ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
@@ -313,11 +315,29 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
 
   // set path to selected player when no player was selected
   if selected_player_id.is_none() {
+    let mut object_query = game.world.query::<&Object>();
+    let objects: Vec<&Object> = object_query
+      .iter(&game.world)
+      .filter(|object| {
+        object.polygon_type == PolygonType::BLOCK || object.polygon_type == PolygonType::TRANSPARENT
+      })
+      .collect();
+    let in_object = objects
+      .iter()
+      .find(|object| {
+        maths_rs::point_inside_polygon(
+          maths_rs::vec::Vec2 { x, y },
+          &object.polygon.iter().map(|(p, _)| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
+        )
+      })
+      .is_some();
     let mut query = game.world.query::<(&Player, &Selection, &mut Movement)>();
 
-    for (_, selection, mut movement) in query.iter_mut(&mut game.world) {
-      if selection.active {
-        movement.current_path = vec![Point2 { x, y }]; // TODO: is target walkable?
+    if !in_object {
+      for (_, selection, mut movement) in query.iter_mut(&mut game.world) {
+        if selection.active {
+          movement.current_path = vec![Point2 { x, y }];
+        }
       }
     }
   }
