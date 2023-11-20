@@ -15,17 +15,23 @@ view_direction = 0
 [[enemy]]
 image = "/enemy.png"
 path = []
-position = [280, 450]
+position = [350, 475]
 view_direction = 4.7123
 
 [[object]]
 image = "/ground.png"
-polygon = [[0, 0], [1000, 0], [1000, 800], [0, 800]]
+polygon = [[0, 0], [800, 0], [800, 600], [0, 600]]
 polygon_type = "ground"
 position = [0, 0]
 
 [[object]]
-image = "/block.png"
-polygon = [[128, 236], [160, 219], [32, 154], [0, 171]]
+image = "/block-001.png"
+polygon = [[0, 83], [48, 107], [60, 101], [26,82], [60, 65], [48, 59]]
 polygon_type = "block"
-position = [250, 200]
+position = [300, 300]
+
+[[object]]
+image = "/block-002.png"
+polygon = [[0,66], [49, 90], [60, 84], [11, 60]]
+polygon_type = "block"
+position = [349, 342]

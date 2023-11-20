@@ -227,19 +227,21 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   let mut query = game.world.query::<(&Object, &Position)>();
 
   for (object, position) in query.iter_mut(&mut game.world) {
-    let points: Vec<Point2<f32>> = object
-      .polygon
-      .iter()
-      .map(|(p1, _)| Point2 {
-        x: p1.x + position.x,
-        y: p1.y + position.y,
-      })
-      .collect();
+    if object.polygon.len() >= 3 {
+      let points: Vec<Point2<f32>> = object
+        .polygon
+        .iter()
+        .map(|(p1, _)| Point2 {
+          x: p1.x + position.x,
+          y: p1.y + position.y,
+        })
+        .collect();
 
-    let mesh =
-      ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
-        .unwrap();
-    canvas.draw(&mesh, DrawParam::new().offset(game.camera));
+      let mesh =
+        ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
+          .unwrap();
+      canvas.draw(&mesh, DrawParam::new().offset(game.camera));
+    }
   }
 }
 
