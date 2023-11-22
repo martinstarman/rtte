@@ -24,7 +24,7 @@ use ggez::{
   Context, ContextBuilder, GameError, GameResult,
 };
 use maths_rs::vec::Vec2;
-use resource::mark::Mark;
+use resource::{mark::Mark, target_area::TargetArea};
 use std::path;
 
 const DEBUG: bool = true;
@@ -56,10 +56,10 @@ impl Game {
       world.spawn(object.to_component(i, ctx));
     }
 
-    world.insert_resource(Mark {
-      active: false,
-      x: 0.,
-      y: 0.,
+    world.insert_resource(Mark { position: None });
+
+    world.insert_resource(TargetArea {
+      rect: Rect::new(500., 100., 100., 100.),
     });
 
     let mut schedule = Schedule::default();
@@ -69,6 +69,8 @@ impl Game {
     schedule.add_systems(system::view::update_current_direction);
     schedule.add_systems(system::view::update_default_direction);
     schedule.add_systems(system::view::mark_in_view);
+    schedule.add_systems(system::game_over::all_players_in_target_area);
+    schedule.add_systems(system::game_over::some_player_in_enemy_view);
     schedule.add_systems(system::view::update);
 
     let game = Game {
@@ -126,21 +128,10 @@ impl EventHandler<GameError> for Game {
 
     if DEBUG {
       draw_entity_debug(self, ctx, &mut canvas);
+      draw_target_area(self, ctx, &mut canvas);
     }
 
     canvas.finish(ctx)?;
-
-    Ok(())
-  }
-
-  fn mouse_button_down_event(
-    &mut self,
-    _ctx: &mut Context,
-    _button: MouseButton,
-    _x: f32,
-    _y: f32,
-  ) -> Result<(), GameError> {
-    // TODO: multiple player selection
 
     Ok(())
   }
@@ -194,12 +185,25 @@ fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, ysorted
 
 fn draw_mark(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   if let Some(mark) = game.world.get_resource::<Mark>() {
-    if mark.active {
-      let rect = Rect::new(mark.x - 10., mark.y - 10., 20., 20.);
+    if let Some(position) = mark.position {
+      let rect = Rect::new(position.x - 10., position.y - 10., 20., 20.);
       let mesh =
         ggez::graphics::Mesh::new_rectangle(ctx, DrawMode::stroke(1.), rect, Color::WHITE).unwrap();
       canvas.draw(&mesh, DrawParam::new().offset(game.camera));
     }
+  }
+}
+
+fn draw_target_area(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
+  if let Some(target_area) = game.world.get_resource::<TargetArea>() {
+    let mesh = ggez::graphics::Mesh::new_rectangle(
+      ctx,
+      DrawMode::stroke(1.),
+      target_area.rect,
+      Color::GREEN,
+    )
+    .unwrap();
+    canvas.draw(&mesh, DrawParam::new().offset(game.camera));
   }
 }
 
@@ -280,9 +284,7 @@ fn select_enemy_or_place_mark(game: &mut Game, x: f32, y: f32) {
     }
   } else {
     if let Some(mut mark) = game.world.get_resource_mut::<Mark>() {
-      mark.active = true;
-      mark.x = x;
-      mark.y = y;
+      mark.position = Some(Vec2::new(x, y));
     }
   }
 }
@@ -346,11 +348,13 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
 fn select_or_stop_player(game: &mut Game, _x: f32, _y: f32) {
   // TODO: multiple player selection
 
-  // stop player movement
-  let mut query = game.world.query::<(&Player, &mut Movement)>();
+  // stop selected player movement
+  let mut query = game.world.query::<(&Player, &mut Movement, &Selection)>();
 
-  for (_, mut movement) in query.iter_mut(&mut game.world) {
-    movement.current_path = vec![];
+  for (_, mut movement, selection) in query.iter_mut(&mut game.world) {
+    if selection.active {
+      movement.current_path = vec![];
+    }
   }
 }
 

@@ -66,13 +66,13 @@ pub fn update_shift(mut query: Query<&mut View>) {
 pub fn mark_in_view(mut query: Query<(&View, &mut Selection, &Enemy)>, mut mark: ResMut<Mark>) {
   let mut enemy_id: Option<ComponentId> = None;
 
-  if mark.active {
+  if let Some(position) = mark.position {
     for (view, mut selection, enemy) in &mut query {
       if maths_rs::point_inside_polygon(
-        Vec2::new(mark.x, mark.y),
+        position,
         &view.polygon.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
       ) {
-        mark.active = false;
+        mark.position = None;
         selection.active = true;
         enemy_id = Some(enemy.id);
       }
