@@ -1,11 +1,11 @@
 use crate::{
   component::{
-    enemy::Enemy,
-    movement::Movement,
-    object::{Object, PolygonType},
-    position::Position,
-    selection::Selection,
-    view::{Shift, View},
+    enemy::EnemyComponent,
+    movement::MovementComponent,
+    object::{ObjectComponent, PolygonType},
+    position::PositionComponent,
+    selection::SelectionComponent,
+    view::{Shift, ViewComponent},
   },
   resource::mark::Mark,
 };
@@ -22,7 +22,7 @@ const DISTANCE: f32 = 150.;
 const INNER_ANGLE: f32 = 60. * RADIAN;
 const SHIFT_ANGLE: f32 = 30. * RADIAN;
 
-pub fn update_current_direction(mut query: Query<&mut View>) {
+pub fn update_current_direction(mut query: Query<&mut ViewComponent>) {
   for mut view in &mut query {
     if view.shift == Shift::LEFT {
       view.current_direction += RADIAN;
@@ -34,7 +34,10 @@ pub fn update_current_direction(mut query: Query<&mut View>) {
 
 // TODO: smooth transition
 pub fn update_default_direction(
-  mut query: Query<(&mut View, &Movement, &Position), Changed<Movement>>,
+  mut query: Query<
+    (&mut ViewComponent, &MovementComponent, &PositionComponent),
+    Changed<MovementComponent>,
+  >,
 ) {
   for (mut view, movement, position) in &mut query {
     if movement.current_path.len() > 0 {
@@ -49,7 +52,7 @@ pub fn update_default_direction(
   }
 }
 
-pub fn update_shift(mut query: Query<&mut View>) {
+pub fn update_shift(mut query: Query<&mut ViewComponent>) {
   for mut view in &mut query {
     let rad = view.current_direction - view.default_direction;
 
@@ -63,7 +66,10 @@ pub fn update_shift(mut query: Query<&mut View>) {
   }
 }
 
-pub fn mark_in_view(mut query: Query<(&View, &mut Selection, &Enemy)>, mut mark: ResMut<Mark>) {
+pub fn mark_in_view(
+  mut query: Query<(&ViewComponent, &mut SelectionComponent, &EnemyComponent)>,
+  mut mark: ResMut<Mark>,
+) {
   let mut enemy_id: Option<ComponentId> = None;
 
   if let Some(position) = mark.position {
@@ -89,9 +95,12 @@ pub fn mark_in_view(mut query: Query<(&View, &mut Selection, &Enemy)>, mut mark:
   }
 }
 
-pub fn update(mut query: Query<(&mut View, &Position)>, objects_query: Query<&Object>) {
-  let objects: Vec<&Object> =
-    objects_query.iter().filter(|object| object.polygon_type == PolygonType::BLOCK).collect();
+pub fn update(
+  mut query: Query<(&mut ViewComponent, &PositionComponent)>,
+  query2: Query<&ObjectComponent>,
+) {
+  let objects: Vec<&ObjectComponent> =
+    query2.iter().filter(|object| object.polygon_type == PolygonType::BLOCK).collect();
 
   for (mut view, position) in &mut query {
     let mut points: Vec<Point2<f32>> = vec![];
@@ -103,7 +112,7 @@ pub fn update(mut query: Query<(&mut View, &Position)>, objects_query: Query<&Ob
         Vec2f::new(f32::cos(rad) * DISTANCE + position.x, f32::sin(rad) * DISTANCE + position.y);
 
       for object in &objects {
-        // test all objects polygon lines vs ray (from entity position to view_point)
+        // test all objects polygon lines vs ray (from entity position to view point)
         for line in &object.polygon {
           if let Some(intersection) = maths_rs::line_segment_vs_line_segment(
             Vec3f::new(position.x, position.y, 0.),

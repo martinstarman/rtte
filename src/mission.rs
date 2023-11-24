@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use std::{fs::File, io::Read};
 
-use crate::entity::{player::PlayerEntity, enemy::EnemyEntity, object::ObjectEntity};
+use crate::entity::{enemy::EnemyEntity, object::ObjectEntity, player::PlayerEntity};
 
 #[derive(Deserialize)]
 pub struct Mission {

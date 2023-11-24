@@ -6,15 +6,15 @@ pub mod system;
 
 use bevy_ecs::{component::ComponentId, query::With, schedule::Schedule, world::World};
 use component::{
-  enemy::Enemy,
-  movement::Movement,
-  object::{Object, PolygonType},
-  player::Player,
-  position::Position,
-  selection::Selection,
-  size::Size,
-  sprite::Sprite,
-  view::View,
+  enemy::EnemyComponent,
+  movement::MovementComponent,
+  object::{ObjectComponent, PolygonType},
+  player::PlayerComponent,
+  position::PositionComponent,
+  selection::SelectionComponent,
+  size::SizeComponent,
+  sprite::SpriteComponent,
+  view::ViewComponent,
 };
 use ggez::{
   event::{self, EventHandler, MouseButton},
@@ -45,15 +45,15 @@ impl Game {
     let mission = mission::load("resources/demo.toml");
 
     for (i, player) in mission.player.iter().enumerate() {
-      world.spawn(player.to_component(i, ctx));
+      world.spawn(player.into(i, ctx));
     }
 
     for (i, enemy) in mission.enemy.iter().enumerate() {
-      world.spawn(enemy.to_component(i, ctx));
+      world.spawn(enemy.into(i, ctx));
     }
 
     for (i, object) in mission.object.iter().enumerate() {
-      world.spawn(object.to_component(i, ctx));
+      world.spawn(object.into(i, ctx));
     }
 
     world.insert_resource(Mark { position: None });
@@ -163,7 +163,7 @@ impl EventHandler<GameError> for Game {
 }
 
 fn draw_entity(game: &mut Game, _ctx: &mut Context, canvas: &mut Canvas, ysorted: bool) {
-  let mut query = game.world.query::<(&Position, &Size, &Sprite)>();
+  let mut query = game.world.query::<(&PositionComponent, &SizeComponent, &SpriteComponent)>();
   let mut entities: Vec<_> =
     query.iter_mut(&mut game.world).filter(|(_, _, sprite)| sprite.ysorted == ysorted).collect();
 
@@ -208,7 +208,8 @@ fn draw_target_area(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
 }
 
 fn draw_view(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
-  let mut query = game.world.query_filtered::<(&Selection, &View), With<Enemy>>();
+  let mut query =
+    game.world.query_filtered::<(&SelectionComponent, &ViewComponent), With<EnemyComponent>>();
 
   for (selection, view) in query.iter_mut(&mut game.world) {
     if selection.active && view.polygon.len() >= 3 {
@@ -226,7 +227,7 @@ fn draw_view(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
 
 fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   // rect
-  let mut query = game.world.query::<(&Position, &Size)>();
+  let mut query = game.world.query::<(&PositionComponent, &SizeComponent)>();
 
   for (position, size) in query.iter_mut(&mut game.world) {
     let rect = Rect::new(position.x, position.y, size.width, size.height);
@@ -236,7 +237,7 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   }
 
   // polygon
-  let mut query = game.world.query::<&Object>();
+  let mut query = game.world.query::<&ObjectComponent>();
 
   for object in query.iter_mut(&mut game.world) {
     if object.polygon.len() >= 3 {
@@ -256,7 +257,10 @@ fn select_enemy_or_place_mark(game: &mut Game, x: f32, y: f32) {
   let mut new_enemy_selected: bool = false;
 
   // try to select enemy
-  let mut query = game.world.query::<(&Enemy, &mut Selection, &Position, &Size)>();
+  let mut query =
+    game
+      .world
+      .query::<(&EnemyComponent, &mut SelectionComponent, &PositionComponent, &SizeComponent)>();
 
   for (enemy, mut selection, position, size) in query.iter_mut(&mut game.world) {
     let rect = Rect::new(position.x, position.y, size.width, size.height);
@@ -274,7 +278,7 @@ fn select_enemy_or_place_mark(game: &mut Game, x: f32, y: f32) {
   // deselect current selected enemy
   if new_enemy_selected {
     if let Some(id) = current_selected_enemy_id {
-      let mut query = game.world.query::<(&Enemy, &mut Selection)>();
+      let mut query = game.world.query::<(&EnemyComponent, &mut SelectionComponent)>();
 
       for (enemy, mut selection) in query.iter_mut(&mut game.world) {
         if enemy.id == id {
@@ -293,7 +297,10 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
   let mut selected_player_id: Option<ComponentId> = None;
 
   // try to select player
-  let mut query = game.world.query::<(&Player, &mut Selection, &Position, &Size)>();
+  let mut query =
+    game
+      .world
+      .query::<(&PlayerComponent, &mut SelectionComponent, &PositionComponent, &SizeComponent)>();
 
   for (player, mut selection, position, size) in query.iter_mut(&mut game.world) {
     let rect = Rect::new(position.x, position.y, size.width, size.height);
@@ -306,7 +313,7 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
 
   // deselect all players if some was selected
   if let Some(id) = selected_player_id {
-    let mut query = game.world.query::<(&Player, &mut Selection)>();
+    let mut query = game.world.query::<(&PlayerComponent, &mut SelectionComponent)>();
 
     for (player, mut selection) in query.iter_mut(&mut game.world) {
       if player.id != id {
@@ -317,8 +324,8 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
 
   // set path to selected player when no player was selected
   if selected_player_id.is_none() {
-    let mut object_query = game.world.query::<&Object>();
-    let objects: Vec<&Object> = object_query
+    let mut object_query = game.world.query::<&ObjectComponent>();
+    let objects: Vec<&ObjectComponent> = object_query
       .iter(&game.world)
       .filter(|object| {
         object.polygon_type == PolygonType::BLOCK || object.polygon_type == PolygonType::TRANSPARENT
@@ -333,7 +340,8 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
         )
       })
       .is_some();
-    let mut query = game.world.query::<(&Player, &Selection, &mut Movement)>();
+    let mut query =
+      game.world.query::<(&PlayerComponent, &SelectionComponent, &mut MovementComponent)>();
 
     if !in_object {
       for (_, selection, mut movement) in query.iter_mut(&mut game.world) {
@@ -349,7 +357,8 @@ fn select_or_stop_player(game: &mut Game, _x: f32, _y: f32) {
   // TODO: multiple player selection
 
   // stop selected player movement
-  let mut query = game.world.query::<(&Player, &mut Movement, &Selection)>();
+  let mut query =
+    game.world.query::<(&PlayerComponent, &mut MovementComponent, &SelectionComponent)>();
 
   for (_, mut movement, selection) in query.iter_mut(&mut game.world) {
     if selection.active {

@@ -8,7 +8,7 @@ pub enum Shift {
 }
 
 #[derive(Component)]
-pub struct View {
+pub struct ViewComponent {
   pub current_direction: f32, // where is entity looking
   pub default_direction: f32, // where is entity moving
   pub polygon: Vec<Point2<f32>>,

@@ -1,6 +1,6 @@
 use bevy_ecs::prelude::*;
 
 #[derive(Component)]
-pub struct Selection {
+pub struct SelectionComponent {
   pub active: bool,
 }

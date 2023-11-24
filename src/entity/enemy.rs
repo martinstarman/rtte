@@ -1,11 +1,11 @@
 use crate::component::{
-  enemy::{Enemy, EnemyBundle},
-  movement::Movement,
-  position::Position,
-  selection::Selection,
-  size::Size,
-  sprite::Sprite,
-  view::{Shift, View},
+  enemy::{EnemyBundle, EnemyComponent},
+  movement::MovementComponent,
+  position::PositionComponent,
+  selection::SelectionComponent,
+  size::SizeComponent,
+  sprite::SpriteComponent,
+  view::{Shift, ViewComponent},
 };
 use bevy_ecs::component::ComponentId;
 use ggez::{graphics::Image, mint::Point2, Context};
@@ -20,7 +20,7 @@ pub struct EnemyEntity {
 }
 
 impl EnemyEntity {
-  pub fn to_component(&self, index: usize, ctx: &mut Context) -> EnemyBundle {
+  pub fn into(&self, index: usize, ctx: &mut Context) -> EnemyBundle {
     let image = Image::from_path(ctx, self.image.clone()).unwrap();
     let mut path: Vec<Point2<f32>> = vec![];
 
@@ -32,32 +32,32 @@ impl EnemyEntity {
     }
 
     EnemyBundle {
-      position: Position {
+      position: PositionComponent {
         x: self.position.0,
         y: self.position.1,
       },
-      size: Size {
+      size: SizeComponent {
         width: image.width() as f32,
         height: image.height() as f32,
       },
-      sprite: Sprite {
+      sprite: SpriteComponent {
         image,
         ysorted: true,
       },
-      movement: Movement {
+      movement: MovementComponent {
         current_path: path.clone(),
         default_path: path.clone(),
       },
-      view: View {
+      view: ViewComponent {
         polygon: vec![],
         current_direction: self.view_direction,
         default_direction: self.view_direction,
         shift: Shift::LEFT,
       },
-      enemy: Enemy {
+      enemy: EnemyComponent {
         id: ComponentId::new(index),
       },
-      selection: Selection { active: false },
+      selection: SelectionComponent { active: false },
     }
   }
 }

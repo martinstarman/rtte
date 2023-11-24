@@ -1,8 +1,8 @@
 use crate::component::{
-  object::{Object, ObjectBundle, PolygonType},
-  position::Position,
-  size::Size,
-  sprite::Sprite,
+  object::{ObjectBundle, ObjectComponent, PolygonType},
+  position::PositionComponent,
+  size::SizeComponent,
+  sprite::SpriteComponent,
 };
 use bevy_ecs::component::ComponentId;
 use ggez::{graphics::Image, mint::Point2, Context};
@@ -17,7 +17,7 @@ pub struct ObjectEntity {
 }
 
 impl ObjectEntity {
-  pub fn to_component(&self, index: usize, ctx: &mut Context) -> ObjectBundle {
+  pub fn into(&self, index: usize, ctx: &mut Context) -> ObjectBundle {
     let image = Image::from_path(ctx, self.image.clone()).unwrap();
     let mut closed_polygon: Vec<(Point2<f32>, Point2<f32>)> = vec![];
     let polygon_type = match self.polygon_type.as_str() {
@@ -61,19 +61,19 @@ impl ObjectEntity {
     }
 
     ObjectBundle {
-      position: Position {
+      position: PositionComponent {
         x: self.position.0,
         y: self.position.1,
       },
-      size: Size {
+      size: SizeComponent {
         width: image.width() as f32,
         height: image.height() as f32,
       },
-      sprite: Sprite {
+      sprite: SpriteComponent {
         image,
         ysorted: polygon_type != PolygonType::GROUND,
       },
-      object: Object {
+      object: ObjectComponent {
         id: ComponentId::new(index),
         polygon: closed_polygon,
         polygon_type,

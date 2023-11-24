@@ -6,12 +6,12 @@ use ggez::mint::Point2;
 use maths_rs::vec::Vec2;
 
 use crate::{
-  component::{player::Player, position::Position, view::View},
+  component::{player::PlayerComponent, position::PositionComponent, view::ViewComponent},
   resource::target_area::TargetArea,
 };
 
 pub fn all_players_in_target_area(
-  query: Query<&Position, With<Player>>,
+  query: Query<&PositionComponent, With<PlayerComponent>>,
   target_area: ResMut<TargetArea>,
 ) {
   let mut all_players_in_target_area = true;
@@ -30,7 +30,10 @@ pub fn all_players_in_target_area(
   }
 }
 
-pub fn some_player_in_enemy_view(query: Query<&View>, query2: Query<&Position, With<Player>>) {
+pub fn some_player_in_enemy_view(
+  query: Query<&ViewComponent>,
+  query2: Query<&PositionComponent, With<PlayerComponent>>,
+) {
   for view in &query {
     for position in &query2 {
       if view.polygon.len() > 2

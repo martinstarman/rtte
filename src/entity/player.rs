@@ -1,10 +1,10 @@
 use crate::component::{
-  movement::Movement,
-  player::{Player, PlayerBundle},
-  position::Position,
-  selection::Selection,
-  size::Size,
-  sprite::Sprite,
+  movement::MovementComponent,
+  player::{PlayerBundle, PlayerComponent},
+  position::PositionComponent,
+  selection::SelectionComponent,
+  size::SizeComponent,
+  sprite::SpriteComponent,
 };
 use bevy_ecs::component::ComponentId;
 use ggez::{graphics::Image, Context};
@@ -17,27 +17,27 @@ pub struct PlayerEntity {
 }
 
 impl PlayerEntity {
-  pub fn to_component(&self, index: usize, ctx: &mut Context) -> PlayerBundle {
+  pub fn into(&self, index: usize, ctx: &mut Context) -> PlayerBundle {
     let image = Image::from_path(ctx, self.image.clone()).unwrap();
 
     PlayerBundle {
-      movement: Movement {
+      movement: MovementComponent {
         current_path: vec![],
         default_path: vec![],
       },
-      player: Player {
+      player: PlayerComponent {
         id: ComponentId::new(index),
       },
-      position: Position {
+      position: PositionComponent {
         x: self.position.0,
         y: self.position.1,
       },
-      selection: Selection { active: false },
-      size: Size {
+      selection: SelectionComponent { active: false },
+      size: SizeComponent {
         width: image.width() as f32,
         height: image.height() as f32,
       },
-      sprite: Sprite {
+      sprite: SpriteComponent {
         image,
         ysorted: true,
       },
