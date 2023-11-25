@@ -1,4 +1,5 @@
 pub mod component;
+pub mod constants;
 pub mod entity;
 pub mod mission;
 pub mod resource;
@@ -26,6 +27,10 @@ use ggez::{
 use maths_rs::vec::Vec2;
 use resource::{mark::Mark, target_area::TargetArea};
 use std::path;
+use system::{
+  mark_in_view, movement, player_in_enemy_view, reach_target_area, view, view_current_direction,
+  view_default_direction, view_shift,
+};
 
 const DEBUG: bool = true;
 const WINDOW_WIDTH: f32 = 800.;
@@ -64,14 +69,14 @@ impl Game {
 
     let mut schedule = Schedule::default();
 
-    schedule.add_systems(system::movement::update);
-    schedule.add_systems(system::view::update_shift);
-    schedule.add_systems(system::view::update_current_direction);
-    schedule.add_systems(system::view::update_default_direction);
-    schedule.add_systems(system::view::mark_in_view);
-    schedule.add_systems(system::game_over::all_players_in_target_area);
-    schedule.add_systems(system::game_over::some_player_in_enemy_view);
-    schedule.add_systems(system::view::update);
+    schedule.add_systems(movement::run);
+    schedule.add_systems(player_in_enemy_view::run);
+    schedule.add_systems(reach_target_area::run);
+    schedule.add_systems(view_current_direction::run);
+    schedule.add_systems(view_default_direction::run);
+    schedule.add_systems(view_shift::run);
+    schedule.add_systems(mark_in_view::run);
+    schedule.add_systems(view::run);
 
     let game = Game {
       world,

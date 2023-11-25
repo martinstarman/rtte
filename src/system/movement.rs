@@ -1,10 +1,11 @@
-use crate::component::{movement::MovementComponent, position::PositionComponent};
+use crate::{
+  component::{movement::MovementComponent, position::PositionComponent},
+  constants::MIN_MOVEMENT_DISTANCE,
+};
 use bevy_ecs::system::Query;
 use maths_rs::Vec2f;
 
-const MIN_DISTANCE: f32 = 1.;
-
-pub fn update(mut query: Query<(&mut MovementComponent, &mut PositionComponent)>) {
+pub fn run(mut query: Query<(&mut MovementComponent, &mut PositionComponent)>) {
   for (mut movement, mut current_position) in &mut query {
     // move within path
     if movement.current_path.len() > 0 {
@@ -14,7 +15,7 @@ pub fn update(mut query: Query<(&mut MovementComponent, &mut PositionComponent)>
         Vec2f::new(current_position.x, current_position.y),
       );
 
-      if distance < MIN_DISTANCE {
+      if distance < MIN_MOVEMENT_DISTANCE {
         current_position.x = next_position.x;
         current_position.y = next_position.y;
         movement.current_path.remove(0);
