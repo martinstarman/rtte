@@ -1,11 +1,14 @@
 pub mod component;
 pub mod constants;
 pub mod entity;
+pub mod event;
 pub mod mission;
 pub mod resource;
 pub mod system;
 
-use bevy_ecs::{component::ComponentId, query::With, schedule::Schedule, world::World};
+use bevy_ecs::{
+  component::ComponentId, event::Events, query::With, schedule::Schedule, world::World,
+};
 use component::{
   enemy::EnemyComponent,
   movement::MovementComponent,
@@ -17,8 +20,9 @@ use component::{
   sprite::SpriteComponent,
   view::ViewComponent,
 };
+use event::select_or_stop_player::SelectOrStopPlayer;
 use ggez::{
-  event::{self, EventHandler, MouseButton},
+  event::{EventHandler, MouseButton},
   graphics::{Canvas, Color, DrawMode, DrawParam, Rect},
   input::keyboard::{KeyCode, KeyMods},
   mint::Point2,
@@ -28,8 +32,8 @@ use maths_rs::vec::Vec2;
 use resource::{mark::Mark, target_area::TargetArea};
 use std::path;
 use system::{
-  mark_in_view, movement, player_in_enemy_view, reach_target_area, view, view_current_direction,
-  view_default_direction, view_shift,
+  mark_in_view, movement, player_in_enemy_view, reach_target_area, select_or_stop_player, view,
+  view_current_direction, view_default_direction, view_shift,
 };
 
 const DEBUG: bool = true;
@@ -67,6 +71,8 @@ impl Game {
       rect: Rect::new(500., 100., 100., 100.),
     });
 
+    world.insert_resource(Events::<SelectOrStopPlayer>::default());
+
     let mut schedule = Schedule::default();
 
     schedule.add_systems(movement::run);
@@ -77,6 +83,7 @@ impl Game {
     schedule.add_systems(view_shift::run);
     schedule.add_systems(mark_in_view::run);
     schedule.add_systems(view::run);
+    schedule.add_systems(select_or_stop_player::run);
 
     let game = Game {
       world,
@@ -159,7 +166,7 @@ impl EventHandler<GameError> for Game {
           select_or_move_player(self, x, y);
         }
       }
-      MouseButton::Right => select_or_stop_player(self, x, y),
+      MouseButton::Right => self.world.send_event(SelectOrStopPlayer {}),
       _ => {}
     }
 
@@ -358,20 +365,6 @@ fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
   }
 }
 
-fn select_or_stop_player(game: &mut Game, _x: f32, _y: f32) {
-  // TODO: multiple player selection
-
-  // stop selected player movement
-  let mut query =
-    game.world.query::<(&PlayerComponent, &mut MovementComponent, &SelectionComponent)>();
-
-  for (_, mut movement, selection) in query.iter_mut(&mut game.world) {
-    if selection.active {
-      movement.current_path = vec![];
-    }
-  }
-}
-
 fn main() -> GameResult {
   let resource_dir = path::PathBuf::from("./resources");
 
@@ -385,5 +378,5 @@ fn main() -> GameResult {
 
   ggez::input::mouse::set_cursor_grabbed(&mut ctx, true)?; // lock mouse to window
 
-  event::run(ctx, event_loop, state)
+  ggez::event::run(ctx, event_loop, state)
 }
