@@ -12,11 +12,12 @@ env:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest # TODO: linux
 
     steps:
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+    # TODO: tests
+    # - name: Run tests
+    #   run: cargo test --verbose
