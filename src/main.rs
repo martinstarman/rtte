@@ -10,17 +10,10 @@ use bevy_ecs::{
   component::ComponentId, event::Events, query::With, schedule::Schedule, world::World,
 };
 use component::{
-  enemy::EnemyComponent,
-  movement::MovementComponent,
-  object::{ObjectComponent, PolygonType},
-  player::PlayerComponent,
-  position::PositionComponent,
-  selection::SelectionComponent,
-  size::SizeComponent,
-  sprite::SpriteComponent,
-  view::ViewComponent,
+  enemy::EnemyComponent, object::ObjectComponent, position::PositionComponent,
+  selection::SelectionComponent, size::SizeComponent, sprite::SpriteComponent, view::ViewComponent,
 };
-use event::select_or_stop_player::SelectOrStopPlayer;
+use event::{select_or_move_player::SelectOrMovePlayer, select_or_stop_player::SelectOrStopPlayer};
 use ggez::{
   event::{EventHandler, MouseButton},
   graphics::{Canvas, Color, DrawMode, DrawParam, Rect},
@@ -32,8 +25,8 @@ use maths_rs::vec::Vec2;
 use resource::{mark::Mark, target_area::TargetArea};
 use std::path;
 use system::{
-  mark_in_view, movement, player_in_enemy_view, reach_target_area, select_or_stop_player, view,
-  view_current_direction, view_default_direction, view_shift,
+  mark_in_view, movement, player_in_enemy_view, reach_target_area, select_or_move_player,
+  select_or_stop_player, view, view_current_direction, view_default_direction, view_shift,
 };
 
 const DEBUG: bool = true;
@@ -72,6 +65,7 @@ impl Game {
     });
 
     world.insert_resource(Events::<SelectOrStopPlayer>::default());
+    world.insert_resource(Events::<SelectOrMovePlayer>::default());
 
     let mut schedule = Schedule::default();
 
@@ -84,6 +78,7 @@ impl Game {
     schedule.add_systems(mark_in_view::run);
     schedule.add_systems(view::run);
     schedule.add_systems(select_or_stop_player::run);
+    schedule.add_systems(select_or_move_player::run);
 
     let game = Game {
       world,
@@ -163,10 +158,10 @@ impl EventHandler<GameError> for Game {
         if ctx.keyboard.is_mod_active(KeyMods::SHIFT) {
           select_enemy_or_place_mark(self, x, y);
         } else {
-          select_or_move_player(self, x, y);
+          self.world.send_event(SelectOrMovePlayer { x, y });
         }
       }
-      MouseButton::Right => self.world.send_event(SelectOrStopPlayer {}),
+      MouseButton::Right => self.world.send_event(SelectOrStopPlayer::default()),
       _ => {}
     }
 
@@ -301,66 +296,6 @@ fn select_enemy_or_place_mark(game: &mut Game, x: f32, y: f32) {
   } else {
     if let Some(mut mark) = game.world.get_resource_mut::<Mark>() {
       mark.position = Some(Vec2::new(x, y));
-    }
-  }
-}
-
-fn select_or_move_player(game: &mut Game, x: f32, y: f32) {
-  let mut selected_player_id: Option<ComponentId> = None;
-
-  // try to select player
-  let mut query =
-    game
-      .world
-      .query::<(&PlayerComponent, &mut SelectionComponent, &PositionComponent, &SizeComponent)>();
-
-  for (player, mut selection, position, size) in query.iter_mut(&mut game.world) {
-    let rect = Rect::new(position.x, position.y, size.width, size.height);
-
-    if rect.contains(Point2 { x, y }) {
-      selection.active = true;
-      selected_player_id = Some(player.id);
-    }
-  }
-
-  // deselect all players if some was selected
-  if let Some(id) = selected_player_id {
-    let mut query = game.world.query::<(&PlayerComponent, &mut SelectionComponent)>();
-
-    for (player, mut selection) in query.iter_mut(&mut game.world) {
-      if player.id != id {
-        selection.active = false;
-      }
-    }
-  }
-
-  // set path to selected player when no player was selected
-  if selected_player_id.is_none() {
-    let mut object_query = game.world.query::<&ObjectComponent>();
-    let objects: Vec<&ObjectComponent> = object_query
-      .iter(&game.world)
-      .filter(|object| {
-        object.polygon_type == PolygonType::BLOCK || object.polygon_type == PolygonType::TRANSPARENT
-      })
-      .collect();
-    let in_object = objects
-      .iter()
-      .find(|object| {
-        maths_rs::point_inside_polygon(
-          maths_rs::vec::Vec2 { x, y },
-          &object.polygon.iter().map(|(p, _)| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
-        )
-      })
-      .is_some();
-    let mut query =
-      game.world.query::<(&PlayerComponent, &SelectionComponent, &mut MovementComponent)>();
-
-    if !in_object {
-      for (_, selection, mut movement) in query.iter_mut(&mut game.world) {
-        if selection.active {
-          movement.current_path = vec![Point2 { x, y }];
-        }
-      }
     }
   }
 }
