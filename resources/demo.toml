@@ -26,12 +26,18 @@ position = [0, 0]
 
 [[object]]
 image = "/block-001.png"
-polygon = [[0, 83], [48, 107], [60, 101], [26,82], [60, 65], [48, 59]]
+polygon = [[0, 83], [49, 108], [60, 102], [25, 83], [60, 65], [48, 59]]
 polygon_type = "block"
 position = [300, 300]
 
 [[object]]
 image = "/block-002.png"
-polygon = [[0,66], [49, 90], [60, 84], [11, 60]]
+polygon = [[0, 66], [49, 90], [60, 84], [11, 60]]
 polygon_type = "block"
 position = [349, 342]
+
+# [[object]]
+# image = "/block-002.png"
+# polygon = [[0, 0], [100, 0], [0, 100]]
+# polygon_type = "block"
+# position = [200, 200]
