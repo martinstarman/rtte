@@ -1,7 +1,7 @@
 pub mod enemy;
 pub mod movement;
-pub mod object;
 pub mod player;
+pub mod polygon;
 pub mod position;
 pub mod selection;
 pub mod size;

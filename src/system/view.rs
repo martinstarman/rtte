@@ -1,6 +1,6 @@
 use crate::{
   component::{
-    object::{ObjectComponent, PolygonType},
+    polygon::{PolygonComponent, Type},
     position::PositionComponent,
     view::ViewComponent,
   },
@@ -12,10 +12,10 @@ use maths_rs::{Vec2f, Vec3f};
 
 pub fn run(
   mut query: Query<(&mut ViewComponent, &PositionComponent)>,
-  query2: Query<&ObjectComponent>,
+  query2: Query<&PolygonComponent>,
 ) {
-  let objects: Vec<&ObjectComponent> =
-    query2.iter().filter(|object| object.polygon_type == PolygonType::BLOCK).collect();
+  let objects: Vec<&PolygonComponent> =
+    query2.iter().filter(|object| object.r#type == Type::BLOCK).collect();
 
   for (mut view, position) in &mut query {
     let mut points: Vec<Point2<f32>> = vec![];

@@ -18,26 +18,30 @@ path = []
 position = [350, 475]
 view_direction = 4.7123
 
-[[object]]
-image = "/ground.png"
-polygon = [[0, 0], [800, 0], [800, 600], [0, 600]]
-polygon_type = "ground"
-position = [0, 0]
+# [[image]]
+# path = "/ground.png"
+# position = [0, 0]
+# ysorted = false
 
-[[object]]
-image = "/block-001.png"
-polygon = [[0, 83], [49, 108], [60, 102], [25, 83], [60, 65], [48, 59]]
-polygon_type = "block"
-position = [300, 300]
+# [[image]]
+# path = "/block-001.png"
+# position = [300, 300]
+# ysorted = true
 
-[[object]]
-image = "/block-002.png"
-polygon = [[0, 66], [49, 90], [60, 84], [11, 60]]
-polygon_type = "block"
-position = [349, 342]
-
-# [[object]]
+# [[image]]
 # image = "/block-002.png"
-# polygon = [[0, 0], [100, 0], [0, 100]]
-# polygon_type = "block"
-# position = [200, 200]
+# position = [349, 342]
+# ysorted = true
+
+# TODO: do we need this type of polygon?
+# [[polygon]]
+# points = [[0, 0], [800, 0], [800, 600], [0, 600]]
+# type = "ground"
+
+[[polygon]]
+points = [[100, 100], [125, 100], [125, 200], [175, 200], [175, 225], [100, 225]]
+type = "block"
+
+[[polygon]]
+points = [[150, 100], [275, 100], [275, 225], [250, 225], [250, 125], [150, 125]]
+type = "block"

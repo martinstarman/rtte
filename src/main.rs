@@ -10,7 +10,7 @@ use bevy_ecs::{
   component::ComponentId, event::Events, query::With, schedule::Schedule, world::World,
 };
 use component::{
-  enemy::EnemyComponent, object::ObjectComponent, position::PositionComponent,
+  enemy::EnemyComponent, polygon::PolygonComponent, position::PositionComponent,
   selection::SelectionComponent, size::SizeComponent, sprite::SpriteComponent, view::ViewComponent,
 };
 use event::{select_or_move_player::SelectOrMovePlayer, select_or_stop_player::SelectOrStopPlayer};
@@ -54,8 +54,8 @@ impl Game {
       world.spawn(enemy.into(i, ctx));
     }
 
-    for (i, object) in mission.object.iter().enumerate() {
-      world.spawn(object.into(i, ctx));
+    for (i, polygon) in mission.polygon.iter().enumerate() {
+      world.spawn(polygon.into(i, ctx));
     }
 
     world.insert_resource(Mark { position: None });
@@ -244,7 +244,7 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
   }
 
   // polygon
-  let mut query = game.world.query::<&ObjectComponent>();
+  let mut query = game.world.query::<&PolygonComponent>();
 
   for object in query.iter_mut(&mut game.world) {
     if object.polygon.len() >= 3 {

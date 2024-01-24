@@ -1,7 +1,7 @@
 use crate::{
   component::{
     movement::MovementComponent,
-    object::{ObjectComponent, PolygonType},
+    polygon::{PolygonComponent, Type},
     player::PlayerComponent,
     position::PositionComponent,
     selection::SelectionComponent,
@@ -23,7 +23,7 @@ pub fn run(
     &SizeComponent,
     &mut MovementComponent,
   )>,
-  q2: Query<&ObjectComponent>,
+  q2: Query<&PolygonComponent>,
 ) {
   for event in events.read() {
     let mut selected_player_id: Option<ComponentId> = None;
@@ -52,10 +52,10 @@ pub fn run(
 
     // set path to selected player when no player was selected
     if selected_player_id.is_none() {
-      let blocks: Vec<&ObjectComponent> = q2
+      let blocks: Vec<&PolygonComponent> = q2
         .into_iter()
         .filter(|block| {
-          block.polygon_type == PolygonType::BLOCK || block.polygon_type == PolygonType::TRANSPARENT
+          block.r#type == Type::BLOCK || block.r#type == Type::TRANSPARENT
         })
         .collect();
 
