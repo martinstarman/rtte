@@ -1,13 +1,15 @@
 use serde::Deserialize;
 use std::{fs::File, io::Read};
 
-use crate::entity::{enemy::EnemyEntity, player::PlayerEntity, polygon::PolygonEntity};
+use crate::entity::{
+  enemy::EnemyEntity, image::ImageEntity, player::PlayerEntity, polygon::PolygonEntity,
+};
 
 #[derive(Deserialize)]
 pub struct Mission {
   pub player: Vec<PlayerEntity>,
   pub enemy: Vec<EnemyEntity>,
-  // pub images: Vec<TODO>,
+  pub image: Vec<ImageEntity>,
   pub polygon: Vec<PolygonEntity>,
 }
 

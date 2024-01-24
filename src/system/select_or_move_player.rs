@@ -1,8 +1,8 @@
 use crate::{
   component::{
     movement::MovementComponent,
-    polygon::{PolygonComponent, Type},
     player::PlayerComponent,
+    polygon::{PolygonComponent, Type},
     position::PositionComponent,
     selection::SelectionComponent,
     size::SizeComponent,
@@ -54,9 +54,7 @@ pub fn run(
     if selected_player_id.is_none() {
       let blocks: Vec<&PolygonComponent> = q2
         .into_iter()
-        .filter(|block| {
-          block.r#type == Type::BLOCK || block.r#type == Type::TRANSPARENT
-        })
+        .filter(|block| block.r#type == Type::BLOCK || block.r#type == Type::TRANSPARENT)
         .collect();
 
       let target_point = Point2 {

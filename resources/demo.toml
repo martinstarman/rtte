@@ -18,25 +18,20 @@ path = []
 position = [350, 475]
 view_direction = 4.7123
 
-# [[image]]
-# path = "/ground.png"
-# position = [0, 0]
-# ysorted = false
+[[image]]
+path = "/ground.png"
+position = [0, 0]
+ysorted = false
 
-# [[image]]
-# path = "/block-001.png"
-# position = [300, 300]
-# ysorted = true
+[[image]]
+path = "/block-001.png"
+position = [300, 300]
+ysorted = true
 
-# [[image]]
-# image = "/block-002.png"
-# position = [349, 342]
-# ysorted = true
-
-# TODO: do we need this type of polygon?
-# [[polygon]]
-# points = [[0, 0], [800, 0], [800, 600], [0, 600]]
-# type = "ground"
+[[image]]
+path = "/block-002.png"
+position = [349, 342]
+ysorted = true
 
 [[polygon]]
 points = [[100, 100], [125, 100], [125, 200], [175, 200], [175, 225], [100, 225]]

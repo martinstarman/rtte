@@ -58,6 +58,10 @@ impl Game {
       world.spawn(polygon.into(i, ctx));
     }
 
+    for (i, image) in mission.image.iter().enumerate() {
+      world.spawn(image.into(i, ctx));
+    }
+
     world.insert_resource(Mark { position: None });
 
     world.insert_resource(TargetArea {

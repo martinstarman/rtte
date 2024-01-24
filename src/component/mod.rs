@@ -1,4 +1,5 @@
 pub mod enemy;
+pub mod image;
 pub mod movement;
 pub mod player;
 pub mod polygon;
