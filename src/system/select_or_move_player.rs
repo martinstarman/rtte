@@ -98,6 +98,7 @@ pub fn run(
   }
 }
 
+// TODO: refactor me
 fn get_neighbors(
   point: Point2<i32>,
   target: Point2<i32>,
