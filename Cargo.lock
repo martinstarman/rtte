@@ -2243,7 +2243,7 @@ dependencies = [
 
 [[package]]
 name = "rtte"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "bevy_ecs",
  "ggez",
