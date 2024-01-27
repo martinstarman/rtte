@@ -18,20 +18,25 @@ path = []
 position = [350, 475]
 view_direction = 4.7123
 
-[[object]]
-image = "/ground.png"
-polygon = [[0, 0], [800, 0], [800, 600], [0, 600]]
-polygon_type = "ground"
+[[image]]
+path = "/ground.png"
 position = [0, 0]
+ysorted = false
 
-[[object]]
-image = "/block-001.png"
-polygon = [[0, 83], [48, 107], [60, 101], [26,82], [60, 65], [48, 59]]
-polygon_type = "block"
+[[image]]
+path = "/block-001.png"
 position = [300, 300]
+ysorted = true
 
-[[object]]
-image = "/block-002.png"
-polygon = [[0,66], [49, 90], [60, 84], [11, 60]]
-polygon_type = "block"
+[[image]]
+path = "/block-002.png"
 position = [349, 342]
+ysorted = true
+
+[[polygon]]
+points = [[100, 100], [125, 100], [125, 200], [175, 200], [175, 225], [100, 225]]
+type = "block"
+
+[[polygon]]
+points = [[150, 100], [275, 100], [275, 225], [250, 225], [250, 125], [150, 125]]
+type = "block"
