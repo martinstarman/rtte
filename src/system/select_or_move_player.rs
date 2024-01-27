@@ -11,7 +11,7 @@ use crate::{
 };
 use bevy_ecs::{component::ComponentId, event::EventReader, system::Query};
 use ggez::{graphics::Rect, mint::Point2};
-use maths_rs::{line_segment_vs_line_segment, vec::Vec3};
+use maths_rs::{distance, line_segment_vs_line_segment, vec::Vec3};
 use pathfinding::directed::dijkstra::dijkstra;
 
 pub fn run(
@@ -113,12 +113,25 @@ fn get_neighbors(
       if line.0.x as i32 == point.x && line.0.y as i32 == point.y {
         polygon_id = Some(block.id);
 
+        let neighboor = Point2 {
+          x: line.1.x as i32,
+          y: line.1.y as i32,
+        };
+
         neighbors.push((
-          Point2 {
-            x: line.1.x as i32,
-            y: line.1.y as i32,
-          },
-          1, // TODO: distance
+          neighboor,
+          distance(
+            Vec3 {
+              x: point.x as f32,
+              y: point.y as f32,
+              z: 1.,
+            },
+            Vec3 {
+              x: neighboor.x as f32,
+              y: neighboor.y as f32,
+              z: 1.,
+            },
+          ) as usize,
         ));
       }
     }
@@ -166,7 +179,21 @@ fn get_neighbors(
       y: target.y,
     };
 
-    neighbors.push((neighbor, 1)); // TODO: distance
+    neighbors.push((
+      neighbor,
+      distance(
+        Vec3 {
+          x: point.x as f32,
+          y: point.y as f32,
+          z: 1.,
+        },
+        Vec3 {
+          x: target.x as f32,
+          y: target.y as f32,
+          z: 1.,
+        },
+      ) as usize,
+    ));
   }
 
   // test all blocks
@@ -215,12 +242,25 @@ fn get_neighbors(
           y: line_a.0.y as i32,
         };
 
+        let dist = distance(
+          Vec3 {
+            x: point.x as f32,
+            y: point.y as f32,
+            z: 1.,
+          },
+          Vec3 {
+            x: neighbor.x as f32,
+            y: neighbor.y as f32,
+            z: 1.,
+          },
+        );
+
         if polygon_id.is_some() {
           if polygon_id.unwrap() != block_a.id {
-            neighbors.push((neighbor, 1));
+            neighbors.push((neighbor, dist as usize));
           }
         } else {
-          neighbors.push((neighbor, 1));
+          neighbors.push((neighbor, dist as usize));
         }
       }
     }
