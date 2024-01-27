@@ -13,11 +13,10 @@ impl PolygonEntity {
   pub fn into(&self, index: usize, _ctx: &mut Context) -> PolygonBundle {
     let mut closed_polygon: Vec<(Point2<f32>, Point2<f32>)> = vec![];
     let polygon_type = match self.r#type.as_str() {
-      "block" => Type::BLOCK,
       "transparent" => Type::TRANSPARENT,
       "water" => Type::WATER,
       "snow" => Type::SNOW,
-      _ => Type::GROUND,
+      _ => Type::BLOCK,
     };
 
     if self.points.len() >= 3 {

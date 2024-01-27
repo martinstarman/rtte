@@ -62,26 +62,6 @@ pub fn run(
         y: event.y as i32,
       };
 
-      let mut unique_points: Vec<Point2<f32>> = vec![];
-      let mut unique_lines: Vec<(Point2<f32>, Point2<f32>)> = vec![];
-
-      for block in &blocks {
-        for line in &block.polygon {
-          if !unique_points.contains(&line.0) {
-            unique_points.push(line.0);
-          }
-
-          if !unique_points.contains(&line.1) {
-            unique_points.push(line.1);
-          }
-
-          if !unique_lines.contains(&(line.0, line.1)) && !unique_lines.contains(&(line.1, line.0))
-          {
-            unique_lines.push(line.clone());
-          }
-        }
-      }
-
       for (_, selection, position, _, mut movement) in &mut q1 {
         if selection.active {
           let start_point = Point2 {
@@ -89,25 +69,9 @@ pub fn run(
             y: position.y as i32,
           };
 
-          let mut unique_points_with_player_position = unique_points.clone();
-
-          unique_points_with_player_position.push(Point2 {
-            x: position.x,
-            y: position.y,
-          });
-
-          let target_neighbors =
-            get_neighbors(target_point, &unique_points_with_player_position, &unique_lines);
-
           let path = dijkstra(
             &start_point,
-            |&point| {
-              if target_neighbors.contains(&(point, 1)) {
-                return vec![(target_point, 1)];
-              }
-
-              get_neighbors(point, &unique_points, &unique_lines)
-            },
+            |&point| get_neighbors(point, target_point, blocks.clone()),
             |&point| point.x == target_point.x && point.y == target_point.y,
           );
 
@@ -136,15 +100,35 @@ pub fn run(
 
 fn get_neighbors(
   point: Point2<i32>,
-  unique_points: &Vec<Point2<f32>>,
-  unique_lines: &Vec<(Point2<f32>, Point2<f32>)>,
+  target: Point2<i32>,
+  blocks: Vec<&PolygonComponent>,
 ) -> Vec<(Point2<i32>, usize)> {
   let mut neighbors: Vec<(Point2<i32>, usize)> = vec![];
 
-  for unique_point in unique_points {
-    let mut has_intersection = false;
+  // check if it is polygon point
+  let mut polygon_id: Option<ComponentId> = None;
 
-    for unique_line in unique_lines {
+  for block in &blocks {
+    for line in &block.polygon {
+      if line.0.x as i32 == point.x && line.0.y as i32 == point.y {
+        polygon_id = Some(block.id);
+
+        neighbors.push((
+          Point2 {
+            x: line.1.x as i32,
+            y: line.1.y as i32,
+          },
+          1, // TODO: distance
+        ));
+      }
+    }
+  }
+
+  // test target
+  let mut has_intersection = false;
+
+  for block in &blocks {
+    for line in &block.polygon {
       let intersection = line_segment_vs_line_segment(
         Vec3 {
           x: point.x as f32,
@@ -152,39 +136,92 @@ fn get_neighbors(
           z: 0.,
         },
         Vec3 {
-          x: unique_point.x,
-          y: unique_point.y,
+          x: target.x as f32,
+          y: target.y as f32,
           z: 0.,
         },
         Vec3 {
-          x: unique_line.0.x,
-          y: unique_line.0.y,
+          x: line.0.x,
+          y: line.0.y,
           z: 0.,
         },
         Vec3 {
-          x: unique_line.1.x,
-          y: unique_line.1.y,
+          x: line.1.x,
+          y: line.1.y,
           z: 0.,
         },
       );
 
       if let Some(i) = intersection {
-        if !((i.x == unique_line.0.x && i.y == unique_line.0.y)
-          || (i.x == unique_line.1.x && i.y == unique_line.1.y))
-        {
+        if !((i.x == line.0.x && i.y == line.0.y) || (i.x == line.1.x && i.y == line.1.y)) {
           has_intersection = true;
         }
       }
     }
+  }
 
-    if !has_intersection {
-      let neighbor = Point2 {
-        x: unique_point.x as i32,
-        y: unique_point.y as i32,
-      };
+  if !has_intersection {
+    let neighbor = Point2 {
+      x: target.x,
+      y: target.y,
+    };
 
-      if !neighbors.contains(&(neighbor, 1)) {
-        neighbors.push((neighbor, 1));
+    neighbors.push((neighbor, 1)); // TODO: distance
+  }
+
+  // test all blocks
+  for block_a in &blocks {
+    for line_a in &block_a.polygon {
+      let mut has_intersection = false;
+
+      for block_b in &blocks {
+        for line_b in &block_b.polygon {
+          let intersection = line_segment_vs_line_segment(
+            Vec3 {
+              x: point.x as f32,
+              y: point.y as f32,
+              z: 0.,
+            },
+            Vec3 {
+              x: line_a.0.x,
+              y: line_a.0.y,
+              z: 0.,
+            },
+            Vec3 {
+              x: line_b.0.x,
+              y: line_b.0.y,
+              z: 0.,
+            },
+            Vec3 {
+              x: line_b.1.x,
+              y: line_b.1.y,
+              z: 0.,
+            },
+          );
+
+          if let Some(i) = intersection {
+            if !((i.x == line_b.0.x && i.y == line_b.0.y)
+              || (i.x == line_b.1.x && i.y == line_b.1.y))
+            {
+              has_intersection = true;
+            }
+          }
+        }
+      }
+
+      if !has_intersection {
+        let neighbor = Point2 {
+          x: line_a.0.x as i32,
+          y: line_a.0.y as i32,
+        };
+
+        if polygon_id.is_some() {
+          if polygon_id.unwrap() != block_a.id {
+            neighbors.push((neighbor, 1));
+          }
+        } else {
+          neighbors.push((neighbor, 1));
+        }
       }
     }
   }
