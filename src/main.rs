@@ -6,14 +6,15 @@ pub mod mission;
 pub mod resource;
 pub mod system;
 
-use bevy_ecs::{
-  component::ComponentId, event::Events, query::With, schedule::Schedule, world::World,
-};
+use bevy_ecs::{event::Events, query::With, schedule::Schedule, world::World};
 use component::{
   enemy::EnemyComponent, polygon::PolygonComponent, position::PositionComponent,
   selection::SelectionComponent, size::SizeComponent, sprite::SpriteComponent, view::ViewComponent,
 };
-use event::{select_or_move_player::SelectOrMovePlayer, select_or_stop_player::SelectOrStopPlayer};
+use event::{
+  select_enemy_or_place_mark::SelectEnemyOrPlaceMark, select_or_move_player::SelectOrMovePlayer,
+  select_or_stop_player::SelectOrStopPlayer,
+};
 use ggez::{
   event::{EventHandler, MouseButton},
   graphics::{Canvas, Color, DrawMode, DrawParam, Rect},
@@ -21,12 +22,12 @@ use ggez::{
   mint::Point2,
   Context, ContextBuilder, GameError, GameResult,
 };
-use maths_rs::vec::Vec2;
 use resource::{mark::Mark, target_area::TargetArea};
 use std::path;
 use system::{
-  mark_in_view, movement, player_in_enemy_view, reach_target_area, select_or_move_player,
-  select_or_stop_player, view, view_current_direction, view_default_direction, view_shift,
+  mark_in_view, movement, player_in_enemy_view, reach_target_area, select_enemy_or_place_mark,
+  select_or_move_player, select_or_stop_player, view, view_current_direction,
+  view_default_direction, view_shift,
 };
 
 const DEBUG: bool = true;
@@ -68,8 +69,9 @@ impl Game {
       rect: Rect::new(500., 100., 100., 100.),
     });
 
-    world.insert_resource(Events::<SelectOrStopPlayer>::default());
+    world.insert_resource(Events::<SelectEnemyOrPlaceMark>::default());
     world.insert_resource(Events::<SelectOrMovePlayer>::default());
+    world.insert_resource(Events::<SelectOrStopPlayer>::default());
 
     let mut schedule = Schedule::default();
 
@@ -81,8 +83,9 @@ impl Game {
     schedule.add_systems(view_shift::run);
     schedule.add_systems(mark_in_view::run);
     schedule.add_systems(view::run);
-    schedule.add_systems(select_or_stop_player::run);
+    schedule.add_systems(select_enemy_or_place_mark::run);
     schedule.add_systems(select_or_move_player::run);
+    schedule.add_systems(select_or_stop_player::run);
 
     let game = Game {
       world,
@@ -160,7 +163,7 @@ impl EventHandler<GameError> for Game {
     match btn {
       MouseButton::Left => {
         if ctx.keyboard.is_mod_active(KeyMods::SHIFT) {
-          select_enemy_or_place_mark(self, x, y);
+          self.world.send_event(SelectEnemyOrPlaceMark { x, y });
         } else {
           self.world.send_event(SelectOrMovePlayer { x, y });
         }
@@ -259,47 +262,6 @@ fn draw_entity_debug(game: &mut Game, ctx: &mut Context, canvas: &mut Canvas) {
         ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
           .unwrap();
       canvas.draw(&mesh, DrawParam::new().offset(game.camera));
-    }
-  }
-}
-
-fn select_enemy_or_place_mark(game: &mut Game, x: f32, y: f32) {
-  let mut current_selected_enemy_id: Option<ComponentId> = None;
-  let mut new_enemy_selected: bool = false;
-
-  // try to select enemy
-  let mut query =
-    game
-      .world
-      .query::<(&EnemyComponent, &mut SelectionComponent, &PositionComponent, &SizeComponent)>();
-
-  for (enemy, mut selection, position, size) in query.iter_mut(&mut game.world) {
-    let rect = Rect::new(position.x, position.y, size.width, size.height);
-
-    if selection.active {
-      current_selected_enemy_id = Some(enemy.id);
-    }
-
-    if rect.contains(Point2 { x, y }) && !selection.active {
-      selection.active = true;
-      new_enemy_selected = true;
-    }
-  }
-
-  // deselect current selected enemy
-  if new_enemy_selected {
-    if let Some(id) = current_selected_enemy_id {
-      let mut query = game.world.query::<(&EnemyComponent, &mut SelectionComponent)>();
-
-      for (enemy, mut selection) in query.iter_mut(&mut game.world) {
-        if enemy.id == id {
-          selection.active = false;
-        }
-      }
-    }
-  } else {
-    if let Some(mut mark) = game.world.get_resource_mut::<Mark>() {
-      mark.position = Some(Vec2::new(x, y));
     }
   }
 }
