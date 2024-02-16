@@ -2,6 +2,7 @@ use constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use game::Game;
 use macroquad::{
   color::MAGENTA,
+  input::set_cursor_grab,
   window::{clear_background, next_frame, Conf},
 };
 
@@ -29,6 +30,9 @@ fn window_conf() -> Conf {
 #[macroquad::main(window_conf)]
 async fn main() {
   let mut game = Game::new().await;
+
+  // @see https://github.com/not-fl3/macroquad/issues/557
+  // set_cursor_grab(true);
 
   loop {
     clear_background(MAGENTA);
