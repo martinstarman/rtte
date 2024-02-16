@@ -8,7 +8,7 @@ use crate::component::{
   view::{Shift, ViewComponent},
 };
 use bevy_ecs::component::ComponentId;
-use ggez::{graphics::Image, mint::Point2, Context};
+use macroquad::{math::Vec2, texture::load_texture};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -20,15 +20,12 @@ pub struct EnemyEntity {
 }
 
 impl EnemyEntity {
-  pub fn into(&self, index: usize, ctx: &mut Context) -> EnemyBundle {
-    let image = Image::from_path(ctx, self.image.clone()).unwrap();
-    let mut path: Vec<Point2<f32>> = vec![];
+  pub async fn into(&self, index: usize) -> EnemyBundle {
+    let image = load_texture(self.image.as_str()).await.unwrap();
+    let mut path: Vec<Vec2> = vec![];
 
     for point in &self.path {
-      path.push(Point2 {
-        x: point.0,
-        y: point.1,
-      });
+      path.push(Vec2::new(point.0, point.1));
     }
 
     EnemyBundle {
@@ -37,8 +34,8 @@ impl EnemyEntity {
         y: self.position.1,
       },
       size: SizeComponent {
-        width: image.width() as f32,
-        height: image.height() as f32,
+        width: image.width(),
+        height: image.height(),
       },
       sprite: SpriteComponent {
         image,

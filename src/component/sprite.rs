@@ -1,8 +1,8 @@
 use bevy_ecs::prelude::*;
-use ggez::graphics::Image;
+use macroquad::texture::Texture2D;
 
 #[derive(Component)]
 pub struct SpriteComponent {
-  pub image: Image,
+  pub image: Texture2D,
   pub ysorted: bool,
 }

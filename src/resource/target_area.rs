@@ -1,5 +1,5 @@
 use bevy_ecs::system::Resource;
-use ggez::graphics::Rect;
+use macroquad::math::Rect;
 
 #[derive(Resource)]
 pub struct TargetArea {

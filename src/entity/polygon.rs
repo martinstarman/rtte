@@ -1,6 +1,6 @@
 use crate::component::polygon::{PolygonBundle, PolygonComponent, Type};
 use bevy_ecs::component::ComponentId;
-use ggez::{mint::Point2, Context};
+use macroquad::math::Vec2;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -10,8 +10,8 @@ pub struct PolygonEntity {
 }
 
 impl PolygonEntity {
-  pub fn into(&self, index: usize, _ctx: &mut Context) -> PolygonBundle {
-    let mut closed_polygon: Vec<(Point2<f32>, Point2<f32>)> = vec![];
+  pub fn into(&self, index: usize) -> PolygonBundle {
+    let mut closed_polygon: Vec<(Vec2, Vec2)> = vec![];
     let polygon_type = match self.r#type.as_str() {
       "transparent" => Type::TRANSPARENT,
       "water" => Type::WATER,
@@ -24,31 +24,13 @@ impl PolygonEntity {
         let curr = self.points[i];
         let next = self.points[i + 1];
 
-        closed_polygon.push((
-          Point2 {
-            x: curr.0,
-            y: curr.1,
-          },
-          Point2 {
-            x: next.0,
-            y: next.1,
-          },
-        ));
+        closed_polygon.push((Vec2::new(curr.0, curr.1), Vec2::new(next.0, next.1)));
       }
 
       let first = self.points.first().unwrap();
       let last = self.points.last().unwrap();
 
-      closed_polygon.push((
-        Point2 {
-          x: last.0,
-          y: last.1,
-        },
-        Point2 {
-          x: first.0,
-          y: first.1,
-        },
-      ));
+      closed_polygon.push((Vec2::new(last.0, last.1), Vec2::new(first.0, first.1)));
     }
 
     PolygonBundle {

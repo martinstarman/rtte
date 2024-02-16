@@ -18,7 +18,7 @@ pub fn run(
   if let Some(position) = mark.position {
     for (view, mut selection, enemy) in &mut query {
       if maths_rs::point_inside_polygon(
-        position,
+        Vec2::new(position.x, position.y),
         &view.polygon.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
       ) {
         mark.position = None;

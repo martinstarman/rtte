@@ -1,5 +1,5 @@
 use bevy_ecs::prelude::*;
-use ggez::mint::Point2;
+use macroquad::math::Vec2;
 
 #[derive(PartialEq)]
 pub enum Shift {
@@ -11,6 +11,6 @@ pub enum Shift {
 pub struct ViewComponent {
   pub current_direction: f32, // where is entity looking
   pub default_direction: f32, // where is entity moving
-  pub polygon: Vec<Point2<f32>>,
+  pub polygon: Vec<Vec2>,
   pub shift: Shift,
 }

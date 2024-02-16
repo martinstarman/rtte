@@ -8,9 +8,10 @@ use crate::{
     size::SizeComponent,
   },
   event::select_or_move_player::SelectOrMovePlayer,
+  point::Point,
 };
 use bevy_ecs::{component::ComponentId, event::EventReader, system::Query};
-use ggez::{graphics::Rect, mint::Point2};
+use macroquad::math::{Rect, Vec2};
 use maths_rs::{distance, line_segment_vs_line_segment, vec::Vec3};
 use pathfinding::directed::dijkstra::dijkstra;
 
@@ -32,10 +33,7 @@ pub fn run(
     for (player, mut selection, position, size, _) in &mut q1 {
       let rect = Rect::new(position.x, position.y, size.width, size.height);
 
-      if rect.contains(Point2 {
-        x: event.x,
-        y: event.y,
-      }) {
+      if rect.contains(Vec2::new(event.x, event.y)) {
         selection.active = true;
         selected_player_id = Some(player.id);
       }
@@ -57,17 +55,11 @@ pub fn run(
         .filter(|block| block.r#type == Type::BLOCK || block.r#type == Type::TRANSPARENT)
         .collect();
 
-      let target_point = Point2 {
-        x: event.x as i32,
-        y: event.y as i32,
-      };
+      let target_point = Point::new(event.x as i32, event.y as i32);
 
       for (_, selection, position, _, mut movement) in &mut q1 {
         if selection.active {
-          let start_point = Point2 {
-            x: position.x as i32,
-            y: position.y as i32,
-          };
+          let start_point = Point::new(position.x as i32, position.y as i32);
 
           let path = dijkstra(
             &start_point,
@@ -84,13 +76,8 @@ pub fn run(
             // path does not include destination point
             path.push(target_point);
 
-            movement.current_path = path
-              .into_iter()
-              .map(|p| Point2 {
-                x: p.x as f32,
-                y: p.y as f32,
-              })
-              .collect::<Vec<Point2<f32>>>();
+            movement.current_path =
+              path.into_iter().map(|p| Vec2::new(p.x as f32, p.y as f32)).collect::<Vec<Vec2>>();
           }
         }
       }
@@ -100,11 +87,11 @@ pub fn run(
 
 // TODO: refactor me
 fn get_neighbors(
-  point: Point2<i32>,
-  target: Point2<i32>,
+  point: Point,
+  target: Point,
   blocks: Vec<&PolygonComponent>,
-) -> Vec<(Point2<i32>, usize)> {
-  let mut neighbors: Vec<(Point2<i32>, usize)> = vec![];
+) -> Vec<(Point, usize)> {
+  let mut neighbors: Vec<(Point, usize)> = vec![];
 
   // check if it is polygon point
   let mut polygon_id: Option<ComponentId> = None;
@@ -114,10 +101,7 @@ fn get_neighbors(
       if line.0.x as i32 == point.x && line.0.y as i32 == point.y {
         polygon_id = Some(block.id);
 
-        let neighboor = Point2 {
-          x: line.1.x as i32,
-          y: line.1.y as i32,
-        };
+        let neighboor = Point::new(line.1.x as i32, line.1.y as i32);
 
         neighbors.push((
           neighboor,
@@ -175,10 +159,7 @@ fn get_neighbors(
   }
 
   if !has_intersection {
-    let neighbor = Point2 {
-      x: target.x,
-      y: target.y,
-    };
+    let neighbor = Point::new(target.x, target.y);
 
     neighbors.push((
       neighbor,
@@ -238,10 +219,7 @@ fn get_neighbors(
       }
 
       if !has_intersection {
-        let neighbor = Point2 {
-          x: line_a.0.x as i32,
-          y: line_a.0.y as i32,
-        };
+        let neighbor = Point::new(line_a.0.x as i32, line_a.0.y as i32);
 
         let dist = distance(
           Vec3 {

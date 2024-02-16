@@ -1,5 +1,5 @@
 use bevy_ecs::{component::ComponentId, prelude::*};
-use ggez::mint::Point2;
+use macroquad::math::Vec2;
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum Type {
@@ -12,7 +12,7 @@ pub enum Type {
 #[derive(Component, Clone)]
 pub struct PolygonComponent {
   pub id: ComponentId,
-  pub polygon: Vec<(Point2<f32>, Point2<f32>)>,
+  pub polygon: Vec<(Vec2, Vec2)>,
   pub r#type: Type,
 }
 
