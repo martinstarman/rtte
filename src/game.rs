@@ -1,6 +1,6 @@
 use crate::component::{
-  enemy::EnemyComponent, polygon::PolygonComponent, position::PositionComponent,
-  selection::SelectionComponent, size::SizeComponent, sprite::SpriteComponent, view::ViewComponent,
+  polygon::PolygonComponent, position::PositionComponent, size::SizeComponent,
+  sprite::SpriteComponent,
 };
 use crate::constants::{DEBUG, PAN_SPEED, WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::event::{
@@ -8,14 +8,21 @@ use crate::event::{
   select_or_stop_player::SelectOrStopPlayer,
 };
 use crate::mission;
+use crate::resource::offset::Offset;
 use crate::resource::{mark::Mark, target_area::TargetArea};
 use crate::system::{
-  mark_in_view, movement, player_in_enemy_view, reach_target_area, select_enemy_or_place_mark,
-  select_or_move_player, select_or_stop_player, view, view_current_direction,
-  view_default_direction, view_shift,
+  draw_mark, draw_target, draw_view, mark_in_view, movement, player_in_enemy_view,
+  reach_target_area, select_enemy_or_place_mark, select_or_move_player, select_or_stop_player,
+  view, view_current_direction, view_default_direction, view_shift,
 };
-use bevy_ecs::{event::Events, query::With, schedule::Schedule, world::World};
-use macroquad::prelude::*;
+use bevy_ecs::{event::Events, schedule::Schedule, world::World};
+use macroquad::color::WHITE;
+use macroquad::input::{is_key_down, is_key_pressed, is_mouse_button_pressed, mouse_position};
+use macroquad::math::{Rect, Vec2};
+use macroquad::miniquad::window::request_quit;
+use macroquad::miniquad::{KeyCode, MouseButton};
+use macroquad::shapes::{draw_line, draw_rectangle_lines};
+use macroquad::texture::draw_texture;
 
 pub struct Game {
   world: World,
@@ -46,6 +53,7 @@ impl Game {
     }
 
     world.insert_resource(Mark { position: None });
+    world.insert_resource(Offset { x: 0., y: 0. });
 
     world.insert_resource(TargetArea {
       rect: Rect::new(500., 100., 100., 100.),
@@ -68,53 +76,66 @@ impl Game {
     schedule.add_systems(select_enemy_or_place_mark::run);
     schedule.add_systems(select_or_move_player::run);
     schedule.add_systems(select_or_stop_player::run);
+    schedule.add_systems(draw_view::run);
+    schedule.add_systems(draw_mark::run);
+    schedule.add_systems(draw_target::run);
 
     Game {
       world,
       schedule,
-      camera: Vec2 { x: 0., y: 0. },
+      camera: Vec2 { x: 0., y: 0. }, // TODO: resource?
     }
   }
 
   pub fn update(&mut self) {
     self.schedule.run(&mut self.world);
 
+    let mut offset = self.world.resource_mut::<Offset>();
+
     let (x, y) = mouse_position();
 
     if x == 0. {
       self.camera.x -= PAN_SPEED;
+      offset.x -= PAN_SPEED;
     }
 
     if x == (WINDOW_WIDTH - 1) as f32 {
       self.camera.x += PAN_SPEED;
+      offset.x += PAN_SPEED;
     }
 
     if y == 0. {
       self.camera.y -= PAN_SPEED;
+      offset.y -= PAN_SPEED;
     }
 
     if y == (WINDOW_HEIGHT - 1) as f32 {
       self.camera.y += PAN_SPEED;
+      offset.y += PAN_SPEED;
     }
 
     if is_key_down(KeyCode::Left) {
       self.camera.x -= PAN_SPEED;
+      offset.x -= PAN_SPEED;
     }
 
     if is_key_down(KeyCode::Right) {
       self.camera.x += PAN_SPEED;
+      offset.x += PAN_SPEED;
     }
 
     if is_key_down(KeyCode::Up) {
       self.camera.y -= PAN_SPEED;
+      offset.y -= PAN_SPEED;
     }
 
     if is_key_down(KeyCode::Down) {
       self.camera.y += PAN_SPEED;
+      offset.y += PAN_SPEED;
     }
 
     if is_key_pressed(KeyCode::Escape) {
-      // TODO
+      request_quit()
     }
 
     if is_mouse_button_pressed(MouseButton::Left) {
@@ -130,15 +151,13 @@ impl Game {
     }
   }
 
+  // TODO: remove me
   pub fn draw(&mut self) {
     self.draw_entity(false); // Draw non Y indexed entities.
-    self.draw_view();
     self.draw_entity(true); // Draw Y indexed entities.
-    self.draw_mark();
 
     if DEBUG {
       self.draw_entity_debug();
-      self.draw_target_area();
     }
   }
 
@@ -163,46 +182,6 @@ impl Game {
     }
   }
 
-  fn draw_mark(&mut self) {
-    if let Some(mark) = self.world.get_resource::<Mark>() {
-      if let Some(position) = mark.position {
-        draw_rectangle_lines(position.x - 10., position.y - 10., 20., 20., 1., WHITE);
-      }
-    }
-  }
-
-  fn draw_target_area(&mut self) {
-    if let Some(target_area) = self.world.get_resource::<TargetArea>() {
-      draw_rectangle_lines(
-        target_area.rect.x,
-        target_area.rect.y,
-        target_area.rect.w,
-        target_area.rect.h,
-        1.,
-        WHITE,
-      );
-    }
-  }
-
-  fn draw_view(&mut self) {
-    let mut query =
-      self.world.query_filtered::<(&SelectionComponent, &ViewComponent), With<EnemyComponent>>();
-
-    for (selection, view) in query.iter_mut(&mut self.world) {
-      if selection.active && view.polygon.len() >= 3 {
-        // TODO
-        // let mesh = ggez::graphics::Mesh::new_polygon(
-        //   ctx,
-        //   DrawMode::fill(),
-        //   &view.polygon[..],
-        //   Color::from_rgba(255, 0, 0, 127),
-        // )
-        // .unwrap();
-        // canvas.draw(&mesh, DrawParam::new().offset(game.camera));
-      }
-    }
-  }
-
   fn draw_entity_debug(&mut self) {
     // rect
     let mut query = self.world.query::<(&PositionComponent, &SizeComponent)>();
@@ -216,13 +195,9 @@ impl Game {
 
     for object in query.iter_mut(&mut self.world) {
       if object.polygon.len() >= 3 {
-        // TODO
-        // let points: Vec<Vec2> = object.polygon.iter().map(|(p, _)| Vec2::new(p.x, p.y)).collect();
-
-        // let mesh =
-        //   ggez::graphics::Mesh::new_polygon(ctx, DrawMode::stroke(1.), &points[..], Color::WHITE)
-        //     .unwrap();
-        // canvas.draw(&mesh, DrawParam::new().offset(game.camera));
+        for line in &object.polygon {
+          draw_line(line.0.x, line.0.y, line.1.x, line.1.y, 1.0, WHITE);
+        }
       }
     }
   }

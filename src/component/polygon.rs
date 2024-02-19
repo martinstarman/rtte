@@ -1,4 +1,7 @@
-use bevy_ecs::{component::ComponentId, prelude::*};
+use bevy_ecs::{
+  bundle::Bundle,
+  component::{Component, ComponentId},
+};
 use macroquad::math::Vec2;
 
 #[derive(PartialEq, Clone, Copy)]
