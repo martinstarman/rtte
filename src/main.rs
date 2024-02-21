@@ -22,6 +22,7 @@ fn window_conf() -> Conf {
     window_height: WINDOW_HEIGHT,
     window_resizable: false,
     high_dpi: true,
+    fullscreen: true,
     ..Default::default()
   }
 }
@@ -30,16 +31,9 @@ fn window_conf() -> Conf {
 async fn main() {
   let mut game = Game::new().await;
 
-  // @see https://github.com/not-fl3/macroquad/issues/557
-  // set_cursor_grab(true);
-
   loop {
     clear_background(MAGENTA);
-
-    // TODO: draw is not needed when all draws are as systems
-    game.draw();
     game.update();
-
     next_frame().await
   }
 }

@@ -4,22 +4,27 @@ use crate::{
     view::ViewComponent,
   },
   constants::VIEW_COLOR,
+  resource::offset::Offset,
 };
-use bevy_ecs::{query::With, system::Query};
+use bevy_ecs::{
+  query::With,
+  system::{Query, Res},
+};
 use macroquad::{math::Vec2, shapes::draw_triangle};
 
 pub fn run(
   query: Query<(&PositionComponent, &SelectionComponent, &ViewComponent), With<EnemyComponent>>,
+  offset: Res<Offset>,
 ) {
   for (position, selection, view) in &query {
     if selection.active && view.polygon.len() >= 3 {
-      let pos = Vec2::new(position.x, position.y);
+      let p = Vec2::new(position.x - offset.x, position.y - offset.y);
 
       for i in 0..view.polygon.len() - 1 {
-        let p = view.polygon[i];
-        let q = view.polygon[i + 1];
+        let q = Vec2::new(view.polygon[i].x - offset.x, view.polygon[i].y - offset.y);
+        let r = Vec2::new(view.polygon[i + 1].x - offset.x, view.polygon[i + 1].y - offset.y);
 
-        draw_triangle(p, q, pos, VIEW_COLOR);
+        draw_triangle(p, q, r, VIEW_COLOR);
       }
     }
   }
