@@ -7,7 +7,7 @@ use crate::component::{
   sprite::SpriteComponent,
 };
 use bevy_ecs::component::ComponentId;
-use ggez::{graphics::Image, Context};
+use macroquad::texture::load_texture;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -17,8 +17,8 @@ pub struct PlayerEntity {
 }
 
 impl PlayerEntity {
-  pub fn into(&self, index: usize, ctx: &mut Context) -> PlayerBundle {
-    let image = Image::from_path(ctx, self.image.clone()).unwrap();
+  pub async fn into(&self, index: usize) -> PlayerBundle {
+    let image = load_texture(self.image.as_str()).await.unwrap();
 
     PlayerBundle {
       movement: MovementComponent {
@@ -34,8 +34,8 @@ impl PlayerEntity {
       },
       selection: SelectionComponent { active: false },
       size: SizeComponent {
-        width: image.width() as f32,
-        height: image.height() as f32,
+        width: image.width(),
+        height: image.height(),
       },
       sprite: SpriteComponent {
         image,

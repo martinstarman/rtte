@@ -1,35 +1,35 @@
 [[player]]
-image = "/player.png"
+image = "resources/player.png"
 position = [1, 1]
 
 [[player]]
-image = "/player.png"
+image = "resources/player.png"
 position = [30, 1]
 
 [[enemy]]
-image = "/enemy.png"
+image = "resources/enemy.png"
 path = [[550, 400], [650, 500], [450, 500], [450, 400]]
 position = [450, 400]
 view_direction = 0
 
 [[enemy]]
-image = "/enemy.png"
+image = "resources/enemy.png"
 path = []
 position = [350, 475]
 view_direction = 4.7123
 
 [[image]]
-path = "/ground.png"
+path = "resources/ground.png"
 position = [0, 0]
 ysorted = false
 
 [[image]]
-path = "/block-001.png"
+path = "resources/block-001.png"
 position = [300, 300]
 ysorted = true
 
 [[image]]
-path = "/block-002.png"
+path = "resources/block-002.png"
 position = [349, 342]
 ysorted = true
 

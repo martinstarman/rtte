@@ -11,8 +11,7 @@ use bevy_ecs::{
   event::EventReader,
   system::{Query, ResMut},
 };
-use ggez::{graphics::Rect, mint::Point2};
-use maths_rs::vec::Vec2;
+use macroquad::math::{Rect, Vec2};
 
 pub fn run(
   mut events: EventReader<SelectEnemyOrPlaceMark>,
@@ -31,11 +30,7 @@ pub fn run(
         current_selected_enemy_id = Some(enemy.id);
       }
 
-      if rect.contains(Point2 {
-        x: event.x,
-        y: event.y,
-      }) && !selection.active
-      {
+      if rect.contains(Vec2::new(event.x, event.y)) && !selection.active {
         selection.active = true;
         new_enemy_selected = true;
       }
@@ -51,10 +46,7 @@ pub fn run(
         }
       }
     } else {
-      mark.position = Some(Vec2 {
-        x: event.x,
-        y: event.y,
-      });
+      mark.position = Some(Vec2::new(event.x, event.y));
     }
   }
 }

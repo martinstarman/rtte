@@ -1,3 +1,9 @@
+pub mod draw_entity;
+pub mod draw_entity_debug;
+pub mod draw_entity_ysorted;
+pub mod draw_mark;
+pub mod draw_target;
+pub mod draw_view;
 pub mod mark_in_view;
 pub mod movement;
 pub mod player_in_enemy_view;

@@ -2,7 +2,10 @@ use super::{
   movement::MovementComponent, position::PositionComponent, selection::SelectionComponent,
   size::SizeComponent, sprite::SpriteComponent, view::ViewComponent,
 };
-use bevy_ecs::{component::ComponentId, prelude::*};
+use bevy_ecs::{
+  bundle::Bundle,
+  component::{Component, ComponentId},
+};
 
 #[derive(Component)]
 pub struct EnemyComponent {

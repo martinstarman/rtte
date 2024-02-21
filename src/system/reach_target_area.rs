@@ -2,7 +2,7 @@ use bevy_ecs::{
   query::With,
   system::{Query, ResMut},
 };
-use ggez::mint::Point2;
+use macroquad::math::Vec2;
 
 use crate::{
   component::{player::PlayerComponent, position::PositionComponent},
@@ -16,10 +16,7 @@ pub fn run(
   let mut all_players_in_target_area = true;
 
   for position in &query {
-    if !target_area.rect.contains(Point2 {
-      x: position.x,
-      y: position.y,
-    }) {
+    if !target_area.rect.contains(Vec2::new(position.x, position.y)) {
       all_players_in_target_area = false;
     }
   }

@@ -7,7 +7,7 @@ use crate::{
   constants::{RADIAN, VIEW_DISTANCE, VIEW_INNER_ANGLE},
 };
 use bevy_ecs::system::Query;
-use ggez::mint::Point2;
+use macroquad::math::Vec2;
 use maths_rs::{Vec2f, Vec3f};
 
 pub fn run(
@@ -18,7 +18,7 @@ pub fn run(
     query2.iter().filter(|object| object.r#type == Type::BLOCK).collect();
 
   for (mut view, position) in &mut query {
-    let mut points: Vec<Point2<f32>> = vec![];
+    let mut points: Vec<Vec2> = vec![];
     let mut rad = view.current_direction - (VIEW_INNER_ANGLE / 2.);
 
     while rad < view.current_direction + (VIEW_INNER_ANGLE / 2.) {
@@ -53,19 +53,13 @@ pub fn run(
       }
 
       // add closest point to entity
-      points.push(Point2 {
-        x: point.x,
-        y: point.y,
-      });
+      points.push(Vec2::new(point.x, point.y));
 
       rad += RADIAN;
     }
 
     // close view polygon
-    points.push(Point2 {
-      x: position.x,
-      y: position.y,
-    });
+    points.push(Vec2::new(position.x, position.y));
 
     view.polygon = points;
   }

@@ -1,5 +1,8 @@
 use super::{position::PositionComponent, size::SizeComponent, sprite::SpriteComponent};
-use bevy_ecs::{component::ComponentId, prelude::*};
+use bevy_ecs::{
+  bundle::Bundle,
+  component::{Component, ComponentId},
+};
 
 #[derive(Component)]
 pub struct ImageComponent {

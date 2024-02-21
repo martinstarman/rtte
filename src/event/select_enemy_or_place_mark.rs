@@ -1,4 +1,4 @@
-use bevy_ecs::prelude::*;
+use bevy_ecs::event::Event;
 
 #[derive(Event)]
 pub struct SelectEnemyOrPlaceMark {
