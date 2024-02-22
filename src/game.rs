@@ -5,12 +5,16 @@ use crate::event::{
 };
 use crate::mission;
 use crate::resource::offset::Offset;
-use crate::resource::{mark::Mark, target_area::TargetArea};
+use crate::resource::{target_area::TargetArea, view_mark::ViewMark};
+use crate::system::draw_mark::draw_mark;
+use crate::system::draw_target_area::draw_target_area;
+use crate::system::movement::movement;
+use crate::system::players_reach_target_area::players_reach_target_area;
+use crate::system::some_player_in_enemy_view::some_player_in_enemy_view;
 use crate::system::{
-  draw_entity, draw_entity_debug, draw_entity_ysorted, draw_mark, draw_target, draw_view,
-  mark_in_view, movement, player_in_enemy_view, reach_target_area, select_enemy_or_place_mark,
-  select_or_move_player, select_or_stop_player, view, view_current_direction,
-  view_default_direction, view_shift,
+  draw_entity, draw_entity_debug, draw_entity_ysorted, draw_view, mark_in_view,
+  select_enemy_or_place_mark, select_or_move_player, select_or_stop_player, view,
+  view_current_direction, view_default_direction, view_shift,
 };
 use bevy_ecs::schedule::IntoSystemConfigs;
 use bevy_ecs::{event::Events, schedule::Schedule, world::World};
@@ -47,7 +51,7 @@ impl Game {
       world.spawn(image.into(i).await);
     }
 
-    world.insert_resource(Mark { position: None });
+    world.insert_resource(ViewMark { position: None });
     world.insert_resource(Offset { x: 0., y: 0. }); // TODO: toml
 
     world.insert_resource(TargetArea {
@@ -60,9 +64,9 @@ impl Game {
 
     let mut schedule = Schedule::default();
 
-    schedule.add_systems(movement::run);
-    schedule.add_systems(player_in_enemy_view::run);
-    schedule.add_systems(reach_target_area::run);
+    schedule.add_systems(movement);
+    schedule.add_systems(some_player_in_enemy_view);
+    schedule.add_systems(players_reach_target_area);
     schedule.add_systems(view_current_direction::run);
     schedule.add_systems(view_default_direction::run);
     schedule.add_systems(view_shift::run);
@@ -76,14 +80,14 @@ impl Game {
         .before(draw_entity_ysorted::run)
         .before(draw_entity_debug::run)
         .before(draw_view::run)
-        .before(draw_mark::run)
-        .before(draw_target::run),
+        .before(draw_mark)
+        .before(draw_target_area),
     );
     schedule.add_systems(draw_entity_ysorted::run.before(draw_entity_debug::run));
     schedule.add_systems(draw_entity_debug::run);
     schedule.add_systems(draw_view::run);
-    schedule.add_systems(draw_mark::run);
-    schedule.add_systems(draw_target::run);
+    schedule.add_systems(draw_mark);
+    schedule.add_systems(draw_target_area);
 
     Game { world, schedule }
   }
@@ -126,7 +130,7 @@ impl Game {
     }
 
     if is_mouse_button_pressed(MouseButton::Right) {
-      self.world.send_event(SelectOrStopPlayer::default());
+      self.world.send_event(SelectOrStopPlayer {});
     }
   }
 }

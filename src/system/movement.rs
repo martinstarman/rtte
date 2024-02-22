@@ -5,7 +5,7 @@ use crate::{
 use bevy_ecs::system::Query;
 use maths_rs::Vec2f;
 
-pub fn run(mut query: Query<(&mut MovementComponent, &mut PositionComponent)>) {
+pub fn movement(mut query: Query<(&mut MovementComponent, &mut PositionComponent)>) {
   for (mut movement, mut current_position) in &mut query {
     // move within path
     if movement.current_path.len() > 0 {

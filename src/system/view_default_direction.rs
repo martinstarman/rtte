@@ -5,6 +5,7 @@ use crate::component::{
 };
 
 // TODO: smooth transition
+// TODO: fov_movement_direction
 pub fn run(
   mut query: Query<
     (&mut ViewComponent, &MovementComponent, &PositionComponent),

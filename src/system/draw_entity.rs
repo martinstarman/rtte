@@ -6,7 +6,7 @@ use bevy_ecs::system::{Query, Res};
 use macroquad::{color::WHITE, math::Vec2, texture::draw_texture};
 
 pub fn run(
-  query: Query<(&PositionComponent, &SizeComponent, &SpriteComponent)>,
+  query: Query<(&PositionComponent, &SizeComponent, &SpriteComponent)>, // TODO: remove SizeComponent
   offset: Res<Offset>,
 ) {
   let entities: Vec<_> = query.iter().filter(|(_, _, sprite)| sprite.ysorted == false).collect();

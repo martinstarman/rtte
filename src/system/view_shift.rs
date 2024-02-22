@@ -5,6 +5,7 @@ use crate::{
   constants::VIEW_SHIFT_MAX_ANGLE,
 };
 
+// TODO: fov_view_direction_shift
 pub fn run(mut query: Query<&mut ViewComponent>) {
   for mut view in &mut query {
     let rad = view.current_direction - view.default_direction;

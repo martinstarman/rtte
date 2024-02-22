@@ -10,14 +10,12 @@ use bevy_ecs::system::Query;
 use macroquad::math::Vec2;
 use maths_rs::{Vec2f, Vec3f};
 
-pub fn run(
-  mut query: Query<(&mut ViewComponent, &PositionComponent)>,
-  query2: Query<&PolygonComponent>,
-) {
+// TODO: fov
+pub fn run(mut q1: Query<(&mut ViewComponent, &PositionComponent)>, q2: Query<&PolygonComponent>) {
   let objects: Vec<&PolygonComponent> =
-    query2.iter().filter(|object| object.r#type == Type::BLOCK).collect();
+    q2.iter().filter(|object| object.r#type == Type::BLOCK).collect();
 
-  for (mut view, position) in &mut query {
+  for (mut view, position) in &mut q1 {
     let mut points: Vec<Vec2> = vec![];
     let mut rad = view.current_direction - (VIEW_INNER_ANGLE / 2.);
 
@@ -61,6 +59,6 @@ pub fn run(
     // close view polygon
     points.push(Vec2::new(position.x, position.y));
 
-    view.polygon = points;
+    view.points = points;
   }
 }

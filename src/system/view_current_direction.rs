@@ -5,6 +5,7 @@ use crate::{
   constants::RADIAN,
 };
 
+// TODO: fov_view_direction
 pub fn run(mut query: Query<&mut ViewComponent>) {
   for mut view in &mut query {
     if view.shift == Shift::LEFT {

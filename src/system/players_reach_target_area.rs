@@ -9,7 +9,7 @@ use crate::{
   resource::target_area::TargetArea,
 };
 
-pub fn run(
+pub fn players_reach_target_area(
   query: Query<&PositionComponent, With<PlayerComponent>>,
   target_area: ResMut<TargetArea>,
 ) {

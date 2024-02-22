@@ -46,7 +46,7 @@ impl EnemyEntity {
         default_path: path.clone(),
       },
       view: ViewComponent {
-        polygon: vec![],
+        points: vec![],
         current_direction: self.view_direction,
         default_direction: self.view_direction,
         shift: Shift::LEFT,

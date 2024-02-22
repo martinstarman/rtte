@@ -6,7 +6,7 @@ use crate::{
   resource::{offset::Offset, target_area::TargetArea},
 };
 
-pub fn run(target_area: Res<TargetArea>, offset: Res<Offset>) {
+pub fn draw_target_area(target_area: Res<TargetArea>, offset: Res<Offset>) {
   if DEBUG {
     draw_rectangle_lines(
       target_area.rect.x - offset.x,

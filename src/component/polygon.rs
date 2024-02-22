@@ -13,7 +13,7 @@ pub enum Type {
 }
 
 #[derive(Component, Clone)]
-pub struct PolygonComponent {
+pub struct PolygonComponent { // TODO: polygon.polygon
   pub id: ComponentId,
   pub polygon: Vec<(Vec2, Vec2)>,
   pub r#type: Type,

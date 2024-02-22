@@ -6,22 +6,22 @@ use maths_rs::vec::Vec2;
 
 use crate::{
   component::{enemy::EnemyComponent, selection::SelectionComponent, view::ViewComponent},
-  resource::mark::Mark,
+  resource::view_mark::ViewMark,
 };
 
 pub fn run(
   mut query: Query<(&ViewComponent, &mut SelectionComponent, &EnemyComponent)>,
-  mut mark: ResMut<Mark>,
+  mut view_mark: ResMut<ViewMark>,
 ) {
   let mut enemy_id: Option<ComponentId> = None;
 
-  if let Some(position) = mark.position {
+  if let Some(position) = view_mark.position {
     for (view, mut selection, enemy) in &mut query {
       if maths_rs::point_inside_polygon(
         Vec2::new(position.x, position.y),
-        &view.polygon.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
+        &view.points.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
       ) {
-        mark.position = None;
+        view_mark.position = None;
         selection.active = true;
         enemy_id = Some(enemy.id);
       }

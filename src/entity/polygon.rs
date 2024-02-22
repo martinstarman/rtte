@@ -11,8 +11,9 @@ pub struct PolygonEntity {
 
 impl PolygonEntity {
   pub fn into(&self, index: usize) -> PolygonBundle {
-    let mut closed_polygon: Vec<(Vec2, Vec2)> = vec![];
-    let polygon_type = match self.r#type.as_str() {
+    let mut closed_polygon: Vec<(Vec2, Vec2)> = vec![]; // TODO: polygon
+    
+    let polygon_type = match self.r#type.as_str() { // TODO: type
       "transparent" => Type::TRANSPARENT,
       "water" => Type::WATER,
       "snow" => Type::SNOW,

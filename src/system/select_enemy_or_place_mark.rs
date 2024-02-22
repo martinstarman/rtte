@@ -4,7 +4,7 @@ use crate::{
     size::SizeComponent,
   },
   event::select_enemy_or_place_mark::SelectEnemyOrPlaceMark,
-  resource::mark::Mark,
+  resource::view_mark::ViewMark,
 };
 use bevy_ecs::{
   component::ComponentId,
@@ -16,7 +16,7 @@ use macroquad::math::{Rect, Vec2};
 pub fn run(
   mut events: EventReader<SelectEnemyOrPlaceMark>,
   mut q1: Query<(&EnemyComponent, &mut SelectionComponent, &PositionComponent, &SizeComponent)>,
-  mut mark: ResMut<Mark>,
+  mut view_mark: ResMut<ViewMark>,
 ) {
   for event in events.read() {
     let mut current_selected_enemy_id: Option<ComponentId> = None;
@@ -46,7 +46,7 @@ pub fn run(
         }
       }
     } else {
-      mark.position = Some(Vec2::new(event.x, event.y));
+      view_mark.position = Some(Vec2::new(event.x, event.y));
     }
   }
 }
