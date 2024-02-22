@@ -20,7 +20,7 @@ pub fn some_player_in_enemy_field_of_view(
           &view.points.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
         )
       {
-        // TODO: do something
+        // TODO: mission failed
       }
     }
   }

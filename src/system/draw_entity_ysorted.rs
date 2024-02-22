@@ -5,7 +5,7 @@ use crate::{
 use bevy_ecs::system::{Query, Res};
 use macroquad::{color::WHITE, math::Vec2, texture::draw_texture};
 
-pub fn run(
+pub fn draw_entity_ysorted(
   query: Query<(&PositionComponent, &SizeComponent, &SpriteComponent)>,
   offset: Res<Offset>,
 ) {

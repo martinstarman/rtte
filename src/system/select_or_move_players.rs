@@ -15,7 +15,7 @@ use macroquad::math::{Rect, Vec2};
 use maths_rs::{distance, line_segment_vs_line_segment, vec::Vec3};
 use pathfinding::directed::dijkstra::dijkstra;
 
-pub fn run(
+pub fn select_or_move_players(
   mut events: EventReader<SelectOrMovePlayer>,
   mut query1: Query<(
     &PlayerComponent,

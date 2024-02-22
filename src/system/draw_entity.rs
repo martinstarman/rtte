@@ -1,17 +1,14 @@
 use crate::{
-  component::{position::PositionComponent, size::SizeComponent, sprite::SpriteComponent},
+  component::{position::PositionComponent, sprite::SpriteComponent},
   resource::offset::Offset,
 };
 use bevy_ecs::system::{Query, Res};
 use macroquad::{color::WHITE, math::Vec2, texture::draw_texture};
 
-pub fn run(
-  query: Query<(&PositionComponent, &SizeComponent, &SpriteComponent)>, // TODO: remove SizeComponent
-  offset: Res<Offset>,
-) {
-  let entities: Vec<_> = query.iter().filter(|(_, _, sprite)| sprite.ysorted == false).collect();
+pub fn draw_entity(query: Query<(&PositionComponent, &SpriteComponent)>, offset: Res<Offset>) {
+  let entities: Vec<_> = query.iter().filter(|(_, sprite)| sprite.ysorted == false).collect();
 
-  for (position, _, sprite) in entities {
+  for (position, sprite) in entities {
     let dest = Vec2 {
       x: position.x - offset.x,
       y: position.y - offset.y,

@@ -8,7 +8,7 @@ use macroquad::{
   shapes::{draw_line, draw_rectangle_lines},
 };
 
-pub fn run(
+pub fn draw_entity_debug(
   query1: Query<(&PositionComponent, &SizeComponent)>,
   query2: Query<&PolygonComponent>,
   offset: Res<Offset>,

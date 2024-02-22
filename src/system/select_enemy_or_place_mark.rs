@@ -13,10 +13,10 @@ use bevy_ecs::{
 };
 use macroquad::math::{Rect, Vec2};
 
-pub fn run(
+pub fn select_enemy_or_place_mark(
   mut events: EventReader<SelectEnemyOrPlaceMark>,
   mut query: Query<(&EnemyComponent, &mut SelectionComponent, &PositionComponent, &SizeComponent)>,
-  mut view_mark: ResMut<Mark>,
+  mut mark: ResMut<Mark>,
 ) {
   for event in events.read() {
     let mut current_selected_enemy_id: Option<ComponentId> = None;
@@ -46,7 +46,7 @@ pub fn run(
         }
       }
     } else {
-      view_mark.position = Some(Vec2::new(event.x, event.y));
+      mark.position = Some(Vec2::new(event.x, event.y));
     }
   }
 }

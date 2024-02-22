@@ -22,6 +22,6 @@ pub fn players_reach_target_area(
   }
 
   if all_players_in_target_area {
-    // TODO: do something
+    // TODO: mission success
   }
 }

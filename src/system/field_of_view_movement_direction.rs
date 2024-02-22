@@ -4,7 +4,6 @@ use crate::component::{
   field_of_view::FieldOfViewComponent, movement::MovementComponent, position::PositionComponent,
 };
 
-// TODO: smooth transition
 pub fn field_of_view_movement_direction(
   mut query: Query<
     (&mut FieldOfViewComponent, &MovementComponent, &PositionComponent),
