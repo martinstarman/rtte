@@ -1,14 +1,13 @@
 use bevy_ecs::{query::Changed, system::Query};
 
 use crate::component::{
-  movement::MovementComponent, position::PositionComponent, view::ViewComponent,
+  field_of_view::FieldOfViewComponent, movement::MovementComponent, position::PositionComponent,
 };
 
 // TODO: smooth transition
-// TODO: fov_movement_direction
-pub fn run(
+pub fn field_of_view_movement_direction(
   mut query: Query<
-    (&mut ViewComponent, &MovementComponent, &PositionComponent),
+    (&mut FieldOfViewComponent, &MovementComponent, &PositionComponent),
     Changed<MovementComponent>,
   >,
 ) {
@@ -19,8 +18,8 @@ pub fn run(
         movement.current_path[0].x - position.x,
       );
 
-      view.default_direction = rad;
-      view.current_direction = rad;
+      view.movement_direction = rad;
+      view.direction = rad;
     }
   }
 }

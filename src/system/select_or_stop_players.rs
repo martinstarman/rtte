@@ -6,13 +6,11 @@ use crate::{
 };
 use bevy_ecs::{event::EventReader, query::With, system::Query};
 
-pub fn run(
+pub fn select_or_stop_players(
   mut events: EventReader<SelectOrStopPlayer>,
   mut query: Query<(&mut MovementComponent, &SelectionComponent), With<PlayerComponent>>,
 ) {
   for _event in events.read() {
-    // TODO: multiple player selection
-
     // stop selected player movement
     for (mut movement, selection) in &mut query {
       if selection.active {

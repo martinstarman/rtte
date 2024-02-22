@@ -17,20 +17,20 @@ use pathfinding::directed::dijkstra::dijkstra;
 
 pub fn run(
   mut events: EventReader<SelectOrMovePlayer>,
-  mut q1: Query<(
+  mut query1: Query<(
     &PlayerComponent,
     &mut SelectionComponent,
     &PositionComponent,
     &SizeComponent,
     &mut MovementComponent,
   )>,
-  q2: Query<&PolygonComponent>,
+  query2: Query<&PolygonComponent>,
 ) {
   for event in events.read() {
     let mut selected_player_id: Option<ComponentId> = None;
 
     // try to select player
-    for (player, mut selection, position, size, _) in &mut q1 {
+    for (player, mut selection, position, size, _) in &mut query1 {
       let rect = Rect::new(position.x, position.y, size.width, size.height);
 
       if rect.contains(Vec2::new(event.x, event.y)) {
@@ -41,7 +41,7 @@ pub fn run(
 
     // deselect all players if some was selected
     if let Some(id) = selected_player_id {
-      for (player, mut selection, _, _, _) in &mut q1 {
+      for (player, mut selection, _, _, _) in &mut query1 {
         if player.id != id {
           selection.active = false;
         }
@@ -50,14 +50,14 @@ pub fn run(
 
     // set path to selected player when no player was selected
     if selected_player_id.is_none() {
-      let blocks: Vec<&PolygonComponent> = q2
+      let blocks: Vec<&PolygonComponent> = query2
         .into_iter()
         .filter(|block| block.r#type == Type::BLOCK || block.r#type == Type::TRANSPARENT)
         .collect();
 
       let target_point = Point::new(event.x as i32, event.y as i32);
 
-      for (_, selection, position, _, mut movement) in &mut q1 {
+      for (_, selection, position, _, mut movement) in &mut query1 {
         if selection.active {
           let start_point = Point::new(position.x as i32, position.y as i32);
 

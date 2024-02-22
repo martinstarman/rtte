@@ -5,13 +5,15 @@ use bevy_ecs::{
 use maths_rs::vec::Vec2;
 
 use crate::{
-  component::{enemy::EnemyComponent, selection::SelectionComponent, view::ViewComponent},
-  resource::view_mark::ViewMark,
+  component::{
+    enemy::EnemyComponent, field_of_view::FieldOfViewComponent, selection::SelectionComponent,
+  },
+  resource::mark::Mark,
 };
 
 pub fn run(
-  mut query: Query<(&ViewComponent, &mut SelectionComponent, &EnemyComponent)>,
-  mut view_mark: ResMut<ViewMark>,
+  mut query: Query<(&FieldOfViewComponent, &mut SelectionComponent, &EnemyComponent)>,
+  mut view_mark: ResMut<Mark>,
 ) {
   let mut enemy_id: Option<ComponentId> = None;
 

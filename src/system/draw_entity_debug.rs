@@ -9,12 +9,12 @@ use macroquad::{
 };
 
 pub fn run(
-  q1: Query<(&PositionComponent, &SizeComponent)>,
-  q2: Query<&PolygonComponent>,
+  query1: Query<(&PositionComponent, &SizeComponent)>,
+  query2: Query<&PolygonComponent>,
   offset: Res<Offset>,
 ) {
   // rect
-  for (position, size) in &q1 {
+  for (position, size) in &query1 {
     draw_rectangle_lines(
       position.x - offset.x,
       position.y - offset.y,
@@ -26,7 +26,7 @@ pub fn run(
   }
 
   // polygon
-  for object in &q2 {
+  for object in &query2 {
     if object.polygon.len() >= 3 {
       for line in &object.polygon {
         draw_line(

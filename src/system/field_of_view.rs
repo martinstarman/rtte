@@ -1,29 +1,31 @@
 use crate::{
   component::{
+    field_of_view::FieldOfViewComponent,
     polygon::{PolygonComponent, Type},
     position::PositionComponent,
-    view::ViewComponent,
   },
-  constants::{RADIAN, VIEW_DISTANCE, VIEW_INNER_ANGLE},
+  constants::{FIELD_OF_VIEW_DISTANCE, FIELD_OF_VIEW_INNER_ANGLE, RADIAN},
 };
 use bevy_ecs::system::Query;
 use macroquad::math::Vec2;
 use maths_rs::{Vec2f, Vec3f};
 
-// TODO: fov
-pub fn run(mut q1: Query<(&mut ViewComponent, &PositionComponent)>, q2: Query<&PolygonComponent>) {
+pub fn field_of_view(
+  mut query1: Query<(&mut FieldOfViewComponent, &PositionComponent)>,
+  query2: Query<&PolygonComponent>,
+) {
   let objects: Vec<&PolygonComponent> =
-    q2.iter().filter(|object| object.r#type == Type::BLOCK).collect();
+    query2.iter().filter(|object| object.r#type == Type::BLOCK).collect();
 
-  for (mut view, position) in &mut q1 {
+  for (mut view, position) in &mut query1 {
     let mut points: Vec<Vec2> = vec![];
-    let mut rad = view.current_direction - (VIEW_INNER_ANGLE / 2.);
+    let mut rad = view.direction - (FIELD_OF_VIEW_INNER_ANGLE / 2.);
 
-    while rad < view.current_direction + (VIEW_INNER_ANGLE / 2.) {
-      let mut min_distance = VIEW_DISTANCE;
+    while rad < view.direction + (FIELD_OF_VIEW_INNER_ANGLE / 2.) {
+      let mut min_distance = FIELD_OF_VIEW_DISTANCE;
       let mut point = Vec2f::new(
-        f32::cos(rad) * VIEW_DISTANCE + position.x,
-        f32::sin(rad) * VIEW_DISTANCE + position.y,
+        f32::cos(rad) * FIELD_OF_VIEW_DISTANCE + position.x,
+        f32::sin(rad) * FIELD_OF_VIEW_DISTANCE + position.y,
       );
 
       for object in &objects {

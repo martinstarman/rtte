@@ -1,4 +1,5 @@
 pub mod enemy;
+pub mod field_of_view;
 pub mod image;
 pub mod movement;
 pub mod player;
@@ -7,4 +8,3 @@ pub mod position;
 pub mod selection;
 pub mod size;
 pub mod sprite;
-pub mod view;

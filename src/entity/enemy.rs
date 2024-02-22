@@ -1,11 +1,11 @@
 use crate::component::{
   enemy::{EnemyBundle, EnemyComponent},
+  field_of_view::{FieldOfViewComponent, Shift},
   movement::MovementComponent,
   position::PositionComponent,
   selection::SelectionComponent,
   size::SizeComponent,
   sprite::SpriteComponent,
-  view::{Shift, ViewComponent},
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::{math::Vec2, texture::load_texture};
@@ -45,10 +45,10 @@ impl EnemyEntity {
         current_path: path.clone(),
         default_path: path.clone(),
       },
-      view: ViewComponent {
+      field_of_view: FieldOfViewComponent {
         points: vec![],
-        current_direction: self.view_direction,
-        default_direction: self.view_direction,
+        direction: self.view_direction,
+        movement_direction: self.view_direction,
         shift: Shift::LEFT,
       },
       enemy: EnemyComponent {

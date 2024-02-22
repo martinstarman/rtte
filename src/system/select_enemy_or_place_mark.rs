@@ -4,7 +4,7 @@ use crate::{
     size::SizeComponent,
   },
   event::select_enemy_or_place_mark::SelectEnemyOrPlaceMark,
-  resource::view_mark::ViewMark,
+  resource::mark::Mark,
 };
 use bevy_ecs::{
   component::ComponentId,
@@ -15,15 +15,15 @@ use macroquad::math::{Rect, Vec2};
 
 pub fn run(
   mut events: EventReader<SelectEnemyOrPlaceMark>,
-  mut q1: Query<(&EnemyComponent, &mut SelectionComponent, &PositionComponent, &SizeComponent)>,
-  mut view_mark: ResMut<ViewMark>,
+  mut query: Query<(&EnemyComponent, &mut SelectionComponent, &PositionComponent, &SizeComponent)>,
+  mut view_mark: ResMut<Mark>,
 ) {
   for event in events.read() {
     let mut current_selected_enemy_id: Option<ComponentId> = None;
     let mut new_enemy_selected: bool = false;
 
     // try to select enemy
-    for (enemy, mut selection, position, size) in &mut q1 {
+    for (enemy, mut selection, position, size) in &mut query {
       let rect = Rect::new(position.x, position.y, size.width, size.height);
 
       if selection.active {
@@ -39,7 +39,7 @@ pub fn run(
     // deselect current selected enemy
     if new_enemy_selected {
       if let Some(id) = current_selected_enemy_id {
-        for (enemy, mut selection, _, _) in &mut q1 {
+        for (enemy, mut selection, _, _) in &mut query {
           if enemy.id == id {
             selection.active = false;
           }
