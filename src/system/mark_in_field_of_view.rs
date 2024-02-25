@@ -19,10 +19,7 @@ pub fn mark_in_field_of_view(
 
   if let Some(position) = mark.position {
     for (field_of_view, mut selection, enemy) in &mut query {
-      if maths_rs::point_inside_polygon(
-        Vec2::new(position.x, position.y),
-        &field_of_view.points.iter().map(|p| Vec2::new(p.x, p.y)).collect::<Vec<Vec2<f32>>>(),
-      ) {
+      if maths_rs::point_inside_polygon(Vec2::new(position.x, position.y), &field_of_view.points) {
         mark.position = None;
         selection.active = true;
         enemy_id = Some(enemy.id);

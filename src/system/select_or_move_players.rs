@@ -50,9 +50,9 @@ pub fn select_or_move_players(
 
     // set path to selected player when no player was selected
     if selected_player_id.is_none() {
-      let blocks: Vec<&PolygonComponent> = query2
+      let polygons: Vec<&PolygonComponent> = query2
         .into_iter()
-        .filter(|block| block.r#type == Type::BLOCK || block.r#type == Type::TRANSPARENT)
+        .filter(|polygon| polygon.r#type == Type::BLOCK || polygon.r#type == Type::TRANSPARENT)
         .collect();
 
       let target_point = Point::new(event.x as i32, event.y as i32);
@@ -63,7 +63,7 @@ pub fn select_or_move_players(
 
           let path = dijkstra(
             &start_point,
-            |&point| get_neighbors(point, target_point, blocks.clone()),
+            |&point| get_neighbors(point, target_point, polygons.clone()),
             |&point| point.x == target_point.x && point.y == target_point.y,
           );
 
@@ -89,17 +89,17 @@ pub fn select_or_move_players(
 fn get_neighbors(
   point: Point,
   target: Point,
-  blocks: Vec<&PolygonComponent>,
+  polygons: Vec<&PolygonComponent>,
 ) -> Vec<(Point, usize)> {
   let mut neighbors: Vec<(Point, usize)> = vec![];
 
   // check if it is polygon point
   let mut polygon_id: Option<ComponentId> = None;
 
-  for block in &blocks {
-    for line in &block.lines {
+  for polygon in &polygons {
+    for line in &polygon.lines {
       if line.0.x as i32 == point.x && line.0.y as i32 == point.y {
-        polygon_id = Some(block.id);
+        polygon_id = Some(polygon.id);
 
         let neighboor = Point::new(line.1.x as i32, line.1.y as i32);
 
@@ -125,8 +125,8 @@ fn get_neighbors(
   // test target
   let mut has_intersection = false;
 
-  for block in &blocks {
-    for line in &block.lines {
+  for polygon in &polygons {
+    for line in &polygon.lines {
       let intersection = line_segment_vs_line_segment(
         Vec3 {
           x: point.x as f32,
@@ -178,13 +178,13 @@ fn get_neighbors(
     ));
   }
 
-  // test all blocks
-  for block_a in &blocks {
-    for line_a in &block_a.lines {
+  // test all polygons
+  for polygon_a in &polygons {
+    for line_a in &polygon_a.lines {
       let mut has_intersection = false;
 
-      for block_b in &blocks {
-        for line_b in &block_b.lines {
+      for polygon_b in &polygons {
+        for line_b in &polygon_b.lines {
           let intersection = line_segment_vs_line_segment(
             Vec3 {
               x: point.x as f32,
@@ -235,7 +235,7 @@ fn get_neighbors(
         );
 
         if polygon_id.is_some() {
-          if polygon_id.unwrap() != block_a.id {
+          if polygon_id.unwrap() != polygon_a.id {
             neighbors.push((neighbor, dist as usize));
           }
         } else {

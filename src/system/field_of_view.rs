@@ -7,8 +7,7 @@ use crate::{
   constants::{FIELD_OF_VIEW_DISTANCE, FIELD_OF_VIEW_INNER_ANGLE, RADIAN},
 };
 use bevy_ecs::system::Query;
-use macroquad::math::Vec2;
-use maths_rs::{Vec2f, Vec3f};
+use maths_rs::{vec::Vec2, Vec2f, Vec3f};
 
 pub fn field_of_view(
   mut query1: Query<(&mut FieldOfViewComponent, &PositionComponent)>,
@@ -18,7 +17,7 @@ pub fn field_of_view(
     query2.iter().filter(|polygon| polygon.r#type == Type::BLOCK).collect();
 
   for (mut field_of_view, position) in &mut query1 {
-    let mut points: Vec<Vec2> = vec![];
+    let mut points: Vec<Vec2<f32>> = vec![];
     let mut angle = field_of_view.direction - (FIELD_OF_VIEW_INNER_ANGLE / 2.);
 
     while angle < field_of_view.direction + (FIELD_OF_VIEW_INNER_ANGLE / 2.) {
