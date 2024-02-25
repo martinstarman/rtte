@@ -38,7 +38,7 @@ impl PolygonEntity {
     PolygonBundle {
       polygon: PolygonComponent {
         id: ComponentId::new(index),
-        polygon,
+        lines: polygon,
         r#type,
       },
     }

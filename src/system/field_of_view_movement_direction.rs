@@ -10,15 +10,12 @@ pub fn field_of_view_movement_direction(
     Changed<MovementComponent>,
   >,
 ) {
-  for (mut view, movement, position) in &mut query {
-    if movement.current_path.len() > 0 {
-      let rad = f32::atan2(
-        movement.current_path[0].y - position.y,
-        movement.current_path[0].x - position.x,
-      );
+  for (mut field_of_view, movement, position) in &mut query {
+    if movement.path.len() > 0 {
+      let angle = f32::atan2(movement.path[0].y - position.y, movement.path[0].x - position.x);
 
-      view.movement_direction = rad;
-      view.direction = rad;
+      field_of_view.movement_direction = angle;
+      field_of_view.direction = angle;
     }
   }
 }

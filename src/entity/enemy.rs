@@ -16,12 +16,12 @@ pub struct EnemyEntity {
   image: String,
   position: (f32, f32),
   path: Vec<(f32, f32)>,
-  view_direction: f32,
+  field_of_view_direction: f32,
 }
 
 impl EnemyEntity {
   pub async fn into(&self, index: usize) -> EnemyBundle {
-    let image = load_texture(self.image.as_str()).await.unwrap();
+    let texture = load_texture(self.image.as_str()).await.unwrap();
     let mut path: Vec<Vec2> = vec![];
 
     for point in &self.path {
@@ -34,21 +34,21 @@ impl EnemyEntity {
         y: self.position.1,
       },
       size: SizeComponent {
-        width: image.width(),
-        height: image.height(),
+        width: texture.width(),
+        height: texture.height(),
       },
       sprite: SpriteComponent {
-        image,
+        texture,
         ysorted: true,
       },
       movement: MovementComponent {
-        current_path: path.clone(),
+        path: path.clone(),
         default_path: path.clone(),
       },
       field_of_view: FieldOfViewComponent {
         points: vec![],
-        direction: self.view_direction,
-        movement_direction: self.view_direction,
+        direction: self.field_of_view_direction,
+        movement_direction: self.field_of_view_direction,
         shift: Shift::LEFT,
       },
       enemy: EnemyComponent {

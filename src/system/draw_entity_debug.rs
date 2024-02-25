@@ -26,18 +26,16 @@ pub fn draw_entity_debug(
   }
 
   // polygon
-  for object in &query2 {
-    if object.polygon.len() >= 3 {
-      for line in &object.polygon {
-        draw_line(
-          line.0.x - offset.x,
-          line.0.y - offset.y,
-          line.1.x - offset.x,
-          line.1.y - offset.y,
-          1.0,
-          WHITE,
-        );
-      }
+  for polygon in &query2 {
+    for line in &polygon.lines {
+      draw_line(
+        line.0.x - offset.x,
+        line.0.y - offset.y,
+        line.1.x - offset.x,
+        line.1.y - offset.y,
+        1.0,
+        WHITE,
+      );
     }
   }
 }

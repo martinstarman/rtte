@@ -18,11 +18,11 @@ pub struct PlayerEntity {
 
 impl PlayerEntity {
   pub async fn into(&self, index: usize) -> PlayerBundle {
-    let image = load_texture(self.image.as_str()).await.unwrap();
+    let texture = load_texture(self.image.as_str()).await.unwrap();
 
     PlayerBundle {
       movement: MovementComponent {
-        current_path: vec![],
+        path: vec![],
         default_path: vec![],
       },
       player: PlayerComponent {
@@ -34,11 +34,11 @@ impl PlayerEntity {
       },
       selection: SelectionComponent { active: false },
       size: SizeComponent {
-        width: image.width(),
-        height: image.height(),
+        width: texture.width(),
+        height: texture.height(),
       },
       sprite: SpriteComponent {
-        image,
+        texture,
         ysorted: true,
       },
     }

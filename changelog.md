@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - mission file
 
 ## [0.2.0] - 2023-10-18
-- view mark
+- mark
 - enemy selection
-- view direction matches movement direction
-- view shift limits
+- fov movement direction
+- fov shift limits
 
 ## [0.1.0] - 2023-09-15
 
@@ -23,4 +23,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - entity drawing with Y sorting
 - entity selection
 - entity movement
-- enemy view
+- enemy fov

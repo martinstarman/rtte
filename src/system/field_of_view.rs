@@ -14,23 +14,23 @@ pub fn field_of_view(
   mut query1: Query<(&mut FieldOfViewComponent, &PositionComponent)>,
   query2: Query<&PolygonComponent>,
 ) {
-  let objects: Vec<&PolygonComponent> =
-    query2.iter().filter(|object| object.r#type == Type::BLOCK).collect();
+  let polygons: Vec<&PolygonComponent> =
+    query2.iter().filter(|polygon| polygon.r#type == Type::BLOCK).collect();
 
-  for (mut view, position) in &mut query1 {
+  for (mut field_of_view, position) in &mut query1 {
     let mut points: Vec<Vec2> = vec![];
-    let mut rad = view.direction - (FIELD_OF_VIEW_INNER_ANGLE / 2.);
+    let mut angle = field_of_view.direction - (FIELD_OF_VIEW_INNER_ANGLE / 2.);
 
-    while rad < view.direction + (FIELD_OF_VIEW_INNER_ANGLE / 2.) {
+    while angle < field_of_view.direction + (FIELD_OF_VIEW_INNER_ANGLE / 2.) {
       let mut min_distance = FIELD_OF_VIEW_DISTANCE;
       let mut point = Vec2f::new(
-        f32::cos(rad) * FIELD_OF_VIEW_DISTANCE + position.x,
-        f32::sin(rad) * FIELD_OF_VIEW_DISTANCE + position.y,
+        f32::cos(angle) * FIELD_OF_VIEW_DISTANCE + position.x,
+        f32::sin(angle) * FIELD_OF_VIEW_DISTANCE + position.y,
       );
 
-      for object in &objects {
-        // test all objects polygon lines vs ray (from entity position to view point)
-        for line in &object.polygon {
+      for polygon in &polygons {
+        // test all polygon lines vs ray (from entity position to fov point)
+        for line in &polygon.lines {
           if let Some(intersection) = maths_rs::line_segment_vs_line_segment(
             Vec3f::new(position.x, position.y, 0.),
             point.into(),
@@ -55,12 +55,12 @@ pub fn field_of_view(
       // add closest point to entity
       points.push(Vec2::new(point.x, point.y));
 
-      rad += RADIAN;
+      angle += RADIAN;
     }
 
-    // close view polygon
+    // close fov polygon
     points.push(Vec2::new(position.x, position.y));
 
-    view.points = points;
+    field_of_view.points = points;
   }
 }

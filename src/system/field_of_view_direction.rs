@@ -6,11 +6,7 @@ use crate::{
 };
 
 pub fn field_of_view_direction(mut query: Query<&mut FieldOfViewComponent>) {
-  for mut view in &mut query {
-    if view.shift == Shift::LEFT {
-      view.direction += RADIAN;
-    } else {
-      view.direction -= RADIAN;
-    }
+  for mut field_of_view in &mut query {
+    field_of_view.direction += if field_of_view.shift == Shift::LEFT { RADIAN } else { -RADIAN };
   }
 }

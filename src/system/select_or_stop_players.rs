@@ -14,7 +14,7 @@ pub fn select_or_stop_players(
     // stop selected player movement
     for (mut movement, selection) in &mut query {
       if selection.active {
-        movement.current_path = vec![];
+        movement.path = vec![];
       }
     }
   }

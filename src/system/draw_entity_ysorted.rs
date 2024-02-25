@@ -3,7 +3,7 @@ use crate::{
   resource::offset::Offset,
 };
 use bevy_ecs::system::{Query, Res};
-use macroquad::{color::WHITE, math::Vec2, texture::draw_texture};
+use macroquad::{color::WHITE, texture::draw_texture};
 
 pub fn draw_entity_ysorted(
   query: Query<(&PositionComponent, &SizeComponent, &SpriteComponent)>,
@@ -16,11 +16,6 @@ pub fn draw_entity_ysorted(
   });
 
   for (position, _, sprite) in entities {
-    let dest = Vec2 {
-      x: position.x - offset.x,
-      y: position.y - offset.y,
-    };
-
-    draw_texture(&sprite.image, dest.x, dest.y, WHITE);
+    draw_texture(&sprite.texture, position.x - offset.x, position.y - offset.y, WHITE);
   }
 }

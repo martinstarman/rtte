@@ -6,15 +6,15 @@ use crate::{
 };
 
 pub fn field_of_view_shift(mut query: Query<&mut FieldOfViewComponent>) {
-  for mut view in &mut query {
-    let rad = view.direction - view.movement_direction;
+  for mut field_of_view in &mut query {
+    let angle = field_of_view.direction - field_of_view.movement_direction;
 
-    if rad > FIELD_OF_VIEW_SHIFT_MAX_ANGLE {
-      view.shift = Shift::RIGHT;
+    if angle > FIELD_OF_VIEW_SHIFT_MAX_ANGLE {
+      field_of_view.shift = Shift::RIGHT;
     }
 
-    if rad < -FIELD_OF_VIEW_SHIFT_MAX_ANGLE {
-      view.shift = Shift::LEFT;
+    if angle < -FIELD_OF_VIEW_SHIFT_MAX_ANGLE {
+      field_of_view.shift = Shift::LEFT;
     }
   }
 }

@@ -76,7 +76,7 @@ pub fn select_or_move_players(
             // path does not include destination point
             path.push(target_point);
 
-            movement.current_path =
+            movement.path =
               path.into_iter().map(|p| Vec2::new(p.x as f32, p.y as f32)).collect::<Vec<Vec2>>();
           }
         }
@@ -97,7 +97,7 @@ fn get_neighbors(
   let mut polygon_id: Option<ComponentId> = None;
 
   for block in &blocks {
-    for line in &block.polygon {
+    for line in &block.lines {
       if line.0.x as i32 == point.x && line.0.y as i32 == point.y {
         polygon_id = Some(block.id);
 
@@ -126,7 +126,7 @@ fn get_neighbors(
   let mut has_intersection = false;
 
   for block in &blocks {
-    for line in &block.polygon {
+    for line in &block.lines {
       let intersection = line_segment_vs_line_segment(
         Vec3 {
           x: point.x as f32,
@@ -180,11 +180,11 @@ fn get_neighbors(
 
   // test all blocks
   for block_a in &blocks {
-    for line_a in &block_a.polygon {
+    for line_a in &block_a.lines {
       let mut has_intersection = false;
 
       for block_b in &blocks {
-        for line_b in &block_b.polygon {
+        for line_b in &block_b.lines {
           let intersection = line_segment_vs_line_segment(
             Vec3 {
               x: point.x as f32,
