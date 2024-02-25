@@ -17,7 +17,7 @@ pub struct ImageEntity {
 
 impl ImageEntity {
   pub async fn into(&self, index: usize) -> ImageBundle {
-    let image = load_texture(self.path.as_str()).await.unwrap();
+    let texture = load_texture(self.path.as_str()).await.unwrap();
 
     ImageBundle {
       image: ImageComponent {
@@ -28,11 +28,11 @@ impl ImageEntity {
         y: self.position.1,
       },
       size: SizeComponent {
-        width: image.width(),
-        height: image.height(),
+        width: texture.width(),
+        height: texture.height(),
       },
       sprite: SpriteComponent {
-        image,
+        texture,
         ysorted: self.ysorted,
       },
     }

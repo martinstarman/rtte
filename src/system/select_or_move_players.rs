@@ -15,22 +15,22 @@ use macroquad::math::{Rect, Vec2};
 use maths_rs::{distance, line_segment_vs_line_segment, vec::Vec3};
 use pathfinding::directed::dijkstra::dijkstra;
 
-pub fn run(
+pub fn select_or_move_players(
   mut events: EventReader<SelectOrMovePlayer>,
-  mut q1: Query<(
+  mut query1: Query<(
     &PlayerComponent,
     &mut SelectionComponent,
     &PositionComponent,
     &SizeComponent,
     &mut MovementComponent,
   )>,
-  q2: Query<&PolygonComponent>,
+  query2: Query<&PolygonComponent>,
 ) {
   for event in events.read() {
     let mut selected_player_id: Option<ComponentId> = None;
 
     // try to select player
-    for (player, mut selection, position, size, _) in &mut q1 {
+    for (player, mut selection, position, size, _) in &mut query1 {
       let rect = Rect::new(position.x, position.y, size.width, size.height);
 
       if rect.contains(Vec2::new(event.x, event.y)) {
@@ -41,7 +41,7 @@ pub fn run(
 
     // deselect all players if some was selected
     if let Some(id) = selected_player_id {
-      for (player, mut selection, _, _, _) in &mut q1 {
+      for (player, mut selection, _, _, _) in &mut query1 {
         if player.id != id {
           selection.active = false;
         }
@@ -50,20 +50,20 @@ pub fn run(
 
     // set path to selected player when no player was selected
     if selected_player_id.is_none() {
-      let blocks: Vec<&PolygonComponent> = q2
+      let polygons: Vec<&PolygonComponent> = query2
         .into_iter()
-        .filter(|block| block.r#type == Type::BLOCK || block.r#type == Type::TRANSPARENT)
+        .filter(|polygon| polygon.r#type == Type::BLOCK || polygon.r#type == Type::TRANSPARENT)
         .collect();
 
       let target_point = Point::new(event.x as i32, event.y as i32);
 
-      for (_, selection, position, _, mut movement) in &mut q1 {
+      for (_, selection, position, _, mut movement) in &mut query1 {
         if selection.active {
           let start_point = Point::new(position.x as i32, position.y as i32);
 
           let path = dijkstra(
             &start_point,
-            |&point| get_neighbors(point, target_point, blocks.clone()),
+            |&point| get_neighbors(point, target_point, polygons.clone()),
             |&point| point.x == target_point.x && point.y == target_point.y,
           );
 
@@ -76,7 +76,7 @@ pub fn run(
             // path does not include destination point
             path.push(target_point);
 
-            movement.current_path =
+            movement.path =
               path.into_iter().map(|p| Vec2::new(p.x as f32, p.y as f32)).collect::<Vec<Vec2>>();
           }
         }
@@ -89,17 +89,17 @@ pub fn run(
 fn get_neighbors(
   point: Point,
   target: Point,
-  blocks: Vec<&PolygonComponent>,
+  polygons: Vec<&PolygonComponent>,
 ) -> Vec<(Point, usize)> {
   let mut neighbors: Vec<(Point, usize)> = vec![];
 
   // check if it is polygon point
   let mut polygon_id: Option<ComponentId> = None;
 
-  for block in &blocks {
-    for line in &block.polygon {
+  for polygon in &polygons {
+    for line in &polygon.lines {
       if line.0.x as i32 == point.x && line.0.y as i32 == point.y {
-        polygon_id = Some(block.id);
+        polygon_id = Some(polygon.id);
 
         let neighboor = Point::new(line.1.x as i32, line.1.y as i32);
 
@@ -125,8 +125,8 @@ fn get_neighbors(
   // test target
   let mut has_intersection = false;
 
-  for block in &blocks {
-    for line in &block.polygon {
+  for polygon in &polygons {
+    for line in &polygon.lines {
       let intersection = line_segment_vs_line_segment(
         Vec3 {
           x: point.x as f32,
@@ -178,13 +178,13 @@ fn get_neighbors(
     ));
   }
 
-  // test all blocks
-  for block_a in &blocks {
-    for line_a in &block_a.polygon {
+  // test all polygons
+  for polygon_a in &polygons {
+    for line_a in &polygon_a.lines {
       let mut has_intersection = false;
 
-      for block_b in &blocks {
-        for line_b in &block_b.polygon {
+      for polygon_b in &polygons {
+        for line_b in &polygon_b.lines {
           let intersection = line_segment_vs_line_segment(
             Vec3 {
               x: point.x as f32,
@@ -235,7 +235,7 @@ fn get_neighbors(
         );
 
         if polygon_id.is_some() {
-          if polygon_id.unwrap() != block_a.id {
+          if polygon_id.unwrap() != polygon_a.id {
             neighbors.push((neighbor, dist as usize));
           }
         } else {

@@ -1,36 +1,35 @@
 use crate::{
   component::{
+    field_of_view::FieldOfViewComponent,
     polygon::{PolygonComponent, Type},
     position::PositionComponent,
-    view::ViewComponent,
   },
-  constants::{RADIAN, VIEW_DISTANCE, VIEW_INNER_ANGLE},
+  constants::{FIELD_OF_VIEW_DISTANCE, FIELD_OF_VIEW_INNER_ANGLE, RADIAN},
 };
 use bevy_ecs::system::Query;
-use macroquad::math::Vec2;
-use maths_rs::{Vec2f, Vec3f};
+use maths_rs::{vec::Vec2, Vec2f, Vec3f};
 
-pub fn run(
-  mut query: Query<(&mut ViewComponent, &PositionComponent)>,
+pub fn field_of_view(
+  mut query1: Query<(&mut FieldOfViewComponent, &PositionComponent)>,
   query2: Query<&PolygonComponent>,
 ) {
-  let objects: Vec<&PolygonComponent> =
-    query2.iter().filter(|object| object.r#type == Type::BLOCK).collect();
+  let polygons: Vec<&PolygonComponent> =
+    query2.iter().filter(|polygon| polygon.r#type == Type::BLOCK).collect();
 
-  for (mut view, position) in &mut query {
-    let mut points: Vec<Vec2> = vec![];
-    let mut rad = view.current_direction - (VIEW_INNER_ANGLE / 2.);
+  for (mut field_of_view, position) in &mut query1 {
+    let mut points: Vec<Vec2<f32>> = vec![];
+    let mut angle = field_of_view.direction - (FIELD_OF_VIEW_INNER_ANGLE / 2.);
 
-    while rad < view.current_direction + (VIEW_INNER_ANGLE / 2.) {
-      let mut min_distance = VIEW_DISTANCE;
+    while angle < field_of_view.direction + (FIELD_OF_VIEW_INNER_ANGLE / 2.) {
+      let mut min_distance = FIELD_OF_VIEW_DISTANCE;
       let mut point = Vec2f::new(
-        f32::cos(rad) * VIEW_DISTANCE + position.x,
-        f32::sin(rad) * VIEW_DISTANCE + position.y,
+        f32::cos(angle) * FIELD_OF_VIEW_DISTANCE + position.x,
+        f32::sin(angle) * FIELD_OF_VIEW_DISTANCE + position.y,
       );
 
-      for object in &objects {
-        // test all objects polygon lines vs ray (from entity position to view point)
-        for line in &object.polygon {
+      for polygon in &polygons {
+        // test all polygon lines vs ray (from entity position to fov point)
+        for line in &polygon.lines {
           if let Some(intersection) = maths_rs::line_segment_vs_line_segment(
             Vec3f::new(position.x, position.y, 0.),
             point.into(),
@@ -55,12 +54,12 @@ pub fn run(
       // add closest point to entity
       points.push(Vec2::new(point.x, point.y));
 
-      rad += RADIAN;
+      angle += RADIAN;
     }
 
-    // close view polygon
+    // close fov polygon
     points.push(Vec2::new(position.x, position.y));
 
-    view.polygon = points;
+    field_of_view.points = points;
   }
 }

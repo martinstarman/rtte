@@ -9,7 +9,7 @@ use crate::{
   resource::target_area::TargetArea,
 };
 
-pub fn run(
+pub fn players_reach_target_area(
   query: Query<&PositionComponent, With<PlayerComponent>>,
   target_area: ResMut<TargetArea>,
 ) {
@@ -22,6 +22,6 @@ pub fn run(
   }
 
   if all_players_in_target_area {
-    // TODO: do something
+    // TODO: mission success
   }
 }

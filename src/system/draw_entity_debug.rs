@@ -8,13 +8,13 @@ use macroquad::{
   shapes::{draw_line, draw_rectangle_lines},
 };
 
-pub fn run(
-  q1: Query<(&PositionComponent, &SizeComponent)>,
-  q2: Query<&PolygonComponent>,
+pub fn draw_entity_debug(
+  query1: Query<(&PositionComponent, &SizeComponent)>,
+  query2: Query<&PolygonComponent>,
   offset: Res<Offset>,
 ) {
   // rect
-  for (position, size) in &q1 {
+  for (position, size) in &query1 {
     draw_rectangle_lines(
       position.x - offset.x,
       position.y - offset.y,
@@ -26,18 +26,16 @@ pub fn run(
   }
 
   // polygon
-  for object in &q2 {
-    if object.polygon.len() >= 3 {
-      for line in &object.polygon {
-        draw_line(
-          line.0.x - offset.x,
-          line.0.y - offset.y,
-          line.1.x - offset.x,
-          line.1.y - offset.y,
-          1.0,
-          WHITE,
-        );
-      }
+  for polygon in &query2 {
+    for line in &polygon.lines {
+      draw_line(
+        line.0.x - offset.x,
+        line.0.y - offset.y,
+        line.1.x - offset.x,
+        line.1.y - offset.y,
+        1.0,
+        WHITE,
+      );
     }
   }
 }

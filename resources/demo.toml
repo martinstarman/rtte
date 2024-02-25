@@ -10,13 +10,13 @@ position = [30, 1]
 image = "resources/enemy.png"
 path = [[550, 400], [650, 500], [450, 500], [450, 400]]
 position = [450, 400]
-view_direction = 0
+field_of_view_direction = 0
 
 [[enemy]]
 image = "resources/enemy.png"
 path = []
 position = [350, 475]
-view_direction = 4.7123
+field_of_view_direction = 4.7123
 
 [[image]]
 path = "resources/ground.png"
