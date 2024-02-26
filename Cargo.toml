@@ -9,6 +9,6 @@ version = "0.4.0"
 maths-rs = "0.2.6"
 bevy_ecs = "0.12.1"
 toml = "0.8.10"
-serde = { version = "1.0.196", features = ["derive"] }
+serde = { version = "1.0.197", features = ["derive"] }
 pathfinding = "4.9.1"
 macroquad = "0.4.4"
