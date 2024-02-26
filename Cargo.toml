@@ -7,7 +7,7 @@ version = "0.4.0"
 
 [dependencies]
 maths-rs = "0.2.6"
-bevy_ecs = "0.12.1"
+bevy_ecs = "0.13.0"
 toml = "0.8.10"
 serde = { version = "1.0.197", features = ["derive"] }
 pathfinding = "4.9.1"
