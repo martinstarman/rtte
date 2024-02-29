@@ -7,7 +7,6 @@ use maths_rs::Vec2f;
 
 pub fn movement(mut query: Query<(&mut MovementComponent, &mut PositionComponent)>) {
   for (mut movement, mut current_position) in &mut query {
-    // move within path
     if movement.path.len() > 0 {
       let next_position = movement.path[0];
       let distance = maths_rs::distance::<f32, Vec2f>(
@@ -23,11 +22,6 @@ pub fn movement(mut query: Query<(&mut MovementComponent, &mut PositionComponent
         current_position.x += (next_position.x - current_position.x) / distance;
         current_position.y += (next_position.y - current_position.y) / distance;
       }
-    }
-
-    // reset path if any
-    if movement.path.len() == 0 && movement.default_path.len() > 0 {
-      movement.path = movement.default_path.clone();
     }
   }
 }

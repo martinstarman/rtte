@@ -19,6 +19,7 @@ use crate::system::field_of_view_shift::field_of_view_shift;
 use crate::system::mark_in_field_of_view::mark_in_field_of_view;
 use crate::system::movement::movement;
 use crate::system::players_reach_target_area::players_reach_target_area;
+use crate::system::reset_path::reset_path;
 use crate::system::select_enemy_or_place_mark::select_enemy_or_place_mark;
 use crate::system::select_or_move_players::select_or_move_players;
 use crate::system::select_or_stop_players::select_or_stop_players;
@@ -95,6 +96,7 @@ impl Game {
     schedule.add_systems(draw_field_of_view);
     schedule.add_systems(draw_mark);
     schedule.add_systems(draw_target_area);
+    schedule.add_systems(reset_path);
 
     Game { world, schedule }
   }

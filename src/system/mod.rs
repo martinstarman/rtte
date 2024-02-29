@@ -11,6 +11,7 @@ pub mod field_of_view_shift;
 pub mod mark_in_field_of_view;
 pub mod movement;
 pub mod players_reach_target_area;
+pub mod reset_path;
 pub mod select_enemy_or_place_mark;
 pub mod select_or_move_players;
 pub mod select_or_stop_players;
