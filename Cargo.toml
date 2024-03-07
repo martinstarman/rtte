@@ -6,9 +6,9 @@ version = "0.4.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-maths-rs = "0.2.6"
 bevy_ecs = "0.13.0"
-toml = "0.8.10"
-serde = { version = "1.0.197", features = ["derive"] }
+macroquad = {version = "0.4.5", features = ["audio"]}
+maths-rs = "0.2.6"
 pathfinding = "4.9.1"
-macroquad = "0.4.5"
+serde = {version = "1.0.197", features = ["derive"]}
+toml = "0.8.10"

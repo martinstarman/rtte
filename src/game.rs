@@ -4,6 +4,7 @@ use crate::event::{
   select_or_stop_player::SelectOrStopPlayer,
 };
 use crate::mission;
+use crate::resource::alarm::Alarm;
 use crate::resource::offset::Offset;
 use crate::resource::{mark::Mark, target_area::TargetArea};
 use crate::system::draw_entity::draw_entity;
@@ -65,6 +66,8 @@ impl Game {
     world.insert_resource(TargetArea {
       rect: Rect::new(500., 100., 100., 100.),
     });
+
+    world.insert_resource(Alarm::new().await);
 
     world.insert_resource(Events::<SelectEnemyOrPlaceMark>::default());
     world.insert_resource(Events::<SelectOrMovePlayer>::default());
