@@ -31,6 +31,7 @@ use macroquad::input::{is_key_down, is_key_pressed, is_mouse_button_pressed, mou
 use macroquad::math::Rect;
 use macroquad::miniquad::window::request_quit;
 use macroquad::miniquad::{KeyCode, MouseButton};
+use macroquad::texture::load_texture;
 use macroquad::window::{screen_height, screen_width};
 
 pub struct Game {
@@ -60,7 +61,10 @@ impl Game {
       world.spawn(image.into(i).await);
     }
 
-    world.insert_resource(Mark { position: None });
+    world.insert_resource(Mark {
+      position: None,
+      texture: load_texture("resources/mark.png").await.unwrap(),
+    });
     world.insert_resource(Offset { x: 0., y: 0. });
 
     world.insert_resource(TargetArea {
