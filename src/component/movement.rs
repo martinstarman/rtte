@@ -5,4 +5,5 @@ use macroquad::math::Vec2;
 pub struct MovementComponent {
   pub path: Vec<Vec2>,
   pub default_path: Vec<Vec2>,
+  pub speed: f32,
 }

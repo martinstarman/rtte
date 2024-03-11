@@ -19,8 +19,8 @@ pub fn movement(mut query: Query<(&mut MovementComponent, &mut PositionComponent
         position.y = next_position.y;
         movement.path.remove(0);
       } else {
-        position.x += (next_position.x - position.x) / distance;
-        position.y += (next_position.y - position.y) / distance;
+        position.x += ((next_position.x - position.x) / distance) * movement.speed;
+        position.y += ((next_position.y - position.y) / distance) * movement.speed;
       }
     }
   }

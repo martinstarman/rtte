@@ -1,10 +1,13 @@
-use crate::component::{
-  movement::MovementComponent,
-  player::{PlayerBundle, PlayerComponent},
-  position::PositionComponent,
-  selection::SelectionComponent,
-  size::SizeComponent,
-  sprite::SpriteComponent,
+use crate::{
+  component::{
+    movement::MovementComponent,
+    player::{PlayerBundle, PlayerComponent},
+    position::PositionComponent,
+    selection::SelectionComponent,
+    size::SizeComponent,
+    sprite::SpriteComponent,
+  },
+  constants::MOVEMENT_SPEED,
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::texture::load_texture;
@@ -24,6 +27,7 @@ impl PlayerEntity {
       movement: MovementComponent {
         path: vec![],
         default_path: vec![],
+        speed: MOVEMENT_SPEED,
       },
       player: PlayerComponent {
         id: ComponentId::new(index),
