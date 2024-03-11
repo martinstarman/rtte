@@ -11,6 +11,7 @@ use crate::system::draw_entity::draw_entity;
 use crate::system::draw_entity_debug::draw_entity_debug;
 use crate::system::draw_entity_ysorted::draw_entity_ysorted;
 use crate::system::draw_field_of_view::draw_field_of_view;
+use crate::system::draw_fps::draw_fps;
 use crate::system::draw_mark::draw_mark;
 use crate::system::draw_target_area::draw_target_area;
 use crate::system::field_of_view::field_of_view;
@@ -103,6 +104,14 @@ impl Game {
     schedule.add_systems(draw_field_of_view);
     schedule.add_systems(draw_mark);
     schedule.add_systems(draw_target_area);
+    schedule.add_systems(
+      draw_fps
+        .after(draw_entity_ysorted)
+        .after(draw_entity_debug)
+        .after(draw_field_of_view)
+        .after(draw_mark)
+        .after(draw_target_area),
+    );
     schedule.add_systems(reset_path);
 
     Game { world, schedule }
