@@ -28,14 +28,14 @@ pub fn field_of_view(
         f32::sin(angle) * FIELD_OF_VIEW_DISTANCE + position.y,
       );
 
-      for (shape, sposition) in &blocks {
+      for (shape, block_position) in &blocks {
         // test all lines vs ray (from entity position to fov point)
         for line in &shape.lines {
           if let Some(intersection) = maths_rs::line_segment_vs_line_segment(
             Vec3f::new(position.x, position.y, 0.),
             point.into(),
-            Vec3f::new(sposition.x + line.0.x, sposition.y + line.0.y, 0.),
-            Vec3f::new(sposition.x + line.1.x, sposition.y + line.1.y, 0.),
+            Vec3f::new(block_position.x + line.0.x, block_position.y + line.0.y, 0.),
+            Vec3f::new(block_position.x + line.1.x, block_position.y + line.1.y, 0.),
           ) {
             // ray was intersected by some line
             let distance = maths_rs::distance::<f32, Vec2f>(
