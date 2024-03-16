@@ -1,5 +1,5 @@
 use crate::{
-  component::{polygon::PolygonComponent, position::PositionComponent, size::SizeComponent},
+  component::{position::PositionComponent, shape::ShapeComponent, size::SizeComponent},
   resource::offset::Offset,
 };
 use bevy_ecs::system::{Query, Res};
@@ -10,7 +10,7 @@ use macroquad::{
 
 pub fn draw_entity_debug(
   query1: Query<(&PositionComponent, &SizeComponent)>,
-  query2: Query<&PolygonComponent>,
+  query2: Query<(&PositionComponent, &ShapeComponent)>,
   offset: Res<Offset>,
 ) {
   // rect
@@ -25,14 +25,14 @@ pub fn draw_entity_debug(
     );
   }
 
-  // polygon
-  for polygon in &query2 {
-    for line in &polygon.lines {
+  // shape
+  for (position, shape) in &query2 {
+    for line in &shape.lines {
       draw_line(
-        line.0.x - offset.x,
-        line.0.y - offset.y,
-        line.1.x - offset.x,
-        line.1.y - offset.y,
+        position.x + line.0.x - offset.x,
+        position.y + line.0.y - offset.y,
+        position.x + line.1.x - offset.x,
+        position.y + line.1.y - offset.y,
         1.0,
         WHITE,
       );

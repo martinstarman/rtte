@@ -1,38 +1,44 @@
 [[player]]
 image = "resources/player.png"
 position = [1, 1]
+# shape
 
 [[player]]
 image = "resources/player.png"
 position = [30, 1]
+# shape
 
 [[enemy]]
+field_of_view_direction = 0
 image = "resources/enemy.png"
 path = [[550, 400], [650, 500], [450, 500], [450, 400]]
 position = [450, 400]
-field_of_view_direction = 0
+# shape
 
 [[enemy]]
+field_of_view_direction = 4.7123
 image = "resources/enemy.png"
 path = []
 position = [350, 475]
-field_of_view_direction = 4.7123
+# shape
 
-[[image]]
-path = "resources/ground.png"
+[[object]]
+image = "resources/ground.png"
 position = [0, 0]
+shape = [[0, 0], [800, 0], [800, 600], [0, 600]] # relative to position and clockwise
+type = "none"
 ysorted = false
 
-[[image]]
-path = "resources/block-001.png"
+[[object]]
+image = "resources/block-001.png"
 position = [300, 300]
-ysorted = true
-
-[[image]]
-path = "resources/block-002.png"
-position = [349, 342]
-ysorted = true
-
-[[polygon]]
-points = [[350, 352], [360, 359], [325, 380], [409, 424], [398, 431], [300, 383]]
+shape = [[50, 52], [60, 59], [13, 90], [0, 83]]
 type = "block"
+ysorted = true
+
+[[object]]
+image = "resources/block-002.png"
+position = [349, 342]
+shape = [[-22, 38], [60, 82], [49, 89], [-36, 47]]
+type = "block"
+ysorted = true

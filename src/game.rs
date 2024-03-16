@@ -54,12 +54,8 @@ impl Game {
       world.spawn(enemy.into(i).await);
     }
 
-    for (i, polygon) in mission.polygon.iter().enumerate() {
-      world.spawn(polygon.into(i));
-    }
-
-    for (i, image) in mission.image.iter().enumerate() {
-      world.spawn(image.into(i).await);
+    for (i, object) in mission.object.iter().enumerate() {
+      world.spawn(object.into(i).await);
     }
 
     world.insert_resource(Mark {
