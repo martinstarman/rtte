@@ -10,4 +10,4 @@ pub const FIELD_OF_VIEW_DISTANCE: f32 = 150.;
 pub const FIELD_OF_VIEW_INNER_ANGLE: f32 = 60. * RADIAN;
 pub const FIELD_OF_VIEW_SHIFT_MAX_ANGLE: f32 = 30. * RADIAN;
 pub const FIELD_OF_VIEW_COLOR: Color = Color::new(1., 0., 0., 0.5);
-pub const MOVEMENT_SPEED: f32 = 1.6;
+pub const MOVEMENT_SPEED: f32 = 0.6;
