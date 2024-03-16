@@ -8,6 +8,7 @@ use crate::{
     shape::{ShapeComponent, ShapeType},
     size::SizeComponent,
   },
+  constants::{WINDOW_HEIGHT, WINDOW_WIDTH},
   event::select_or_move_player::SelectOrMovePlayer,
 };
 use bevy_ecs::{component::ComponentId, event::EventReader, query::With, system::Query};
@@ -93,36 +94,11 @@ fn find_path(
   let shape = FixShape::new_with_contour_and_holes(
     vec![
       F32Vec::new(0., 0.).to_fix(),
-      F32Vec::new(800., 0.).to_fix(),
-      F32Vec::new(800., 600.).to_fix(),
-      F32Vec::new(0., 600.).to_fix(),
+      F32Vec::new(WINDOW_WIDTH as f32, 0.).to_fix(),
+      F32Vec::new(WINDOW_WIDTH as f32, WINDOW_HEIGHT as f32).to_fix(),
+      F32Vec::new(0., WINDOW_HEIGHT as f32).to_fix(),
     ],
-    holes, // vec![
-           //   vec![
-           //     F32Vec::new(100., 100.).to_fix(),
-           //     F32Vec::new(150., 100.).to_fix(),
-           //     F32Vec::new(150., 150.).to_fix(),
-           //     F32Vec::new(100., 150.).to_fix(),
-           //   ],
-           //   vec![
-           //     F32Vec::new(50., 50.).to_fix(),
-           //     F32Vec::new(80., 50.).to_fix(),
-           //     F32Vec::new(80., 80.).to_fix(),
-           //     F32Vec::new(50., 80.).to_fix(),
-           //   ],
-           //   vec![
-           //     F32Vec::new(150., 100.).to_fix(),
-           //     F32Vec::new(200., 100.).to_fix(),
-           //     F32Vec::new(200., 125.).to_fix(),
-           //     F32Vec::new(150., 125.).to_fix(),
-           //   ],
-           //   vec![
-           //     F32Vec::new(100., 150.).to_fix(),
-           //     F32Vec::new(115., 150.).to_fix(),
-           //     F32Vec::new(115., 175.).to_fix(),
-           //     F32Vec::new(100., 175.).to_fix(),
-           //   ],
-           // ],
+    holes,
   );
 
   let triangulation = shape.to_triangulation(Some(FillRule::NonZero));
@@ -130,12 +106,6 @@ fn find_path(
   let mut triangles: Vec<NavTriangle> = vec![];
 
   for i in (0..triangulation.indices.len()).step_by(3) {
-    println!(
-      "({}, {}, {})",
-      triangulation.indices[i],
-      triangulation.indices[i + 1],
-      triangulation.indices[i + 2]
-    );
     triangles.push(NavTriangle {
       first: triangulation.indices[i] as u32,
       second: triangulation.indices[i + 1] as u32,
@@ -144,11 +114,6 @@ fn find_path(
   }
 
   for i in 0..triangulation.points.len() {
-    println!(
-      "({}x{})",
-      triangulation.points[i].to_f32vec().x,
-      triangulation.points[i].to_f32vec().y,
-    );
     vertices.push(NavVec3::new(
       triangulation.points[i].to_f32vec().x,
       triangulation.points[i].to_f32vec().y,

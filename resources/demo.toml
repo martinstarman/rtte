@@ -39,6 +39,6 @@ ysorted = true
 [[object]]
 image = "resources/block-002.png"
 position = [349, 342]
-shape = [[-22, 38], [60, 82], [49, 89], [-36, 47]]
+shape = [[-22, 38], [60, 82], [49, 89], [-36, 48]]
 type = "block"
 ysorted = true

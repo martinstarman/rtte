@@ -25,9 +25,9 @@ impl ObjectEntity {
     let mut lines: Vec<(Vec2, Vec2)> = vec![];
 
     if self.shape.len() > 2 {
-      for i in 0..self.shape.len() - 1 {
+      for i in 0..self.shape.len() {
         let p = self.shape[i];
-        let q = self.shape[i + 1];
+        let q = self.shape[if i == self.shape.len() - 1 { 0 } else { i + 1 }];
 
         points.push(p.into());
         lines.push((p.into(), q.into()));
