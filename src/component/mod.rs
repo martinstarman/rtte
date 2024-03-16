@@ -1,10 +1,10 @@
 pub mod enemy;
 pub mod field_of_view;
-pub mod image;
 pub mod movement;
+pub mod object;
 pub mod player;
-pub mod polygon;
 pub mod position;
 pub mod selection;
+pub mod shape;
 pub mod size;
 pub mod sprite;

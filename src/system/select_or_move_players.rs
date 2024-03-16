@@ -1,19 +1,24 @@
 use crate::{
   component::{
     movement::MovementComponent,
+    object::ObjectComponent,
     player::PlayerComponent,
-    polygon::{PolygonComponent, Type},
     position::PositionComponent,
     selection::SelectionComponent,
+    shape::{ShapeComponent, ShapeType},
     size::SizeComponent,
   },
+  constants::{WINDOW_HEIGHT, WINDOW_WIDTH},
   event::select_or_move_player::SelectOrMovePlayer,
-  point::Point,
 };
-use bevy_ecs::{component::ComponentId, event::EventReader, system::Query};
+use bevy_ecs::{component::ComponentId, event::EventReader, query::With, system::Query};
+use i_float::{f32_vec::F32Vec, fix_vec::FixVec};
+use i_overlay::bool::fill_rule::FillRule;
+use i_shape::fix_path::FixPath;
+use i_shape::fix_shape::FixShape;
+use i_triangle::triangulation::triangulate::Triangulate;
 use macroquad::math::{Rect, Vec2};
-use maths_rs::{distance, line_segment_vs_line_segment, vec::Vec3};
-use pathfinding::directed::dijkstra::dijkstra;
+use navmesh::{NavMesh, NavPathMode, NavQuery, NavTriangle, NavVec3};
 
 pub fn select_or_move_players(
   mut events: EventReader<SelectOrMovePlayer>,
@@ -24,7 +29,7 @@ pub fn select_or_move_players(
     &SizeComponent,
     &mut MovementComponent,
   )>,
-  query2: Query<&PolygonComponent>,
+  query2: Query<(&ShapeComponent, &PositionComponent), With<ObjectComponent>>,
 ) {
   for event in events.read() {
     let mut selected_player_id: Option<ComponentId> = None;
@@ -50,200 +55,84 @@ pub fn select_or_move_players(
 
     // set path to selected player when no player was selected
     if selected_player_id.is_none() {
-      let polygons: Vec<&PolygonComponent> = query2
+      let blocks: Vec<(&ShapeComponent, &PositionComponent)> = query2
         .into_iter()
-        .filter(|polygon| polygon.r#type == Type::BLOCK || polygon.r#type == Type::TRANSPARENT)
+        .filter(|(shape, _)| {
+          shape.r#type == ShapeType::BLOCK || shape.r#type == ShapeType::TRANSPARENT
+        })
         .collect();
 
-      let target_point = Point::new(event.x as i32, event.y as i32);
+      let to = Vec2::new(event.x, event.y);
 
       for (_, selection, position, _, mut movement) in &mut query1 {
         if selection.active {
-          let start_point = Point::new(position.x as i32, position.y as i32);
-
-          let path = dijkstra(
-            &start_point,
-            |&point| get_neighbors(point, target_point, polygons.clone()),
-            |&point| point.x == target_point.x && point.y == target_point.y,
-          );
-
-          if let Some(path) = path {
-            let mut path = path.0;
-
-            // remove start position, we are already there
-            path.remove(0);
-
-            // path does not include destination point
-            path.push(target_point);
-
-            movement.path =
-              path.into_iter().map(|p| Vec2::new(p.x as f32, p.y as f32)).collect::<Vec<Vec2>>();
-          }
+          let from = Vec2::new(position.x, position.y);
+          movement.path = find_path(from, to, &blocks);
         }
       }
     }
   }
 }
 
-// TODO: refactor me
-fn get_neighbors(
-  point: Point,
-  target: Point,
-  polygons: Vec<&PolygonComponent>,
-) -> Vec<(Point, usize)> {
-  let mut neighbors: Vec<(Point, usize)> = vec![];
+fn find_path(
+  from: Vec2,
+  to: Vec2,
+  blocks: &Vec<(&ShapeComponent, &PositionComponent)>,
+) -> Vec<Vec2> {
+  let mut holes: Vec<FixPath> = vec![];
 
-  // check if it is polygon point
-  let mut polygon_id: Option<ComponentId> = None;
+  for (shape, position) in blocks {
+    let mut hole: Vec<FixVec> = vec![];
 
-  for polygon in &polygons {
-    for line in &polygon.lines {
-      if line.0.x as i32 == point.x && line.0.y as i32 == point.y {
-        polygon_id = Some(polygon.id);
-
-        let neighboor = Point::new(line.1.x as i32, line.1.y as i32);
-
-        neighbors.push((
-          neighboor,
-          distance(
-            Vec3 {
-              x: point.x as f32,
-              y: point.y as f32,
-              z: 1.,
-            },
-            Vec3 {
-              x: neighboor.x as f32,
-              y: neighboor.y as f32,
-              z: 1.,
-            },
-          ) as usize,
-        ));
-      }
+    for point in &shape.points {
+      hole.push(F32Vec::new(point.x + position.x, point.y + position.y).to_fix());
     }
+
+    holes.push(hole);
   }
 
-  // test target
-  let mut has_intersection = false;
+  let shape = FixShape::new_with_contour_and_holes(
+    vec![
+      F32Vec::new(0., 0.).to_fix(),
+      F32Vec::new(WINDOW_WIDTH as f32, 0.).to_fix(),
+      F32Vec::new(WINDOW_WIDTH as f32, WINDOW_HEIGHT as f32).to_fix(),
+      F32Vec::new(0., WINDOW_HEIGHT as f32).to_fix(),
+    ],
+    holes,
+  );
 
-  for polygon in &polygons {
-    for line in &polygon.lines {
-      let intersection = line_segment_vs_line_segment(
-        Vec3 {
-          x: point.x as f32,
-          y: point.y as f32,
-          z: 0.,
-        },
-        Vec3 {
-          x: target.x as f32,
-          y: target.y as f32,
-          z: 0.,
-        },
-        Vec3 {
-          x: line.0.x,
-          y: line.0.y,
-          z: 0.,
-        },
-        Vec3 {
-          x: line.1.x,
-          y: line.1.y,
-          z: 0.,
-        },
-      );
+  let triangulation = shape.to_triangulation(Some(FillRule::NonZero));
+  let mut vertices: Vec<NavVec3> = vec![];
+  let mut triangles: Vec<NavTriangle> = vec![];
 
-      if let Some(i) = intersection {
-        if !((i.x == line.0.x && i.y == line.0.y) || (i.x == line.1.x && i.y == line.1.y)) {
-          has_intersection = true;
-        }
-      }
-    }
+  for i in (0..triangulation.indices.len()).step_by(3) {
+    triangles.push(NavTriangle {
+      first: triangulation.indices[i] as u32,
+      second: triangulation.indices[i + 1] as u32,
+      third: triangulation.indices[i + 2] as u32,
+    })
   }
 
-  if !has_intersection {
-    let neighbor = Point::new(target.x, target.y);
-
-    neighbors.push((
-      neighbor,
-      distance(
-        Vec3 {
-          x: point.x as f32,
-          y: point.y as f32,
-          z: 1.,
-        },
-        Vec3 {
-          x: target.x as f32,
-          y: target.y as f32,
-          z: 1.,
-        },
-      ) as usize,
+  for i in 0..triangulation.points.len() {
+    vertices.push(NavVec3::new(
+      triangulation.points[i].to_f32vec().x,
+      triangulation.points[i].to_f32vec().y,
+      0.,
     ));
   }
 
-  // test all polygons
-  for polygon_a in &polygons {
-    for line_a in &polygon_a.lines {
-      let mut has_intersection = false;
+  let mesh = NavMesh::new(vertices, triangles).unwrap();
 
-      for polygon_b in &polygons {
-        for line_b in &polygon_b.lines {
-          let intersection = line_segment_vs_line_segment(
-            Vec3 {
-              x: point.x as f32,
-              y: point.y as f32,
-              z: 0.,
-            },
-            Vec3 {
-              x: line_a.0.x,
-              y: line_a.0.y,
-              z: 0.,
-            },
-            Vec3 {
-              x: line_b.0.x,
-              y: line_b.0.y,
-              z: 0.,
-            },
-            Vec3 {
-              x: line_b.1.x,
-              y: line_b.1.y,
-              z: 0.,
-            },
-          );
+  let res = mesh.find_path(
+    (from.x, from.y, 0.0).into(),
+    (to.x, to.y, 0.0).into(),
+    NavQuery::Accuracy,
+    NavPathMode::Accuracy,
+  );
 
-          if let Some(i) = intersection {
-            if !((i.x == line_b.0.x && i.y == line_b.0.y)
-              || (i.x == line_b.1.x && i.y == line_b.1.y))
-            {
-              has_intersection = true;
-            }
-          }
-        }
-      }
-
-      if !has_intersection {
-        let neighbor = Point::new(line_a.0.x as i32, line_a.0.y as i32);
-
-        let dist = distance(
-          Vec3 {
-            x: point.x as f32,
-            y: point.y as f32,
-            z: 1.,
-          },
-          Vec3 {
-            x: neighbor.x as f32,
-            y: neighbor.y as f32,
-            z: 1.,
-          },
-        );
-
-        if polygon_id.is_some() {
-          if polygon_id.unwrap() != polygon_a.id {
-            neighbors.push((neighbor, dist as usize));
-          }
-        } else {
-          neighbors.push((neighbor, dist as usize));
-        }
-      }
-    }
+  if let Some(path) = res {
+    return path.into_iter().map(|v| Vec2::new(v.x, v.y)).collect();
   }
 
-  neighbors
+  vec![]
 }

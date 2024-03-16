@@ -11,7 +11,6 @@ pub mod entity;
 pub mod event;
 pub mod game;
 pub mod mission;
-pub mod point;
 pub mod resource;
 pub mod system;
 
