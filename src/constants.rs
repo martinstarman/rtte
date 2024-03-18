@@ -11,3 +11,5 @@ pub const FIELD_OF_VIEW_INNER_ANGLE: f32 = 60. * RADIAN;
 pub const FIELD_OF_VIEW_SHIFT_MAX_ANGLE: f32 = 30. * RADIAN;
 pub const FIELD_OF_VIEW_COLOR: Color = Color::new(1., 0., 0., 0.5);
 pub const MOVEMENT_SPEED: f32 = 0.6;
+pub const MOVEMENT_PATH_COLOR: Color = Color::new(1., 1., 1., 1.);
+pub const NAVMESH_COLOR: Color = Color::new(0., 0., 1., 1.);

@@ -4,6 +4,8 @@ pub mod draw_entity_ysorted;
 pub mod draw_field_of_view;
 pub mod draw_fps;
 pub mod draw_mark;
+pub mod draw_navmesh;
+pub mod draw_path;
 pub mod draw_target_area;
 pub mod field_of_view;
 pub mod field_of_view_direction;
