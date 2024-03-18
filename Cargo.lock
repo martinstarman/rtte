@@ -571,7 +571,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aebd47af9e416459f0240c829a36d92f36dd6f71d99277bcb5316e6dd56a0225"
 dependencies = [
  "i_float",
- "i_shape",
+ "i_shape 0.13.0",
+]
+
+[[package]]
+name = "i_overlay"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdd39cee00660f3aa537a0c68d5e9671286e2981239e322567b8808c49cb3cb6"
+dependencies = [
+ "i_float",
+ "i_shape 0.14.0",
 ]
 
 [[package]]
@@ -585,14 +595,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "i_shape"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c20a699b04b521412b3ee72b5b6995116808eb61979cd317b4c4f8a83a3dcf92"
+dependencies = [
+ "i_float",
+ "serde",
+]
+
+[[package]]
 name = "i_triangle"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "690f17c978af9854672b6fe8cc872791e5c83c8522981579bcf819d3fb0921a2"
 dependencies = [
  "i_float",
- "i_overlay",
- "i_shape",
+ "i_overlay 0.21.0",
+ "i_shape 0.13.0",
  "serde",
 ]
 
@@ -1113,8 +1133,8 @@ version = "0.6.0"
 dependencies = [
  "bevy_ecs",
  "i_float",
- "i_overlay",
- "i_shape",
+ "i_overlay 0.23.0",
+ "i_shape 0.13.0",
  "i_triangle",
  "macroquad",
  "maths-rs",
