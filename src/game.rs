@@ -7,6 +7,7 @@ use crate::mission;
 use crate::resource::alarm::Alarm;
 use crate::resource::offset::Offset;
 use crate::resource::{mark::Mark, target_area::TargetArea};
+use crate::system::animation::animation;
 use crate::system::draw_entity::draw_entity;
 use crate::system::draw_entity_debug::draw_entity_debug;
 use crate::system::draw_entity_ysorted::draw_entity_ysorted;
@@ -127,6 +128,7 @@ impl Game {
         .after(draw_target_area),
     );
     schedule.add_systems(reset_path);
+    schedule.add_systems(animation);
 
     Game { world, schedule }
   }

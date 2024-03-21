@@ -1,7 +1,11 @@
 [[player]]
-image = "resources/player.png"
+image = "resources/player-sprite.png"
 position = [1, 1]
 # shape
+
+[player.animation]
+width = 48
+height = 48
 
 [[player]]
 image = "resources/player.png"
