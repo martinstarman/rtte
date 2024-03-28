@@ -4,7 +4,7 @@ use bevy_ecs::{
 };
 
 use super::{
-  position::PositionComponent, shape::ShapeComponent, size::SizeComponent, sprite::SpriteComponent,
+  position::PositionComponent, shape::ShapeComponent, size::SizeComponent, sprite::SpriteBundle,
 };
 
 #[derive(Component, Clone)]
@@ -16,7 +16,7 @@ pub struct ObjectComponent {
 pub struct ObjectBundle {
   pub object: ObjectComponent,
   pub position: PositionComponent,
-  pub sprite: SpriteComponent,
   pub shape: ShapeComponent,
   pub size: SizeComponent,
+  pub sprite: SpriteBundle,
 }
