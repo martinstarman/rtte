@@ -1,9 +1,10 @@
 use crate::component::{
+  animation::AnimationComponent,
   object::{ObjectBundle, ObjectComponent},
   position::PositionComponent,
   shape::{ShapeComponent, ShapeType},
   size::SizeComponent,
-  sprite::SpriteComponent,
+  sprite::{SpriteBundle, SpriteComponent},
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::{math::Vec2, texture::load_texture};
@@ -23,6 +24,7 @@ impl ObjectEntity {
     let texture = load_texture(self.image.as_str()).await.unwrap();
     let mut points: Vec<Vec2> = vec![];
     let mut lines: Vec<(Vec2, Vec2)> = vec![];
+    let animation = AnimationComponent::default(); // TODO: implement me
 
     if self.shape.len() > 2 {
       for i in 0..self.shape.len() {
@@ -65,9 +67,12 @@ impl ObjectEntity {
         height: texture.height(),
         width: texture.width(),
       },
-      sprite: SpriteComponent {
-        texture,
-        ysorted: self.ysorted,
+      sprite: SpriteBundle {
+        sprite: SpriteComponent {
+          texture,
+          ysorted: self.ysorted,
+        },
+        animation,
       },
     }
   }

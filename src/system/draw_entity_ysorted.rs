@@ -24,19 +24,19 @@ pub fn draw_entity_ysorted(
   });
 
   for (position, _, sprite, animation) in entities {
-    if animation.is_animated {
+    if animation.active {
       draw_texture_ex(
         &sprite.texture,
         position.x - offset.x,
         position.y - offset.y,
         WHITE,
         DrawTextureParams {
-          dest_size: Some(Vec2::new(animation.frame_width, animation.frame_height)),
+          dest_size: Some(Vec2::new(animation.frame_width as f32, animation.frame_height as f32)),
           source: Some(Rect::new(
-            animation.frame as f32 * animation.frame_width,
-            0.,
-            animation.frame_width,
-            animation.frame_height,
+            ((animation.frame / animation.frame_delay) * animation.frame_width) as f32,
+            (animation.frame_row * animation.frame_height) as f32,
+            animation.frame_width as f32,
+            animation.frame_height as f32,
           )),
           ..Default::default()
         },

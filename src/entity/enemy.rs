@@ -1,12 +1,13 @@
 use crate::{
   component::{
+    animation::AnimationComponent,
     enemy::{EnemyBundle, EnemyComponent},
     field_of_view::{FieldOfViewComponent, Shift},
     movement::MovementComponent,
     position::PositionComponent,
     selection::SelectionComponent,
     size::SizeComponent,
-    sprite::SpriteComponent,
+    sprite::{SpriteBundle, SpriteComponent},
   },
   constants::MOVEMENT_SPEED,
 };
@@ -26,6 +27,7 @@ impl EnemyEntity {
   pub async fn into(&self, index: usize) -> EnemyBundle {
     let texture = load_texture(self.image.as_str()).await.unwrap();
     let mut path: Vec<Vec2> = vec![];
+    let animation = AnimationComponent::default(); // TODO: implement me
 
     for point in &self.path {
       path.push(Vec2::new(point.0, point.1));
@@ -40,9 +42,12 @@ impl EnemyEntity {
         width: texture.width(),
         height: texture.height(),
       },
-      sprite: SpriteComponent {
-        texture,
-        ysorted: true,
+      sprite: SpriteBundle {
+        sprite: SpriteComponent {
+          texture,
+          ysorted: true,
+        },
+        animation,
       },
       movement: MovementComponent {
         path: path.clone(),
