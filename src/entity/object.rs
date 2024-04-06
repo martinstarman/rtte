@@ -43,11 +43,11 @@ impl ObjectEntity {
     }
 
     let r#type = match self.r#type.as_str() {
-      "none" => ShapeType::NONE,
-      "transparent" => ShapeType::TRANSPARENT,
-      "water" => ShapeType::WATER,
-      "snow" => ShapeType::SNOW,
-      _ => ShapeType::BLOCK,
+      "none" => ShapeType::None,
+      "transparent" => ShapeType::Transparent,
+      "water" => ShapeType::Water,
+      "snow" => ShapeType::Snow,
+      _ => ShapeType::Block,
     };
 
     ObjectBundle {

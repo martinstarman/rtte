@@ -26,7 +26,7 @@ pub fn draw_navmesh(
     let blocks: Vec<(&ShapeComponent, &PositionComponent)> = query
       .into_iter()
       .filter(|(shape, _)| {
-        shape.r#type == ShapeType::BLOCK || shape.r#type == ShapeType::TRANSPARENT
+        shape.r#type == ShapeType::Block || shape.r#type == ShapeType::Transparent
       })
       .collect();
 

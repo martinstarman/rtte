@@ -1,37 +1,70 @@
 [[player]]
 image = "resources/player-sprite.png"
 position = [1, 1]
-# shape
 
 [player.animation]
-frame_delay = 10
-frame_height = 48
+direction = "E"
+frame_delay = 10 
+frame_height = 48 
+frame_width = 48 
+
+[player.animation.walk]
+directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
 frame_row = 0
-frame_width = 48
+
+# [player.animation.idle]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 8
+
+# [player.animation.run]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 16
+
+# [player.animation.crawl]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 16
 
 [[player]]
 image = "resources/player-sprite.png"
 position = [49, 1]
 
 [player.animation]
-frame_delay = 10
-frame_height = 48
+direction = "S"
+frame_delay = 10 
+frame_height = 48 
+frame_width = 48 
+
+[player.animation.walk]
+directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
 frame_row = 0
-frame_width = 48
+
+# [player.animation.idle]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 8
+
+# [player.animation.run]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 16
+
+# [player.animation.crawl]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 16
+
+####################################################################################################
 
 [[enemy]]
 field_of_view_direction = 0
 image = "resources/enemy.png"
 path = [[550, 400], [650, 500], [450, 500], [450, 400]]
 position = [450, 400]
-# shape
 
 [[enemy]]
 field_of_view_direction = 4.7123
 image = "resources/enemy.png"
 path = []
 position = [350, 475]
-# shape
+
+####################################################################################################
 
 [[object]]
 image = "resources/ground.png"

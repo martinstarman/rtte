@@ -58,7 +58,7 @@ pub fn select_or_move_players(
       let blocks: Vec<(&ShapeComponent, &PositionComponent)> = query2
         .into_iter()
         .filter(|(shape, _)| {
-          shape.r#type == ShapeType::BLOCK || shape.r#type == ShapeType::TRANSPARENT
+          shape.r#type == ShapeType::Block || shape.r#type == ShapeType::Transparent
         })
         .collect();
 

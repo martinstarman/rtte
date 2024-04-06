@@ -1,6 +1,8 @@
+use std::str::FromStr;
+
 use crate::{
   component::{
-    animation::AnimationComponent,
+    animation::{AnimationComponent, Walk},
     movement::MovementComponent,
     player::{PlayerBundle, PlayerComponent},
     position::PositionComponent,
@@ -14,7 +16,7 @@ use bevy_ecs::component::ComponentId;
 use macroquad::texture::load_texture;
 use serde::Deserialize;
 
-use super::shared::animation::Animation;
+use super::shared::{animation::Animation, direction::Direction};
 
 #[derive(Deserialize)]
 pub struct PlayerEntity {
@@ -33,8 +35,17 @@ impl PlayerEntity {
       animation.active = true;
       animation.frame_delay = anim.frame_delay;
       animation.frame_height = anim.frame_height;
-      animation.frame_row = anim.frame_row;
       animation.frame_width = anim.frame_width;
+
+      let walk = Walk {
+        frame_row: anim.walk.frame_row,
+        directions: anim.walk.directions.iter().map(|s| Direction::from_str(&s).unwrap()).collect(),
+      };
+
+      let default_direction: Direction = Direction::from_str(&anim.direction).unwrap();
+
+      animation.frame_row = walk.frame_row
+        + walk.directions.iter().position(|d| d == &default_direction).unwrap() as i32;
     }
 
     PlayerBundle {
