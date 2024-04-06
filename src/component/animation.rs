@@ -10,7 +10,6 @@ pub struct AnimationComponent {
   pub frame_height: i32,
   pub frame_row: i32,
   pub frame_width: i32,
-
   pub walk: Walk,
 }
 
@@ -19,6 +18,7 @@ pub struct Walk {
   pub directions: Vec<Direction>, // TODO: direction_offset?
 }
 
+// TODO: remove me
 impl Default for AnimationComponent {
   fn default() -> Self {
     AnimationComponent {

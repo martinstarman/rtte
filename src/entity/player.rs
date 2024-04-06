@@ -22,31 +22,34 @@ use super::shared::{animation::Animation, direction::Direction};
 pub struct PlayerEntity {
   image: String,
   position: (f32, f32),
-  animation: Option<Animation>,
+  animation: Animation,
 }
 
 impl PlayerEntity {
   pub async fn into(&self, index: usize) -> PlayerBundle {
     let texture = load_texture(self.image.as_str()).await.unwrap();
 
-    let mut animation = AnimationComponent::default();
-
-    if let Some(anim) = &self.animation {
-      animation.active = true;
-      animation.frame_delay = anim.frame_delay;
-      animation.frame_height = anim.frame_height;
-      animation.frame_width = anim.frame_width;
-
-      let walk = Walk {
-        frame_row: anim.walk.frame_row,
-        directions: anim.walk.directions.iter().map(|s| Direction::from_str(&s).unwrap()).collect(),
-      };
-
-      let default_direction: Direction = Direction::from_str(&anim.direction).unwrap();
-
-      animation.frame_row = walk.frame_row
-        + walk.directions.iter().position(|d| d == &default_direction).unwrap() as i32;
-    }
+    let mut animation = AnimationComponent {
+      active: true,
+      frame: 0,
+      frame_delay: self.animation.frame_delay,
+      frame_height: self.animation.frame_height,
+      frame_row: 0,
+      frame_width: self.animation.frame_width,
+      walk: Walk {
+        frame_row: self.animation.walk.frame_row,
+        directions: self
+          .animation
+          .walk
+          .directions
+          .iter()
+          .map(|s| Direction::from_str(&s).unwrap())
+          .collect(),
+      },
+    };
+    let default_direction: Direction = Direction::from_str(&self.animation.direction).unwrap();
+    animation.frame_row = animation.walk.frame_row
+      + animation.walk.directions.iter().position(|d| d == &default_direction).unwrap() as i32;
 
     PlayerBundle {
       movement: MovementComponent {
