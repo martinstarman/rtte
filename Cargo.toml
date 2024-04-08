@@ -6,7 +6,7 @@ version = "0.7.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy_ecs = "0.13.1"
+bevy_ecs = "0.13.2"
 i_float = "0.8.0"
 i_overlay = "0.23.0"
 i_shape = "0.14.0"
