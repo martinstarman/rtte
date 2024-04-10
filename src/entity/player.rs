@@ -49,7 +49,7 @@ impl PlayerEntity {
     };
     let default_direction: Direction = Direction::from_str(&self.animation.direction).unwrap();
     animation.frame_row = animation.walk.frame_row
-      + animation.walk.directions.iter().position(|d| d == &default_direction).unwrap() as i32;
+      + animation.walk.directions.iter().position(|&d| d == default_direction).unwrap() as i32;
 
     PlayerBundle {
       movement: MovementComponent {

@@ -4,7 +4,7 @@ use crate::entity::shared::direction::Direction;
 
 #[derive(Component)]
 pub struct AnimationComponent {
-  pub active: bool,
+  pub active: bool, // TODO: remove me...
   pub frame: i32,
   pub frame_delay: i32,
   pub frame_height: i32,
