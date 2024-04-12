@@ -15,7 +15,7 @@ pub fn field_of_view(
   query2: Query<(&ShapeComponent, &PositionComponent), With<ObjectComponent>>,
 ) {
   let blocks: Vec<(&ShapeComponent, &PositionComponent)> =
-    query2.iter().filter(|(shape, _)| shape.r#type == ShapeType::BLOCK).collect();
+    query2.iter().filter(|(shape, _)| shape.r#type == ShapeType::Block).collect();
 
   for (mut field_of_view, position) in &mut query1 {
     let mut points: Vec<Vec2<f32>> = vec![];

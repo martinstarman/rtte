@@ -3,11 +3,11 @@ use macroquad::math::Vec2;
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum ShapeType {
-  NONE = 0,        //
-  BLOCK = 1,       // blocks enemy field of view and path
-  TRANSPARENT = 2, // blocks only path
-  WATER = 3,       //
-  SNOW = 4,        // blocks thath leave marks
+  None = 0,        //
+  Block = 1,       // blocks enemy field of view and path
+  Transparent = 2, // blocks only path
+  Water = 3,       //
+  Snow = 4,        // blocks thath leave marks
 }
 
 #[derive(Component, Clone)]

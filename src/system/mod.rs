@@ -1,4 +1,5 @@
 pub mod animation;
+pub mod direction;
 pub mod draw_entity;
 pub mod draw_entity_debug;
 pub mod draw_entity_ysorted;

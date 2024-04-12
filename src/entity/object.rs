@@ -42,12 +42,13 @@ impl ObjectEntity {
       lines.push((Vec2::new(last.0, last.1), Vec2::new(first.0, first.1)));
     }
 
+    // TODO: from_str
     let r#type = match self.r#type.as_str() {
-      "none" => ShapeType::NONE,
-      "transparent" => ShapeType::TRANSPARENT,
-      "water" => ShapeType::WATER,
-      "snow" => ShapeType::SNOW,
-      _ => ShapeType::BLOCK,
+      "none" => ShapeType::None,
+      "transparent" => ShapeType::Transparent,
+      "water" => ShapeType::Water,
+      "snow" => ShapeType::Snow,
+      _ => ShapeType::Block,
     };
 
     ObjectBundle {
