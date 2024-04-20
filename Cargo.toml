@@ -14,5 +14,6 @@ i_triangle = "0.18.0"
 macroquad = {version = "0.4.5", features = ["audio"]}
 maths-rs = "0.2.6"
 navmesh = "0.12.1"
+rapier2d = "0.18.0"
 serde = {version = "1.0.197", features = ["derive"]}
 toml = "0.8.12"
