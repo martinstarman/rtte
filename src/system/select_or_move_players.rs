@@ -13,7 +13,7 @@ use crate::{
 };
 use bevy_ecs::{component::ComponentId, event::EventReader, query::With, system::Query};
 use i_float::{f32_vec::F32Vec, fix_vec::FixVec};
-use i_overlay::bool::fill_rule::FillRule;
+use i_overlay::core::fill_rule::FillRule;
 use i_shape::fix_path::FixPath;
 use i_shape::fix_shape::FixShape;
 use i_triangle::triangulation::triangulate::Triangulate;
