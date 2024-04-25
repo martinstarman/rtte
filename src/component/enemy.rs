@@ -1,6 +1,7 @@
 use super::{
-  field_of_view::FieldOfViewComponent, movement::MovementComponent, position::PositionComponent,
-  selection::SelectionComponent, size::SizeComponent, sprite::SpriteBundle,
+  body::BodyComponent, field_of_view::FieldOfViewComponent, movement::MovementComponent,
+  position::PositionComponent, selection::SelectionComponent, size::SizeComponent,
+  sprite::SpriteBundle,
 };
 use bevy_ecs::{
   bundle::Bundle,
@@ -14,6 +15,7 @@ pub struct EnemyComponent {
 
 #[derive(Bundle)]
 pub struct EnemyBundle {
+  pub body: BodyComponent,
   pub enemy: EnemyComponent,
   pub field_of_view: FieldOfViewComponent,
   pub movement: MovementComponent,

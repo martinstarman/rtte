@@ -1,6 +1,6 @@
 use super::{
-  movement::MovementComponent, position::PositionComponent, selection::SelectionComponent,
-  size::SizeComponent, sprite::SpriteBundle,
+  body::BodyComponent, movement::MovementComponent, position::PositionComponent,
+  selection::SelectionComponent, size::SizeComponent, sprite::SpriteBundle,
 };
 use bevy_ecs::{
   bundle::Bundle,
@@ -14,6 +14,7 @@ pub struct PlayerComponent {
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
+  pub body: BodyComponent,
   pub movement: MovementComponent,
   pub player: PlayerComponent,
   pub position: PositionComponent,
