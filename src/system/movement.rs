@@ -1,35 +1,21 @@
 use crate::{
   component::{body::BodyComponent, movement::MovementComponent, position::PositionComponent},
+  constants::MIN_MOVEMENT_DISTANCE,
   resource::physics::Physics,
 };
 use bevy_ecs::system::{Query, Res};
+use maths_rs::Vec2f;
 use rapier2d::prelude::nalgebra;
 use rapier2d::prelude::vector;
 use rapier2d::{control::KinematicCharacterController, pipeline::QueryFilter};
 
 pub fn movement(
-  mut query: Query<(&mut MovementComponent, &mut PositionComponent, &BodyComponent)>,
+  mut query: Query<(&mut MovementComponent, &mut PositionComponent, &mut BodyComponent)>,
   physics: Res<Physics>,
 ) {
-  for (mut movement, mut position, body) in &mut query {
+  for (mut movement, mut position, mut body) in &mut query {
     if movement.path.len() > 0 {
       let next_position = movement.path[0];
-      // let distance = maths_rs::distance::<f32, Vec2f>(
-      //   Vec2f::new(next_position.x, next_position.y),
-      //   Vec2f::new(position.x, position.y),
-      // );
-
-      // if distance < MIN_MOVEMENT_DISTANCE {
-      //   position.x = next_position.x;
-      //   position.y = next_position.y;
-      //   movement.path.remove(0);
-      // } else {
-      //   position.x += ((next_position.x - position.x) / distance) * movement.speed;
-      //   position.y += ((next_position.y - position.y) / distance) * movement.speed;
-      // }
-
-      // let rbs  = RigidBodySet::new();
-      // let h = rbs.insert();
 
       // The translation we would like to apply if there were no obstacles.
       let desired_translation = vector![position.x - next_position.x, position.y - next_position.y];
@@ -50,8 +36,26 @@ pub fn movement(
         |_| {}, // We don’t care about events in this example.
       );
 
-      println!("{:?}", corrected_movement.translation);
+      println!("{}x{}", corrected_movement.translation.x, corrected_movement.translation.y);
       // TODO: apply the `corrected_movement.translation` to the rigid-body or collider based on the rules described bellow.
+
+      let distance = maths_rs::distance::<f32, Vec2f>(
+        Vec2f::new(next_position.x, next_position.y),
+        Vec2f::new(position.x, position.y),
+      );
+
+      if distance < MIN_MOVEMENT_DISTANCE {
+        position.x = next_position.x;
+        position.y = next_position.y;
+        movement.path.remove(0);
+      } else {
+        position.x += (((next_position.x - position.x) / distance) * movement.speed)
+          + (corrected_movement.translation.x * 100.);
+        position.y += (((next_position.y - position.y) / distance) * movement.speed)
+          + (corrected_movement.translation.y * 100.);
+      }
+
+      body.rigid_body.set_next_kinematic_position(vector![position.x, position.y].into());
     }
   }
 }
