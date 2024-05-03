@@ -70,11 +70,7 @@ impl PlayerEntity {
     let rigid_body_handle = rigid_body_set.insert(rigid_body.clone());
     let collider = ColliderBuilder::ball(24.).build(); // TODO: capsule, size
 
-    collider_set.insert_with_parent(
-      collider.clone(),
-      rigid_body_handle,
-      &mut rigid_body_set.clone(),
-    );
+    collider_set.insert_with_parent(collider.clone(), rigid_body_handle, rigid_body_set);
 
     PlayerBundle {
       body: BodyComponent {
