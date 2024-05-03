@@ -17,18 +17,20 @@ pub fn movement(
     if movement.path.len() > 0 {
       let next_position = movement.path[0];
 
+      let collider = &physics.collider_set[body.collider_handle];
+
       // The translation we would like to apply if there were no obstacles.
       let desired_translation = vector![position.x - next_position.x, position.y - next_position.y];
       // Create the character controller, here with the default configuration.
       let character_controller = KinematicCharacterController::default();
       // Calculate the possible movement.
       let corrected_movement = character_controller.move_shape(
-        1. / 60.,                 // The timestep length (can be set to SimulationSettings::dt).
-        &physics.rigid_body_set,  // The RigidBodySet.
-        &physics.collider_set,    // The ColliderSet.
-        &physics.query_pipeline,  // The QueryPipeline.
-        body.collider.shape(),    // The character’s shape.
-        body.collider.position(), // The character’s initial position.
+        1. / 60.,                // The timestep length (can be set to SimulationSettings::dt).
+        &physics.rigid_body_set, // The RigidBodySet.
+        &physics.collider_set,   // The ColliderSet.
+        &physics.query_pipeline, // The QueryPipeline.
+        collider.shape(),        // The character’s shape.
+        collider.position(),     // The character’s initial position.
         desired_translation,
         QueryFilter::default()
           // Make sure the the character we are trying to move isn’t considered an obstacle.
@@ -50,9 +52,9 @@ pub fn movement(
         movement.path.remove(0);
       } else {
         position.x += (((next_position.x - position.x) / distance) * movement.speed)
-          + (corrected_movement.translation.x * 100.);
+          + corrected_movement.translation.x;
         position.y += (((next_position.y - position.y) / distance) * movement.speed)
-          + (corrected_movement.translation.y * 100.);
+          + corrected_movement.translation.y;
       }
 
       let rigid_body = &mut physics.rigid_body_set[body.rigid_body_handle];
