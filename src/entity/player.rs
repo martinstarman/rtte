@@ -67,14 +67,13 @@ impl PlayerEntity {
       RigidBodyBuilder::new(rapier2d::dynamics::RigidBodyType::KinematicPositionBased)
         .position(vector![self.position.0, self.position.1].into())
         .build();
-    let rigid_body_handle = rigid_body_set.insert(rigid_body.clone());
+    let rigid_body_handle = rigid_body_set.insert(rigid_body);
     let collider = ColliderBuilder::ball(24.).build(); // TODO: capsule, size
 
     collider_set.insert_with_parent(collider.clone(), rigid_body_handle, rigid_body_set);
 
     PlayerBundle {
       body: BodyComponent {
-        rigid_body,
         collider,
         rigid_body_handle,
       },

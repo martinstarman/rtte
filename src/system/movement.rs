@@ -3,7 +3,7 @@ use crate::{
   constants::MIN_MOVEMENT_DISTANCE,
   resource::physics::Physics,
 };
-use bevy_ecs::system::{Query, Res};
+use bevy_ecs::system::{Query, ResMut};
 use maths_rs::Vec2f;
 use rapier2d::prelude::nalgebra;
 use rapier2d::prelude::vector;
@@ -11,9 +11,9 @@ use rapier2d::{control::KinematicCharacterController, pipeline::QueryFilter};
 
 pub fn movement(
   mut query: Query<(&mut MovementComponent, &mut PositionComponent, &mut BodyComponent)>,
-  physics: Res<Physics>,
+  mut physics: ResMut<Physics>,
 ) {
-  for (mut movement, mut position, mut body) in &mut query {
+  for (mut movement, mut position, body) in &mut query {
     if movement.path.len() > 0 {
       let next_position = movement.path[0];
 
@@ -55,7 +55,8 @@ pub fn movement(
           + (corrected_movement.translation.y * 100.);
       }
 
-      body.rigid_body.set_next_kinematic_position(vector![position.x, position.y].into());
+      let rigid_body = &mut physics.rigid_body_set[body.rigid_body_handle];
+      rigid_body.set_next_kinematic_position(vector![position.x, position.y].into());
     }
   }
 }

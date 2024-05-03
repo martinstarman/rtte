@@ -44,20 +44,13 @@ impl EnemyEntity {
     }
 
     let rigid_body = RigidBodyBuilder::kinematic_position_based().build();
-    let rigid_body_handle = rigid_body_set.insert(rigid_body.clone());
+    let rigid_body_handle = rigid_body_set.insert(rigid_body);
     let collider = ColliderBuilder::ball(24.).build(); // TODO: capsule
 
-    rigid_body_set.insert(rigid_body.clone());
-
-    collider_set.insert_with_parent(
-      collider.clone(),
-      rigid_body_handle,
-      &mut rigid_body_set.clone(),
-    );
+    collider_set.insert_with_parent(collider.clone(), rigid_body_handle, rigid_body_set);
 
     EnemyBundle {
       body: BodyComponent {
-        rigid_body,
         collider,
         rigid_body_handle,
       },
