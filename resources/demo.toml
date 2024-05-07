@@ -4,9 +4,9 @@ position = [1, 1]
 
 [player.animation]
 direction = "E"
-frame_delay = 10 
-frame_height = 48 
-frame_width = 48 
+frame_delay = 10
+frame_height = 48
+frame_width = 48
 
 [player.animation.walk]
 directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
@@ -26,13 +26,13 @@ frame_row = 0
 
 [[player]]
 image = "resources/player-sprite.png"
-position = [49, 1]
+position = [55, 1]
 
 [player.animation]
 direction = "S"
-frame_delay = 10 
-frame_height = 48 
-frame_width = 48 
+frame_delay = 10
+frame_height = 48
+frame_width = 48
 
 [player.animation.walk]
 directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]

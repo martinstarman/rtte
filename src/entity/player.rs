@@ -70,9 +70,8 @@ impl PlayerEntity {
 
     let rigid_body_handle = rigid_body_set.insert(rigid_body);
 
-    let collider = ColliderBuilder::new(SharedShape::ball(24.))
-      .position(vector![self.position.0, self.position.1].into())
-      .build();
+    // do not set position if collider is attached t origid body
+    let collider = ColliderBuilder::new(SharedShape::ball(24.)).build();
 
     let collider_handle =
       collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);
