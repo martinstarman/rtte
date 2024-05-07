@@ -15,12 +15,12 @@ use crate::{
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::texture::load_texture;
-use rapier2d::prelude::nalgebra;
 use rapier2d::prelude::vector;
 use rapier2d::{
   dynamics::{RigidBodyBuilder, RigidBodySet},
   geometry::{ColliderBuilder, ColliderSet},
 };
+use rapier2d::{geometry::SharedShape, prelude::nalgebra};
 use serde::Deserialize;
 
 use super::shared::{animation::Animation, direction::Direction};
@@ -67,9 +67,13 @@ impl PlayerEntity {
       RigidBodyBuilder::new(rapier2d::dynamics::RigidBodyType::KinematicPositionBased)
         .position(vector![self.position.0, self.position.1].into())
         .build();
+
     let rigid_body_handle = rigid_body_set.insert(rigid_body);
 
-    let collider = ColliderBuilder::ball(24.).build(); // TODO: capsule, size
+    let collider = ColliderBuilder::new(SharedShape::ball(24.))
+      .position(vector![self.position.0, self.position.1].into())
+      .build();
+
     let collider_handle =
       collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);
 

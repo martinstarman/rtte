@@ -20,7 +20,7 @@ pub fn movement(
       let collider = &physics.collider_set[body.collider_handle];
 
       // The translation we would like to apply if there were no obstacles.
-      let desired_translation = vector![position.x - next_position.x, position.y - next_position.y];
+      let desired_translation = vector![next_position.x - position.x, next_position.y - position.y];
       // Create the character controller, here with the default configuration.
       let character_controller = KinematicCharacterController::default();
       // Calculate the possible movement.
@@ -51,10 +51,10 @@ pub fn movement(
         position.y = next_position.y;
         movement.path.remove(0);
       } else {
-        position.x += (((next_position.x - position.x) / distance) * movement.speed)
-          + corrected_movement.translation.x;
-        position.y += (((next_position.y - position.y) / distance) * movement.speed)
-          + corrected_movement.translation.y;
+        position.x += ((next_position.x - position.x) / distance) * movement.speed;
+        position.x += corrected_movement.translation.x;
+        position.y += ((next_position.y - position.y) / distance) * movement.speed;
+        position.y += corrected_movement.translation.y;
       }
 
       let rigid_body = &mut physics.rigid_body_set[body.rigid_body_handle];
