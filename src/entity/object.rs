@@ -1,5 +1,6 @@
 use crate::component::{
   animation::AnimationComponent,
+  body::BodyComponent,
   object::{ObjectBundle, ObjectComponent},
   position::PositionComponent,
   shape::{ShapeComponent, ShapeType},
@@ -8,6 +9,11 @@ use crate::component::{
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::{math::Vec2, texture::load_texture};
+use rapier2d::na::Point2;
+use rapier2d::{
+  dynamics::{RigidBodyBuilder, RigidBodySet, RigidBodyType},
+  geometry::{ColliderBuilder, ColliderSet},
+};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -20,7 +26,12 @@ pub struct ObjectEntity {
 }
 
 impl ObjectEntity {
-  pub async fn into(&self, index: usize) -> ObjectBundle {
+  pub async fn into(
+    &self,
+    index: usize,
+    rigid_body_set: &mut RigidBodySet,
+    collider_set: &mut ColliderSet,
+  ) -> ObjectBundle {
     let texture = load_texture(self.image.as_str()).await.unwrap();
     let mut points: Vec<Vec2> = vec![];
     let mut lines: Vec<(Vec2, Vec2)> = vec![];
@@ -51,7 +62,20 @@ impl ObjectEntity {
       _ => ShapeType::Block,
     };
 
+    let rigid_body = RigidBodyBuilder::new(RigidBodyType::Fixed).build();
+    let rigid_body_handle = rigid_body_set.insert(rigid_body);
+
+    let collider_points: Vec<_> =
+      points.iter().map(|p| Point2::new(self.position.0 + p.x, self.position.1 + p.y)).collect();
+    let collider = ColliderBuilder::convex_hull(&collider_points[..]).unwrap().friction(0.).build();
+    let collider_handle =
+      collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);
+
     ObjectBundle {
+      body: BodyComponent {
+        collider_handle,
+        rigid_body_handle,
+      },
       object: ObjectComponent {
         id: ComponentId::new(index),
       },

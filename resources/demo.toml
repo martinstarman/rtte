@@ -1,6 +1,6 @@
 [[player]]
 image = "resources/player-sprite.png"
-position = [1, 1]
+position = [24, 24]
 
 [player.animation]
 direction = "E"
@@ -26,7 +26,7 @@ frame_row = 0
 
 [[player]]
 image = "resources/player-sprite.png"
-position = [55, 1]
+position = [75, 24]
 
 [player.animation]
 direction = "S"
@@ -65,13 +65,14 @@ path = []
 position = [350, 475]
 
 ####################################################################################################
+# must be convex polygon
 
-[[object]]
-image = "resources/ground.png"
-position = [0, 0]
-shape = [[0, 0], [800, 0], [800, 600], [0, 600]] # relative to position and clockwise
-type = "none"
-ysorted = false
+# [[object]]
+# image = "resources/ground.png"
+# position = [0, 0]
+# shape = [[0, 0], [800, 0], [800, 600], [0, 600]] # relative to position and clockwise
+# type = "none"
+# ysorted = false
 
 [[object]]
 image = "resources/block-001.png"

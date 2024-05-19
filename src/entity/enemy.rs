@@ -14,8 +14,8 @@ use crate::{
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::{math::Vec2, texture::load_texture};
-use rapier2d::prelude::nalgebra;
 use rapier2d::prelude::vector;
+use rapier2d::{dynamics::RigidBodyType, prelude::nalgebra};
 use rapier2d::{
   dynamics::{RigidBodyBuilder, RigidBodySet},
   geometry::{ColliderBuilder, ColliderSet, SharedShape},
@@ -45,15 +45,14 @@ impl EnemyEntity {
       path.push(Vec2::new(point.0, point.1));
     }
 
-    let rigid_body =
-      RigidBodyBuilder::new(rapier2d::dynamics::RigidBodyType::KinematicPositionBased)
-        .position(vector![self.position.0, self.position.1].into())
-        .build();
+    let rigid_body = RigidBodyBuilder::new(RigidBodyType::KinematicPositionBased)
+      .position(vector![self.position.0, self.position.1].into())
+      .build();
 
     let rigid_body_handle = rigid_body_set.insert(rigid_body);
 
     // do not set position if collider is attached t origid body
-    let collider = ColliderBuilder::new(SharedShape::ball(24.)).build();
+    let collider = ColliderBuilder::new(SharedShape::ball(24.)).friction(0.).build();
     let collider_handle =
       collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);
 

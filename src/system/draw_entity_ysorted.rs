@@ -19,16 +19,20 @@ pub fn draw_entity_ysorted(
   let mut entities: Vec<_> =
     query.iter().filter(|(_, _, sprite, _)| sprite.ysorted == true).collect();
 
-  entities.sort_by(|(a_position, a_size, _, _), (b_position, b_size, _, _)| {
-    (a_position.y + a_size.height).partial_cmp(&(b_position.y + b_size.height)).unwrap()
+  entities.sort_by(|(a_position, a_size, _, a_animation), (b_position, b_size, _, b_animation)| {
+    (a_position.y + if a_animation.active { a_size.height / 2. } else { a_size.height })
+      .partial_cmp(
+        &(b_position.y + if b_animation.active { b_size.height / 2. } else { b_size.height }),
+      )
+      .unwrap()
   });
 
-  for (position, _, sprite, animation) in entities {
+  for (position, size, sprite, animation) in entities {
     if animation.active {
       draw_texture_ex(
         &sprite.texture,
-        position.x - offset.x,
-        position.y - offset.y,
+        position.x - (size.width / 2.) - offset.x,
+        position.y - (size.height / 2.) - offset.y,
         WHITE,
         DrawTextureParams {
           dest_size: Some(Vec2::new(animation.frame_width as f32, animation.frame_height as f32)),

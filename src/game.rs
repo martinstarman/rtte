@@ -68,7 +68,7 @@ impl Game {
     }
 
     for (i, object) in mission.object.iter().enumerate() {
-      world.spawn(object.into(i).await);
+      world.spawn(object.into(i, &mut rigid_body_set, &mut collider_set).await);
     }
 
     world.insert_resource(Mark {

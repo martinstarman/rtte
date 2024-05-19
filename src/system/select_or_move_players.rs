@@ -36,7 +36,12 @@ pub fn select_or_move_players(
 
     // try to select player
     for (player, mut selection, position, size, _) in &mut query1 {
-      let rect = Rect::new(position.x, position.y, size.width, size.height);
+      let rect = Rect::new(
+        position.x - (size.width / 2.),
+        position.y - (size.height / 2.),
+        size.width,
+        size.height,
+      );
 
       if rect.contains(Vec2::new(event.x, event.y)) {
         selection.active = true;
