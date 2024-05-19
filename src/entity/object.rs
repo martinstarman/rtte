@@ -65,8 +65,12 @@ impl ObjectEntity {
     let rigid_body = RigidBodyBuilder::new(RigidBodyType::Fixed).build();
     let rigid_body_handle = rigid_body_set.insert(rigid_body);
 
-    let collider_points: Vec<_> =
+    // TODO: empty collider for non blocks
+    let collider_points: Vec<_> = //if r#type == ShapeType::Block || r#type == ShapeType::Transparent {
       points.iter().map(|p| Point2::new(self.position.0 + p.x, self.position.1 + p.y)).collect();
+    //} else {
+    //  vec![]
+    //};
     let collider = ColliderBuilder::convex_hull(&collider_points[..]).unwrap().friction(0.).build();
     let collider_handle =
       collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);

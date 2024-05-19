@@ -1,3 +1,6 @@
+####################################################################################################
+# players
+
 [[player]]
 image = "resources/player-sprite.png"
 position = [24, 24]
@@ -51,6 +54,7 @@ frame_row = 0
 # frame_row = 16
 
 ####################################################################################################
+# enemies
 
 [[enemy]]
 field_of_view_direction = 0
@@ -65,12 +69,16 @@ path = []
 position = [350, 475]
 
 ####################################################################################################
-# must be convex polygon
+# objects
+#
+# object shape must be a convex polgyon
+# object shape points are relative to object position
+# object shape points are clockwise ordered
 
 # [[object]]
 # image = "resources/ground.png"
 # position = [0, 0]
-# shape = [[0, 0], [800, 0], [800, 600], [0, 600]] # relative to position and clockwise
+# shape = [[0, 0], [800, 0], [800, 600], [0, 600]]
 # type = "none"
 # ysorted = false
 
