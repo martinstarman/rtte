@@ -12,13 +12,12 @@ use crate::{
   event::select_or_move_player::SelectOrMovePlayer,
 };
 use bevy_ecs::{component::ComponentId, event::EventReader, query::With, system::Query};
-use i_float::{f32_vec::F32Vec, fix_vec::FixVec};
+use i_float::f64_point::F64Point;
 use i_overlay::core::fill_rule::FillRule;
-use i_shape::fix_path::FixPath;
-use i_shape::fix_shape::FixShape;
-use i_triangle::triangulation::triangulate::Triangulate;
 use macroquad::math::{Rect, Vec2};
 use navmesh::{NavMesh, NavPathMode, NavQuery, NavTriangle, NavVec3};
+
+use i_triangle::triangulation::float::FloatTriangulate;
 
 pub fn select_or_move_players(
   mut events: EventReader<SelectOrMovePlayer>,
@@ -79,29 +78,25 @@ fn find_path(
   to: Vec2,
   blocks: &Vec<(&ShapeComponent, &PositionComponent)>,
 ) -> Vec<Vec2> {
-  let mut holes: Vec<FixPath> = vec![];
+  let mut shapes = vec![vec![
+    F64Point::new(0., 0.),
+    F64Point::new(WINDOW_WIDTH as f64, 0.),
+    F64Point::new(WINDOW_WIDTH as f64, WINDOW_HEIGHT as f64),
+    F64Point::new(0., WINDOW_HEIGHT as f64),
+  ]];
 
   for (shape, position) in blocks {
-    let mut hole: Vec<FixVec> = vec![];
+    let mut hole: Vec<F64Point> = vec![];
 
     for point in &shape.points {
-      hole.push(F32Vec::new(point.x + position.x, point.y + position.y).to_fix());
+      hole.push(F64Point::new((point.x + position.x) as f64, (point.y + position.y) as f64));
     }
 
-    holes.push(hole);
+    shapes.push(hole);
   }
 
-  let shape = FixShape::new_with_contour_and_holes(
-    vec![
-      F32Vec::new(0., 0.).to_fix(),
-      F32Vec::new(WINDOW_WIDTH as f32, 0.).to_fix(),
-      F32Vec::new(WINDOW_WIDTH as f32, WINDOW_HEIGHT as f32).to_fix(),
-      F32Vec::new(0., WINDOW_HEIGHT as f32).to_fix(),
-    ],
-    holes,
-  );
+  let triangulation = shapes.to_triangulation(Some(FillRule::EvenOdd), 0.);
 
-  let triangulation = shape.to_triangulation(Some(FillRule::NonZero));
   let mut vertices: Vec<NavVec3> = vec![];
   let mut triangles: Vec<NavTriangle> = vec![];
 
@@ -115,8 +110,8 @@ fn find_path(
 
   for i in 0..triangulation.points.len() {
     vertices.push(NavVec3::new(
-      triangulation.points[i].to_f32vec().x,
-      triangulation.points[i].to_f32vec().y,
+      triangulation.points[i].x as f32,
+      triangulation.points[i].y as f32,
       0.,
     ));
   }

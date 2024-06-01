@@ -11,11 +11,9 @@ use bevy_ecs::{
   query::With,
   system::{Query, Res},
 };
-use i_float::{f32_vec::F32Vec, fix_vec::FixVec};
+use i_float::f64_point::F64Point;
 use i_overlay::core::fill_rule::FillRule;
-use i_shape::fix_path::FixPath;
-use i_shape::fix_shape::FixShape;
-use i_triangle::triangulation::triangulate::Triangulate;
+use i_triangle::triangulation::float::FloatTriangulate;
 use macroquad::shapes::draw_line;
 
 pub fn draw_navmesh(
@@ -30,42 +28,58 @@ pub fn draw_navmesh(
       })
       .collect();
 
-    let mut holes: Vec<FixPath> = vec![];
+    let mut shapes = vec![vec![
+      F64Point::new(0., 0.),
+      F64Point::new(WINDOW_WIDTH as f64, 0.),
+      F64Point::new(WINDOW_WIDTH as f64, WINDOW_HEIGHT as f64),
+      F64Point::new(0., WINDOW_HEIGHT as f64),
+    ]];
 
     for (shape, position) in &blocks {
-      let mut hole: Vec<FixVec> = vec![];
+      let mut hole: Vec<F64Point> = vec![];
 
       for point in &shape.points {
-        hole.push(F32Vec::new(point.x + position.x, point.y + position.y).to_fix());
+        hole.push(F64Point::new((point.x + position.x) as f64, (point.y + position.y) as f64));
       }
 
-      holes.push(hole);
+      shapes.push(hole);
     }
 
-    let shape = FixShape::new_with_contour_and_holes(
-      vec![
-        F32Vec::new(0., 0.).to_fix(),
-        F32Vec::new(WINDOW_WIDTH as f32, 0.).to_fix(),
-        F32Vec::new(WINDOW_WIDTH as f32, WINDOW_HEIGHT as f32).to_fix(),
-        F32Vec::new(0., WINDOW_HEIGHT as f32).to_fix(),
-      ],
-      holes,
-    );
-
-    let triangulation = shape.to_triangulation(Some(FillRule::NonZero));
+    let triangulation = shapes.to_triangulation(Some(FillRule::EvenOdd), 0.);
 
     for i in (0..triangulation.indices.len()).step_by(3) {
       let j = triangulation.indices[i];
       let k = triangulation.indices[i + 1];
       let l = triangulation.indices[i + 2];
 
-      let p = triangulation.points[j].to_f32vec();
-      let q = triangulation.points[k].to_f32vec();
-      let r = triangulation.points[l].to_f32vec();
+      let p = triangulation.points[j];
+      let q = triangulation.points[k];
+      let r = triangulation.points[l];
 
-      draw_line(p.x - offset.x, p.y - offset.y, q.x - offset.x, q.y - offset.y, 1., NAVMESH_COLOR);
-      draw_line(q.x - offset.x, q.y - offset.y, r.x - offset.x, r.y - offset.y, 1., NAVMESH_COLOR);
-      draw_line(r.x - offset.x, r.y - offset.y, p.x - offset.x, p.y - offset.y, 1., NAVMESH_COLOR);
+      draw_line(
+        p.x as f32 - offset.x,
+        p.y as f32 - offset.y,
+        q.x as f32 - offset.x,
+        q.y as f32 - offset.y,
+        1.,
+        NAVMESH_COLOR,
+      );
+      draw_line(
+        q.x as f32 - offset.x,
+        q.y as f32 - offset.y,
+        r.x as f32 - offset.x,
+        r.y as f32 - offset.y,
+        1.,
+        NAVMESH_COLOR,
+      );
+      draw_line(
+        r.x as f32 - offset.x,
+        r.y as f32 - offset.y,
+        p.x as f32 - offset.x,
+        p.y as f32 - offset.y,
+        1.,
+        NAVMESH_COLOR,
+      );
     }
   }
 }
