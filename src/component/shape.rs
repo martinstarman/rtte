@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use bevy_ecs::{bundle::Bundle, component::Component};
 use macroquad::math::Vec2;
 
@@ -8,6 +10,21 @@ pub enum ShapeType {
   Transparent = 2, // blocks only path
   Water = 3,       //
   Snow = 4,        // blocks thath leave marks
+}
+
+impl FromStr for ShapeType {
+  type Err = ();
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    match s {
+      "none" => Ok(ShapeType::None),
+      "block" => Ok(ShapeType::Block),
+      "transparent" => Ok(ShapeType::Transparent),
+      "water" => Ok(ShapeType::Water),
+      "snow" => Ok(ShapeType::Snow),
+      _ => Err(()),
+    }
+  }
 }
 
 #[derive(Component, Clone)]

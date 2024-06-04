@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::component::{
   animation::AnimationComponent,
   object::{ObjectBundle, ObjectComponent},
@@ -42,14 +44,7 @@ impl ObjectEntity {
       lines.push((Vec2::new(last.0, last.1), Vec2::new(first.0, first.1)));
     }
 
-    // TODO: from_str
-    let r#type = match self.r#type.as_str() {
-      "none" => ShapeType::None,
-      "transparent" => ShapeType::Transparent,
-      "water" => ShapeType::Water,
-      "snow" => ShapeType::Snow,
-      _ => ShapeType::Block,
-    };
+    let shape_type = ShapeType::from_str(self.r#type.as_str()).unwrap();
 
     ObjectBundle {
       object: ObjectComponent {
@@ -62,7 +57,7 @@ impl ObjectEntity {
       shape: ShapeComponent {
         lines,
         points,
-        r#type,
+        r#type: shape_type,
       },
       size: SizeComponent {
         height: texture.height(),
