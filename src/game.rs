@@ -6,6 +6,7 @@ use crate::event::{
 use crate::mission;
 use crate::resource::alarm::Alarm;
 use crate::resource::offset::Offset;
+use crate::resource::physics::Physics;
 use crate::resource::{mark::Mark, target_area::TargetArea};
 use crate::system::animation::animation;
 use crate::system::direction::direction;
@@ -24,6 +25,7 @@ use crate::system::field_of_view_movement_direction::field_of_view_movement_dire
 use crate::system::field_of_view_shift::field_of_view_shift;
 use crate::system::mark_in_field_of_view::mark_in_field_of_view;
 use crate::system::movement::movement;
+use crate::system::physics::physics;
 use crate::system::players_reach_target_area::players_reach_target_area;
 use crate::system::reset_path::reset_path;
 use crate::system::select_enemy_or_place_mark::select_enemy_or_place_mark;
@@ -38,6 +40,9 @@ use macroquad::miniquad::window::request_quit;
 use macroquad::miniquad::{KeyCode, MouseButton};
 use macroquad::texture::load_texture;
 use macroquad::window::{screen_height, screen_width};
+use rapier2d::dynamics::RigidBodySet;
+use rapier2d::geometry::ColliderSet;
+use rapier2d::pipeline::QueryPipeline;
 
 pub struct Game {
   world: World,
@@ -48,14 +53,18 @@ impl Game {
   pub async fn new() -> Game {
     let mut world = World::default();
 
+    let mut rigid_body_set = RigidBodySet::new();
+    let mut collider_set = ColliderSet::new();
+    let query_pipeline = QueryPipeline::new();
+
     let mission = mission::load("resources/demo.toml");
 
     for (i, player) in mission.player.iter().enumerate() {
-      world.spawn(player.into(i).await);
+      world.spawn(player.into(i, &mut rigid_body_set, &mut collider_set).await);
     }
 
     for (i, enemy) in mission.enemy.iter().enumerate() {
-      world.spawn(enemy.into(i).await);
+      world.spawn(enemy.into(i, &mut rigid_body_set, &mut collider_set).await);
     }
 
     for (i, object) in mission.object.iter().enumerate() {
@@ -72,6 +81,12 @@ impl Game {
       rect: Rect::new(500., 100., 100., 100.),
     });
 
+    world.insert_resource(Physics {
+      collider_set,
+      query_pipeline,
+      rigid_body_set,
+    });
+
     world.insert_resource(Alarm::new().await);
 
     world.insert_resource(Events::<SelectEnemyOrPlaceMark>::default());
@@ -80,7 +95,7 @@ impl Game {
 
     let mut schedule = Schedule::default();
 
-    schedule.add_systems(movement);
+    schedule.add_systems(movement.after(physics));
     schedule.add_systems(some_player_in_enemy_field_of_view);
     schedule.add_systems(players_reach_target_area);
     schedule.add_systems(field_of_view_direction);
@@ -131,6 +146,8 @@ impl Game {
     schedule.add_systems(reset_path);
     schedule.add_systems(animation);
     schedule.add_systems(direction);
+
+    schedule.add_systems(physics);
 
     Game { world, schedule }
   }

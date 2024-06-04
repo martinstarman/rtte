@@ -3,6 +3,7 @@ use std::str::FromStr;
 use crate::{
   component::{
     animation::{AnimationComponent, Walk},
+    body::BodyComponent,
     movement::MovementComponent,
     player::{PlayerBundle, PlayerComponent},
     position::PositionComponent,
@@ -14,6 +15,12 @@ use crate::{
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::texture::load_texture;
+use rapier2d::prelude::nalgebra;
+use rapier2d::{dynamics::RigidBodyType, prelude::vector};
+use rapier2d::{
+  dynamics::{RigidBodyBuilder, RigidBodySet},
+  geometry::{ColliderBuilder, ColliderSet},
+};
 use serde::Deserialize;
 
 use super::shared::{animation::Animation, direction::Direction};
@@ -26,7 +33,12 @@ pub struct PlayerEntity {
 }
 
 impl PlayerEntity {
-  pub async fn into(&self, index: usize) -> PlayerBundle {
+  pub async fn into(
+    &self,
+    index: usize,
+    rigid_body_set: &mut RigidBodySet,
+    collider_set: &mut ColliderSet,
+  ) -> PlayerBundle {
     let texture = load_texture(self.image.as_str()).await.unwrap();
 
     let mut animation = AnimationComponent {
@@ -51,7 +63,22 @@ impl PlayerEntity {
     animation.frame_row = animation.walk.frame_row
       + animation.walk.directions.iter().position(|&d| d == default_direction).unwrap() as i32;
 
+    let rigid_body = RigidBodyBuilder::new(RigidBodyType::KinematicPositionBased)
+      .position(vector![self.position.0, self.position.1].into())
+      .build();
+
+    let rigid_body_handle = rigid_body_set.insert(rigid_body);
+
+    let collider = ColliderBuilder::capsule_y(6., 6.).build(); // TODO: width and height
+
+    let collider_handle =
+      collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);
+
     PlayerBundle {
+      body: BodyComponent {
+        collider_handle,
+        rigid_body_handle,
+      },
       movement: MovementComponent {
         path: vec![],
         default_path: vec![],

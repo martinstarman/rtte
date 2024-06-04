@@ -1,6 +1,7 @@
 use crate::{
   component::{
     animation::AnimationComponent,
+    body::BodyComponent,
     enemy::{EnemyBundle, EnemyComponent},
     field_of_view::{FieldOfViewComponent, Shift},
     movement::MovementComponent,
@@ -13,6 +14,12 @@ use crate::{
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::{math::Vec2, texture::load_texture};
+use rapier2d::prelude::vector;
+use rapier2d::{dynamics::RigidBodyType, prelude::nalgebra};
+use rapier2d::{
+  dynamics::{RigidBodyBuilder, RigidBodySet},
+  geometry::{ColliderBuilder, ColliderSet},
+};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -24,7 +31,12 @@ pub struct EnemyEntity {
 }
 
 impl EnemyEntity {
-  pub async fn into(&self, index: usize) -> EnemyBundle {
+  pub async fn into(
+    &self,
+    index: usize,
+    rigid_body_set: &mut RigidBodySet,
+    collider_set: &mut ColliderSet,
+  ) -> EnemyBundle {
     let texture = load_texture(self.image.as_str()).await.unwrap();
     let mut path: Vec<Vec2> = vec![];
     let animation = AnimationComponent::default(); // TODO: implement me
@@ -33,7 +45,22 @@ impl EnemyEntity {
       path.push(Vec2::new(point.0, point.1));
     }
 
+    let rigid_body = RigidBodyBuilder::new(RigidBodyType::KinematicPositionBased)
+      .position(vector![self.position.0, self.position.1].into())
+      .build();
+
+    let rigid_body_handle = rigid_body_set.insert(rigid_body);
+
+    // do not set position if collider is attached t origid body
+    let collider = ColliderBuilder::capsule_y(6., 6.).build(); // TODO: width and height
+    let collider_handle =
+      collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);
+
     EnemyBundle {
+      body: BodyComponent {
+        collider_handle,
+        rigid_body_handle,
+      },
       position: PositionComponent {
         x: self.position.0,
         y: self.position.1,

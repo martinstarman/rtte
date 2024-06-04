@@ -14,6 +14,7 @@ pub struct ObjectComponent {
 
 #[derive(Bundle)]
 pub struct ObjectBundle {
+  // pub body: BodyComponent,
   pub object: ObjectComponent,
   pub position: PositionComponent,
   pub shape: ShapeComponent,

@@ -1,4 +1,5 @@
 pub mod animation;
+pub mod body;
 pub mod enemy;
 pub mod field_of_view;
 pub mod movement;

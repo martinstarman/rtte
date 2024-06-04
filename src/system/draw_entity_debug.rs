@@ -1,5 +1,8 @@
 use crate::{
-  component::{position::PositionComponent, shape::ShapeComponent, size::SizeComponent},
+  component::{
+    animation::AnimationComponent, position::PositionComponent, shape::ShapeComponent,
+    size::SizeComponent,
+  },
   resource::offset::Offset,
 };
 use bevy_ecs::system::{Query, Res};
@@ -8,21 +11,33 @@ use macroquad::{
   shapes::{draw_line, draw_rectangle_lines},
 };
 
+// TODO: split into multiple system (players and enemies are capsules)
 pub fn draw_entity_debug(
-  query1: Query<(&PositionComponent, &SizeComponent)>,
+  query1: Query<(&PositionComponent, &SizeComponent, &AnimationComponent)>,
   query2: Query<(&PositionComponent, &ShapeComponent)>,
   offset: Res<Offset>,
 ) {
   // rect
-  for (position, size) in &query1 {
-    draw_rectangle_lines(
-      position.x - offset.x,
-      position.y - offset.y,
-      size.width,
-      size.height,
-      1.,
-      WHITE,
-    );
+  for (position, size, animation) in &query1 {
+    if animation.active {
+      draw_rectangle_lines(
+        position.x - (size.width / 2.) - offset.x,
+        position.y - (size.height / 2.) - offset.y,
+        size.width,
+        size.height,
+        1.,
+        WHITE,
+      );
+    } else {
+      draw_rectangle_lines(
+        position.x - offset.x,
+        position.y - offset.y,
+        size.width,
+        size.height,
+        1.,
+        WHITE,
+      );
+    }
   }
 
   // shape
