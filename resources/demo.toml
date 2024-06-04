@@ -4,6 +4,8 @@
 [[player]]
 image = "resources/player-sprite.png"
 position = [24, 24]
+# TODO: collider width
+# TODO: collider height
 
 [player.animation]
 direction = "E"
@@ -30,6 +32,8 @@ frame_row = 0
 [[player]]
 image = "resources/player-sprite.png"
 position = [75, 24]
+# TODO: collider width
+# TODO: collider height
 
 [player.animation]
 direction = "S"
@@ -75,12 +79,12 @@ position = [350, 475]
 # object shape points are relative to object position
 # object shape points are clockwise ordered
 
-# [[object]]
-# image = "resources/ground.png"
-# position = [0, 0]
-# shape = [[0, 0], [800, 0], [800, 600], [0, 600]]
-# type = "none"
-# ysorted = false
+[[object]]
+image = "resources/ground.png"
+position = [0, 0]
+shape = [[0, 0], [800, 0], [800, 600], [0, 600]]
+type = "none"
+ysorted = false
 
 [[object]]
 image = "resources/block-001.png"

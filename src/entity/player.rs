@@ -15,12 +15,12 @@ use crate::{
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::texture::load_texture;
+use rapier2d::prelude::nalgebra;
 use rapier2d::{dynamics::RigidBodyType, prelude::vector};
 use rapier2d::{
   dynamics::{RigidBodyBuilder, RigidBodySet},
   geometry::{ColliderBuilder, ColliderSet},
 };
-use rapier2d::{geometry::SharedShape, prelude::nalgebra};
 use serde::Deserialize;
 
 use super::shared::{animation::Animation, direction::Direction};
@@ -69,7 +69,7 @@ impl PlayerEntity {
 
     let rigid_body_handle = rigid_body_set.insert(rigid_body);
 
-    let collider = ColliderBuilder::new(SharedShape::ball(24.)).friction(0.).build();
+    let collider = ColliderBuilder::capsule_y(6., 6.).build(); // TODO: width and height
 
     let collider_handle =
       collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);

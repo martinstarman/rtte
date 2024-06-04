@@ -11,6 +11,7 @@ use macroquad::{
   shapes::{draw_line, draw_rectangle_lines},
 };
 
+// TODO: split into multiple system (players and enemies are capsules)
 pub fn draw_entity_debug(
   query1: Query<(&PositionComponent, &SizeComponent, &AnimationComponent)>,
   query2: Query<(&PositionComponent, &ShapeComponent)>,

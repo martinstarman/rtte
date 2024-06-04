@@ -18,7 +18,7 @@ use rapier2d::prelude::vector;
 use rapier2d::{dynamics::RigidBodyType, prelude::nalgebra};
 use rapier2d::{
   dynamics::{RigidBodyBuilder, RigidBodySet},
-  geometry::{ColliderBuilder, ColliderSet, SharedShape},
+  geometry::{ColliderBuilder, ColliderSet},
 };
 use serde::Deserialize;
 
@@ -52,7 +52,7 @@ impl EnemyEntity {
     let rigid_body_handle = rigid_body_set.insert(rigid_body);
 
     // do not set position if collider is attached t origid body
-    let collider = ColliderBuilder::new(SharedShape::ball(24.)).friction(0.).build();
+    let collider = ColliderBuilder::capsule_y(6., 6.).build(); // TODO: width and height
     let collider_handle =
       collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);
 

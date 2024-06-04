@@ -9,7 +9,6 @@ use rapier2d::prelude::nalgebra;
 use rapier2d::prelude::vector;
 use rapier2d::{control::KinematicCharacterController, pipeline::QueryFilter};
 
-// TODO: fix pathfinding for object colliders
 pub fn movement(
   mut query: Query<(&mut MovementComponent, &mut PositionComponent, &mut BodyComponent)>,
   mut physics: ResMut<Physics>,
