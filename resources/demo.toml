@@ -13,13 +13,13 @@ frame_delay = 10
 frame_height = 48
 frame_width = 48
 
-[player.animation.walk]
-directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-frame_row = 0
-
 # [player.animation.idle]
 # directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
 # frame_row = 8
+
+[player.animation.walk]
+directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+frame_row = 0
 
 # [player.animation.run]
 # directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
@@ -41,13 +41,13 @@ frame_delay = 10
 frame_height = 48
 frame_width = 48
 
-[player.animation.walk]
-directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-frame_row = 0
-
 # [player.animation.idle]
 # directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
 # frame_row = 8
+
+[player.animation.walk]
+directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+frame_row = 0
 
 # [player.animation.run]
 # directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
@@ -55,22 +55,66 @@ frame_row = 0
 
 # [player.animation.crawl]
 # directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 16
+# frame_row = 24
 
 ####################################################################################################
 # enemies
 
 [[enemy]]
 field_of_view_direction = 0
-image = "resources/enemy.png"
+image = "resources/enemy-sprite.png"
 path = [[550, 400], [650, 500], [450, 500], [450, 400]]
 position = [450, 400]
 
+[enemy.animation]
+direction = "E"
+frame_delay = 10
+frame_height = 48
+frame_width = 48
+
+# [enemy.animation.idle]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 8
+
+[enemy.animation.walk]
+directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+frame_row = 0
+
+# [enemy.animation.run]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 16
+
+# [enemy.animation.crawl]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 24
+
 [[enemy]]
 field_of_view_direction = 4.7123
-image = "resources/enemy.png"
+image = "resources/enemy-sprite.png"
 path = []
 position = [350, 475]
+
+[enemy.animation]
+direction = "N"
+frame_delay = 10
+frame_height = 48
+frame_width = 48
+
+# [enemy.animation.idle]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 8
+
+[enemy.animation.walk]
+directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+frame_row = 0
+
+# [enemy.animation.run]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 16
+
+# [enemy.animation.crawl]
+# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
+# frame_row = 24
 
 ####################################################################################################
 # objects

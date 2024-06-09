@@ -1,6 +1,8 @@
+use std::str::FromStr;
+
 use crate::{
   component::{
-    animation::AnimationComponent,
+    animation::{AnimationComponent, Walk},
     body::BodyComponent,
     enemy::{EnemyBundle, EnemyComponent},
     field_of_view::{FieldOfViewComponent, Shift},
@@ -22,12 +24,15 @@ use rapier2d::{
 };
 use serde::Deserialize;
 
+use super::shared::{animation::Animation, direction::Direction};
+
 #[derive(Deserialize)]
 pub struct EnemyEntity {
   image: String,
   position: (f32, f32),
   path: Vec<(f32, f32)>,
   field_of_view_direction: f32,
+  animation: Animation,
 }
 
 impl EnemyEntity {
@@ -39,7 +44,28 @@ impl EnemyEntity {
   ) -> EnemyBundle {
     let texture = load_texture(self.image.as_str()).await.unwrap();
     let mut path: Vec<Vec2> = vec![];
-    let animation = AnimationComponent::default(); // TODO: implement me
+
+    let mut animation = AnimationComponent {
+      active: true,
+      frame: 0,
+      frame_delay: self.animation.frame_delay,
+      frame_height: self.animation.frame_height,
+      frame_row: 0,
+      frame_width: self.animation.frame_width,
+      walk: Walk {
+        frame_row: self.animation.walk.frame_row,
+        directions: self
+          .animation
+          .walk
+          .directions
+          .iter()
+          .map(|s| Direction::from_str(&s).unwrap())
+          .collect(),
+      },
+    };
+    let default_direction: Direction = Direction::from_str(&self.animation.direction).unwrap();
+    animation.frame_row = animation.walk.frame_row
+      + animation.walk.directions.iter().position(|&d| d == default_direction).unwrap() as i32;
 
     for point in &self.path {
       path.push(Vec2::new(point.0, point.1));
@@ -66,8 +92,8 @@ impl EnemyEntity {
         y: self.position.1,
       },
       size: SizeComponent {
-        width: texture.width(),
-        height: texture.height(),
+        height: if animation.active { animation.frame_height as f32 } else { texture.height() },
+        width: if animation.active { animation.frame_width as f32 } else { texture.width() },
       },
       sprite: SpriteBundle {
         sprite: SpriteComponent {

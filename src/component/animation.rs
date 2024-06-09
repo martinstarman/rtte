@@ -14,8 +14,8 @@ pub struct AnimationComponent {
 }
 
 pub struct Walk {
-  pub frame_row: i32,             // TODO: atlas_first_row?
-  pub directions: Vec<Direction>, // TODO: direction_offset?
+  pub frame_row: i32,
+  pub directions: Vec<Direction>,
 }
 
 // TODO: remove me
