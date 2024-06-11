@@ -1038,6 +1038,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
+name = "ordered-float"
+version = "4.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a76df7075c7d4d01fdcb46c912dd17fba5b60c78ea480b475f2b6ab6f666584e"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "parking"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1045,15 +1054,16 @@ checksum = "bb813b8af86854136c6922af0598d719255ecb2179515e6e7730d468f05c9cae"
 
 [[package]]
 name = "parry2d"
-version = "0.13.7"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a996b83a7a12522b395c54f4ba59593b782e8004794c0212a2f487ed7ac6e419"
+checksum = "41c56bf3b44b08f18a6ed01e5c6bf1a41a12efc7e8b806ce0cf50831c88f9fc8"
 dependencies = [
  "approx 0.5.1",
  "arrayvec",
  "bitflags",
  "downcast-rs",
  "either",
+ "log",
  "nalgebra 0.32.5",
  "num-derive",
  "num-traits",
@@ -1261,9 +1271,9 @@ dependencies = [
 
 [[package]]
 name = "rapier2d"
-version = "0.18.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48a3ec4ae89e0837c0ff6f29af32a8e5d78dfabe2273dcd945cfaf3f5d2b1501"
+checksum = "b406e79fca8206343d4e362d5bd6b7eb4c366e34c0ffcc3eb6469aabc3705503"
 dependencies = [
  "approx 0.5.1",
  "arrayvec",
@@ -1271,12 +1281,15 @@ dependencies = [
  "bitflags",
  "crossbeam",
  "downcast-rs",
+ "log",
  "nalgebra 0.32.5",
  "num-derive",
  "num-traits",
+ "ordered-float",
  "parry2d",
  "rustc-hash",
  "simba",
+ "thiserror",
 ]
 
 [[package]]
