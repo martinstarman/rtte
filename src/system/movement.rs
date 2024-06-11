@@ -2,6 +2,7 @@ use crate::{
   component::{body::BodyComponent, movement::MovementComponent, position::PositionComponent},
   constants::MIN_MOVEMENT_DISTANCE,
   resource::physics::Physics,
+  shared::movement::Movement,
 };
 use bevy_ecs::system::{Query, ResMut};
 use maths_rs::Vec2f;
@@ -56,6 +57,10 @@ pub fn movement(
         let collider = &mut physics.collider_set[body.collider_handle];
         collider.set_position(vector![position.x, position.y].into());
       }
+
+      movement.movement = Movement::Walking;
+    } else {
+      movement.movement = Movement::Idling;
     }
   }
 }

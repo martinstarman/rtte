@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::{
   component::{
-    animation::{AnimationComponent, Walk},
+    animation::AnimationComponent,
     body::BodyComponent,
     movement::MovementComponent,
     player::{PlayerBundle, PlayerComponent},
@@ -12,6 +12,7 @@ use crate::{
     sprite::{SpriteBundle, SpriteComponent},
   },
   constants::MOVEMENT_SPEED,
+  shared::{direction::Direction, movement::Movement},
 };
 use bevy_ecs::component::ComponentId;
 use macroquad::texture::load_texture;
@@ -23,7 +24,7 @@ use rapier2d::{
 };
 use serde::Deserialize;
 
-use super::shared::{animation::Animation, direction::Direction};
+use super::shared::animation::Animation;
 
 #[derive(Deserialize)]
 pub struct PlayerEntity {
@@ -41,27 +42,20 @@ impl PlayerEntity {
   ) -> PlayerBundle {
     let texture = load_texture(self.image.as_str()).await.unwrap();
 
-    let mut animation = AnimationComponent {
+    let animation = AnimationComponent {
       active: true,
       frame: 0,
       frame_delay: self.animation.frame_delay,
       frame_height: self.animation.frame_height,
-      frame_row: 0,
       frame_width: self.animation.frame_width,
-      walk: Walk {
-        frame_row: self.animation.walk.frame_row,
-        directions: self
-          .animation
-          .walk
-          .directions
-          .iter()
-          .map(|s| Direction::from_str(&s).unwrap())
-          .collect(),
-      },
+      movements: self.animation.movements.iter().map(|m| Movement::from_str(m).unwrap()).collect(),
+      directions: self
+        .animation
+        .directions
+        .iter()
+        .map(|s| Direction::from_str(&s).unwrap())
+        .collect(),
     };
-    let default_direction: Direction = Direction::from_str(&self.animation.direction).unwrap();
-    animation.frame_row = animation.walk.frame_row
-      + animation.walk.directions.iter().position(|&d| d == default_direction).unwrap() as i32;
 
     let rigid_body = RigidBodyBuilder::new(RigidBodyType::KinematicPositionBased)
       .position(vector![self.position.0, self.position.1].into())
@@ -74,14 +68,18 @@ impl PlayerEntity {
     let collider_handle =
       collider_set.insert_with_parent(collider, rigid_body_handle, rigid_body_set);
 
+    let direction: Direction = Direction::from_str(&self.animation.default_direction).unwrap();
+
     PlayerBundle {
       body: BodyComponent {
         collider_handle,
         rigid_body_handle,
       },
       movement: MovementComponent {
-        path: vec![],
         default_path: vec![],
+        direction,
+        movement: Movement::Idling,
+        path: vec![],
         speed: MOVEMENT_SPEED,
       },
       player: PlayerComponent {

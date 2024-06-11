@@ -12,6 +12,7 @@ pub mod event;
 pub mod game;
 pub mod mission;
 pub mod resource;
+pub mod shared;
 pub mod system;
 
 fn window_conf() -> Conf {
