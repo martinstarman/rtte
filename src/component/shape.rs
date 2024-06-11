@@ -17,11 +17,11 @@ impl FromStr for ShapeType {
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     match s {
-      "none" => Ok(ShapeType::None),
-      "block" => Ok(ShapeType::Block),
-      "transparent" => Ok(ShapeType::Transparent),
-      "water" => Ok(ShapeType::Water),
-      "snow" => Ok(ShapeType::Snow),
+      "NONE" => Ok(ShapeType::None),
+      "BLOCK" => Ok(ShapeType::Block),
+      "TRASPARENT" => Ok(ShapeType::Transparent),
+      "WATER" => Ok(ShapeType::Water),
+      "SNOW" => Ok(ShapeType::Snow),
       _ => Err(()),
     }
   }

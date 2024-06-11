@@ -8,26 +8,13 @@ position = [24, 24]
 # TODO: collider height
 
 [player.animation]
-direction = "E"
+default_direction = "E"
 frame_delay = 10
 frame_height = 48
 frame_width = 48
-
-# [player.animation.idle]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 8
-
-[player.animation.walk]
+# TODO: comments
+movements = ["WALKING", "IDLING"]
 directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-frame_row = 0
-
-# [player.animation.run]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 16
-
-# [player.animation.crawl]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 16
 
 [[player]]
 image = "resources/player-sprite.png"
@@ -36,26 +23,12 @@ position = [75, 24]
 # TODO: collider height
 
 [player.animation]
-direction = "S"
+default_direction = "S"
 frame_delay = 10
 frame_height = 48
 frame_width = 48
-
-# [player.animation.idle]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 8
-
-[player.animation.walk]
+movements = ["WALKING", "IDLING"]
 directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-frame_row = 0
-
-# [player.animation.run]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 16
-
-# [player.animation.crawl]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 24
 
 ####################################################################################################
 # enemies
@@ -67,26 +40,12 @@ path = [[550, 400], [650, 500], [450, 500], [450, 400]]
 position = [450, 400]
 
 [enemy.animation]
-direction = "E"
+default_direction = "E"
 frame_delay = 10
 frame_height = 48
 frame_width = 48
-
-# [enemy.animation.idle]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 8
-
-[enemy.animation.walk]
+movements = ["WALKING", "IDLING"]
 directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-frame_row = 0
-
-# [enemy.animation.run]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 16
-
-# [enemy.animation.crawl]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 24
 
 [[enemy]]
 field_of_view_direction = 4.7123
@@ -95,26 +54,12 @@ path = []
 position = [350, 475]
 
 [enemy.animation]
-direction = "N"
+default_direction = "N"
 frame_delay = 10
 frame_height = 48
 frame_width = 48
-
-# [enemy.animation.idle]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 8
-
-[enemy.animation.walk]
+movements = ["WALKING", "IDLING"]
 directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-frame_row = 0
-
-# [enemy.animation.run]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 16
-
-# [enemy.animation.crawl]
-# directions = ["S", "SW", "W", "NW", "N", "NE", "E", "SE"]
-# frame_row = 24
 
 ####################################################################################################
 # objects
@@ -127,19 +72,19 @@ frame_row = 0
 image = "resources/ground.png"
 position = [0, 0]
 shape = [[0, 0], [800, 0], [800, 600], [0, 600]]
-type = "none"
+type = "NONE"
 ysorted = false
 
 [[object]]
 image = "resources/block-001.png"
 position = [300, 300]
 shape = [[50, 52], [60, 59], [13, 90], [0, 83]]
-type = "block"
+type = "BLOCK"
 ysorted = true
 
 [[object]]
 image = "resources/block-002.png"
 position = [349, 342]
 shape = [[-22, 38], [60, 82], [49, 89], [-36, 48]]
-type = "block"
+type = "BLOCK"
 ysorted = true

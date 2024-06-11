@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use crate::component::{
   animation::AnimationComponent,
+  movement::MovementComponent,
   object::{ObjectBundle, ObjectComponent},
   position::PositionComponent,
   shape::{ShapeComponent, ShapeType},
@@ -66,6 +67,7 @@ impl ObjectEntity {
       //   collider_handle,
       //   rigid_body_handle,
       // },
+      movement: MovementComponent::default(),
       object: ObjectComponent {
         id: ComponentId::new(index),
       },

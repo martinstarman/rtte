@@ -1,6 +1,6 @@
 use bevy_ecs::component::Component;
 
-use crate::entity::shared::direction::Direction;
+use crate::shared::{direction::Direction, movement::Movement};
 
 #[derive(Component)]
 pub struct AnimationComponent {
@@ -8,17 +8,11 @@ pub struct AnimationComponent {
   pub frame: i32,
   pub frame_delay: i32,
   pub frame_height: i32,
-  pub frame_row: i32,
   pub frame_width: i32,
-  pub walk: Walk,
-}
-
-pub struct Walk {
-  pub frame_row: i32,
+  pub movements: Vec<Movement>,
   pub directions: Vec<Direction>,
 }
 
-// TODO: remove me
 impl Default for AnimationComponent {
   fn default() -> Self {
     AnimationComponent {
@@ -26,12 +20,9 @@ impl Default for AnimationComponent {
       frame: 0,
       frame_delay: 0,
       frame_height: 0,
-      frame_row: 0,
       frame_width: 0,
-      walk: Walk {
-        frame_row: 0,
-        directions: vec![],
-      },
+      movements: vec![],
+      directions: vec![],
     }
   }
 }
