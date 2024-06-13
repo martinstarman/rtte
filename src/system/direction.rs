@@ -24,7 +24,7 @@ pub fn direction(mut query: Query<(&PositionComponent, &mut MovementComponent)>)
         direction = Direction::South;
       } else if a >= 112.5 && a < 157.5 {
         direction = Direction::SouthWest;
-      } else if a >= 157.5 && a < 180.0 {
+      } else if a >= 157.5 && a <= 180.0 {
         direction = Direction::West;
       }
 
@@ -36,7 +36,7 @@ pub fn direction(mut query: Query<(&PositionComponent, &mut MovementComponent)>)
         direction = Direction::North;
       } else if a <= -112.5 && a > -157.5 {
         direction = Direction::NorthWest;
-      } else if a <= -157.5 && a > -180.0 {
+      } else if a <= -157.5 && a >= -180.0 {
         direction = Direction::West;
       }
 
