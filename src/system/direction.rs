@@ -40,7 +40,9 @@ pub fn direction(mut query: Query<(&PositionComponent, &mut MovementComponent)>)
         direction = Direction::West;
       }
 
-      movement.direction = direction;
+      if movement.direction != direction {
+        movement.direction = direction;
+      }
     }
   }
 }

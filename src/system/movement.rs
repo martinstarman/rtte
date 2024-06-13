@@ -58,9 +58,13 @@ pub fn movement(
         collider.set_position(vector![position.x, position.y].into());
       }
 
-      movement.movement = Movement::Walking;
+      if movement.movement != Movement::Walking {
+        movement.movement = Movement::Walking;
+      }
     } else {
-      movement.movement = Movement::Idling;
+      if movement.movement != Movement::Idling {
+        movement.movement = Movement::Idling;
+      }
     }
   }
 }
