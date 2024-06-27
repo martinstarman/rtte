@@ -16,6 +16,7 @@ I'm not game developer nor Rust developer.
 - ```LMB``` - select player/move player
 - ```RMB``` - stop player movement
 - ```Shift + LMB``` - show enemy field of view/place a mark
+- ```X``` - knife
 
 ## Goals
 - Human readable mission files

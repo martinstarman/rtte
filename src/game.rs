@@ -1,15 +1,17 @@
 use crate::constants::PAN_SPEED;
 use crate::event::{
   select_enemy_or_place_mark::SelectEnemyOrPlaceMark, select_or_move_player::SelectOrMovePlayer,
-  select_or_stop_player::SelectOrStopPlayer,
+  select_or_stop_player::SelectOrStopPlayer, set_cursor::SetCursor,
 };
 use crate::mission;
 use crate::resource::alarm::Alarm;
+use crate::resource::cursor::{Cursor, CursorType};
 use crate::resource::offset::Offset;
 use crate::resource::physics::Physics;
 use crate::resource::{mark::Mark, target_area::TargetArea};
 use crate::system::animation::animation;
 use crate::system::direction::direction;
+use crate::system::draw_cursor::draw_cursor;
 use crate::system::draw_entity::draw_entity;
 use crate::system::draw_entity_debug::draw_entity_debug;
 use crate::system::draw_entity_ysorted::draw_entity_ysorted;
@@ -31,6 +33,7 @@ use crate::system::reset_path::reset_path;
 use crate::system::select_enemy_or_place_mark::select_enemy_or_place_mark;
 use crate::system::select_or_move_players::select_or_move_players;
 use crate::system::select_or_stop_players::select_or_stop_players;
+use crate::system::set_cursor::set_cursor;
 use crate::system::some_player_in_enemy_field_of_view::some_player_in_enemy_field_of_view;
 use bevy_ecs::schedule::IntoSystemConfigs;
 use bevy_ecs::{event::Events, schedule::Schedule, world::World};
@@ -71,6 +74,8 @@ impl Game {
       world.spawn(object.into(i).await);
     }
 
+    world.insert_resource(Cursor::new().await);
+
     world.insert_resource(Mark {
       position: None,
       texture: load_texture("resources/mark.png").await.unwrap(),
@@ -92,6 +97,7 @@ impl Game {
     world.insert_resource(Events::<SelectEnemyOrPlaceMark>::default());
     world.insert_resource(Events::<SelectOrMovePlayer>::default());
     world.insert_resource(Events::<SelectOrStopPlayer>::default());
+    world.insert_resource(Events::<SetCursor>::default());
 
     let mut schedule = Schedule::default();
 
@@ -106,6 +112,7 @@ impl Game {
     schedule.add_systems(select_enemy_or_place_mark);
     schedule.add_systems(select_or_move_players);
     schedule.add_systems(select_or_stop_players);
+    schedule.add_systems(set_cursor);
     schedule.add_systems(
       draw_entity
         .before(draw_entity_ysorted)
@@ -148,6 +155,19 @@ impl Game {
     schedule.add_systems(direction);
 
     schedule.add_systems(physics);
+    schedule.add_systems(
+      draw_cursor
+        .after(draw_entity)
+        .after(draw_entity_ysorted)
+        .after(draw_entity_debug)
+        .after(draw_field_of_view)
+        .after(draw_fps)
+        .after(draw_mark)
+        .after(draw_navmesh)
+        .after(draw_path)
+        .after(draw_target_area)
+        .after(draw_target_area),
+    );
 
     Game { world, schedule }
   }
@@ -191,6 +211,15 @@ impl Game {
 
     if is_mouse_button_pressed(MouseButton::Right) {
       self.world.send_event(SelectOrStopPlayer {});
+      self.world.send_event(SetCursor {
+        cursor_type: CursorType::Default,
+      });
+    }
+
+    if is_key_pressed(KeyCode::X) {
+      self.world.send_event(SetCursor {
+        cursor_type: CursorType::Knife,
+      });
     }
   }
 }

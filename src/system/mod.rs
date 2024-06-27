@@ -1,5 +1,6 @@
 pub mod animation;
 pub mod direction;
+pub mod draw_cursor;
 pub mod draw_entity;
 pub mod draw_entity_debug;
 pub mod draw_entity_ysorted;
@@ -21,4 +22,5 @@ pub mod reset_path;
 pub mod select_enemy_or_place_mark;
 pub mod select_or_move_players;
 pub mod select_or_stop_players;
+pub mod set_cursor;
 pub mod some_player_in_enemy_field_of_view;
