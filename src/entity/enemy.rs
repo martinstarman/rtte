@@ -4,7 +4,7 @@ use crate::{
   component::{
     animation::AnimationComponent,
     body::BodyComponent,
-    enemy::{EnemyBundle, EnemyComponent},
+    enemy::{EnemyBundle, EnemyComponent, EnemyState},
     field_of_view::{FieldOfViewComponent, Shift},
     movement::MovementComponent,
     position::PositionComponent,
@@ -113,6 +113,7 @@ impl EnemyEntity {
       },
       enemy: EnemyComponent {
         id: ComponentId::new(index),
+        state: EnemyState::ALIVE,
       },
       selection: SelectionComponent { active: false },
     }

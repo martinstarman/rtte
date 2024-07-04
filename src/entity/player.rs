@@ -4,6 +4,7 @@ use crate::{
   component::{
     animation::AnimationComponent,
     body::BodyComponent,
+    melee_attack::MeleeAttackComponent,
     movement::MovementComponent,
     player::{PlayerBundle, PlayerComponent},
     position::PositionComponent,
@@ -74,6 +75,10 @@ impl PlayerEntity {
       body: BodyComponent {
         collider_handle,
         rigid_body_handle,
+      },
+      melee_attack: MeleeAttackComponent {
+        active: false,
+        enemy_id: None,
       },
       movement: MovementComponent {
         default_path: vec![],

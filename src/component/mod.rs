@@ -2,6 +2,7 @@ pub mod animation;
 pub mod body;
 pub mod enemy;
 pub mod field_of_view;
+pub mod melee_attack;
 pub mod movement;
 pub mod object;
 pub mod player;

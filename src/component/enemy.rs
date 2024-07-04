@@ -8,9 +8,15 @@ use bevy_ecs::{
   component::{Component, ComponentId},
 };
 
+pub enum EnemyState {
+  ALIVE,
+  DEAD,
+}
+
 #[derive(Component)]
 pub struct EnemyComponent {
   pub id: ComponentId,
+  pub state: EnemyState,
 }
 
 #[derive(Bundle)]

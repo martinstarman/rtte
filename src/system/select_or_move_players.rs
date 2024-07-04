@@ -1,5 +1,7 @@
 use crate::{
   component::{
+    enemy::EnemyComponent,
+    melee_attack::MeleeAttackComponent,
     movement::MovementComponent,
     object::ObjectComponent,
     player::PlayerComponent,
@@ -19,6 +21,7 @@ use navmesh::{NavMesh, NavPathMode, NavQuery, NavTriangle, NavVec3};
 
 use i_triangle::triangulation::float::FloatTriangulate;
 
+// TODO: naming - melee attack
 pub fn select_or_move_players(
   mut events: EventReader<SelectOrMovePlayer>,
   mut query1: Query<(
@@ -27,14 +30,16 @@ pub fn select_or_move_players(
     &PositionComponent,
     &SizeComponent,
     &mut MovementComponent,
+    &mut MeleeAttackComponent,
   )>,
   query2: Query<(&ShapeComponent, &PositionComponent), With<ObjectComponent>>,
+  query3: Query<(&EnemyComponent, &PositionComponent, &SizeComponent)>,
 ) {
   for event in events.read() {
     let mut selected_player_id: Option<ComponentId> = None;
 
     // try to select player
-    for (player, mut selection, position, size, _) in &mut query1 {
+    for (player, mut selection, position, size, _, _) in &mut query1 {
       let rect = Rect::new(
         position.x - (size.width / 2.),
         position.y - (size.height / 2.),
@@ -50,7 +55,7 @@ pub fn select_or_move_players(
 
     // deselect all players if some was selected
     if let Some(id) = selected_player_id {
-      for (player, mut selection, _, _, _) in &mut query1 {
+      for (player, mut selection, _, _, _, _) in &mut query1 {
         if player.id != id {
           selection.active = false;
         }
@@ -66,12 +71,29 @@ pub fn select_or_move_players(
         })
         .collect();
 
-      let to = Vec2::new(event.x, event.y);
+      let enemies: Vec<(&EnemyComponent, &PositionComponent, &SizeComponent)> = query3
+        .into_iter()
+        .filter(|(_, position, size)| {
+          let rect = Rect::new(position.x, position.y, size.width, size.height);
+          rect.contains(Vec2::new(event.x, event.y))
+        })
+        .collect();
 
-      for (_, selection, position, _, mut movement) in &mut query1 {
+      for (_, selection, position, _, mut movement, mut melee_attack) in &mut query1 {
         if selection.active {
-          let from = Vec2::new(position.x, position.y);
-          movement.path = find_path(from, to, &blocks);
+          if enemies.len() > 0 && melee_attack.active {
+            melee_attack.enemy_id = Some(enemies[0].0.id);
+
+            let from = Vec2::new(position.x, position.y);
+            let to = Vec2::new(enemies[0].1.x, enemies[0].1.y);
+            // TODO: updates path periodically if enemy moving
+            movement.path = find_path(from, to, &blocks);
+          } else {
+            let to = Vec2::new(event.x, event.y);
+            let from = Vec2::new(position.x, position.y);
+            movement.path = find_path(from, to, &blocks);
+            // TODO: reset melee attack if some
+          }
         }
       }
     }

@@ -1,11 +1,11 @@
 use crate::constants::PAN_SPEED;
 use crate::event::{
-  select_enemy_or_place_mark::SelectEnemyOrPlaceMark, select_or_move_player::SelectOrMovePlayer,
-  select_or_stop_player::SelectOrStopPlayer, set_cursor::SetCursor,
+  knife_melee_attack::KnifeMeleeAttack, select_enemy_or_place_mark::SelectEnemyOrPlaceMark,
+  select_or_move_player::SelectOrMovePlayer, select_or_stop_player::SelectOrStopPlayer,
 };
 use crate::mission;
 use crate::resource::alarm::Alarm;
-use crate::resource::cursor::{Cursor, CursorType};
+use crate::resource::cursor::Cursor;
 use crate::resource::offset::Offset;
 use crate::resource::physics::Physics;
 use crate::resource::{mark::Mark, target_area::TargetArea};
@@ -25,6 +25,8 @@ use crate::system::field_of_view::field_of_view;
 use crate::system::field_of_view_direction::field_of_view_direction;
 use crate::system::field_of_view_movement_direction::field_of_view_movement_direction;
 use crate::system::field_of_view_shift::field_of_view_shift;
+use crate::system::knife_melee_attack::knife_melee_attack;
+use crate::system::knife_melee_attack_kill::knife_melee_attack_kill;
 use crate::system::mark_in_field_of_view::mark_in_field_of_view;
 use crate::system::movement::movement;
 use crate::system::physics::physics;
@@ -33,7 +35,6 @@ use crate::system::reset_path::reset_path;
 use crate::system::select_enemy_or_place_mark::select_enemy_or_place_mark;
 use crate::system::select_or_move_players::select_or_move_players;
 use crate::system::select_or_stop_players::select_or_stop_players;
-use crate::system::set_cursor::set_cursor;
 use crate::system::some_player_in_enemy_field_of_view::some_player_in_enemy_field_of_view;
 use bevy_ecs::schedule::IntoSystemConfigs;
 use bevy_ecs::{event::Events, schedule::Schedule, world::World};
@@ -97,7 +98,7 @@ impl Game {
     world.insert_resource(Events::<SelectEnemyOrPlaceMark>::default());
     world.insert_resource(Events::<SelectOrMovePlayer>::default());
     world.insert_resource(Events::<SelectOrStopPlayer>::default());
-    world.insert_resource(Events::<SetCursor>::default());
+    world.insert_resource(Events::<KnifeMeleeAttack>::default());
 
     let mut schedule = Schedule::default();
 
@@ -112,7 +113,8 @@ impl Game {
     schedule.add_systems(select_enemy_or_place_mark);
     schedule.add_systems(select_or_move_players);
     schedule.add_systems(select_or_stop_players);
-    schedule.add_systems(set_cursor);
+    schedule.add_systems(knife_melee_attack_kill);
+    schedule.add_systems(knife_melee_attack);
     schedule.add_systems(
       draw_entity
         .before(draw_entity_ysorted)
@@ -211,15 +213,10 @@ impl Game {
 
     if is_mouse_button_pressed(MouseButton::Right) {
       self.world.send_event(SelectOrStopPlayer {});
-      self.world.send_event(SetCursor {
-        cursor_type: CursorType::Default,
-      });
     }
 
     if is_key_pressed(KeyCode::X) {
-      self.world.send_event(SetCursor {
-        cursor_type: CursorType::Knife,
-      });
+      self.world.send_event(KnifeMeleeAttack {});
     }
   }
 }
