@@ -14,5 +14,5 @@ macroquad = {version = "0.4.8", features = ["audio"]}
 maths-rs = "0.2.6"
 navmesh = "0.12.1"
 rapier2d = "0.21.0"
-serde = {version = "1.0.203", features = ["derive"]}
+serde = {version = "1.0.204", features = ["derive"]}
 toml = "0.8.14"
