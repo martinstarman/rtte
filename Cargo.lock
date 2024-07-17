@@ -559,9 +559,9 @@ checksum = "62adaabb884c94955b19907d60019f4e145d091c75345379e70d1ee696f7854f"
 
 [[package]]
 name = "i_float"
-version = "1.1.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6ff587f37218a3d3112ad181eb34608162a20840a741d3ecfede05f9ae945c9"
+checksum = "718dbbb1e92163ff53c15b035af4af20a852c60295ad2fae426f3ca2d41d202d"
 dependencies = [
  "serde",
 ]
