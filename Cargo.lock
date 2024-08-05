@@ -596,9 +596,9 @@ checksum = "cce4e0c28e92a783988b0177899cde7787a8049f4021d566d66c550e61cb8d48"
 
 [[package]]
 name = "i_triangle"
-version = "0.25.0"
+version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9c2849f7021ba3b40d13c9c344bb0778c7fdf2e663ce3b3ac75dbec0b5d1024"
+checksum = "dff1c146d0db2baf241a50eec4c46ba3189499cadb51f14a50796ae562583a19"
 dependencies = [
  "i_overlay",
  "serde",
