@@ -9,7 +9,7 @@ version = "0.8.0"
 bevy_ecs = "0.14.1"
 i_float = "1.2.3"
 i_overlay = "1.4.0"
-i_triangle = "0.25.0"
+i_triangle = "0.25.1"
 macroquad = {version = "0.4.11", features = ["audio"]}
 maths-rs = "0.2.6"
 navmesh = "0.12.1"
