@@ -1,39 +1,27 @@
-use constants::{WINDOW_HEIGHT, WINDOW_WIDTH};
-use game::Game;
-use macroquad::{
-  color::MAGENTA,
-  window::{clear_background, next_frame, Conf},
-};
+mod camera;
 
-pub mod component;
-pub mod constants;
-pub mod entity;
-pub mod event;
-pub mod game;
-pub mod mission;
-pub mod resource;
-pub mod shared;
-pub mod system;
+use bevy::{prelude::*, window::WindowResolution};
+use camera::camera_setup;
 
-fn window_conf() -> Conf {
-  Conf {
-    window_title: "rtte".to_owned(),
-    window_width: WINDOW_WIDTH,
-    window_height: WINDOW_HEIGHT,
-    window_resizable: false,
-    high_dpi: true,
-    fullscreen: true,
-    ..Default::default()
-  }
+fn main() -> AppExit {
+  App::new()
+    .add_plugins(DefaultPlugins.set(WindowPlugin {
+      primary_window: Some(Window {
+        title: "RTTE".into(),
+        resolution: WindowResolution::new(800., 600.),
+        ..Default::default()
+      }),
+      ..Default::default()
+    }))
+    .add_systems(Startup, (camera_setup, red_square_setup))
+    .run()
 }
 
-#[macroquad::main(window_conf)]
-async fn main() {
-  let mut game = Game::new().await;
+fn red_square_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+  let red_square = SpriteBundle {
+    texture: asset_server.load("red_square.png"),
+    ..default()
+  };
 
-  loop {
-    clear_background(MAGENTA);
-    game.update();
-    next_frame().await
-  }
+  commands.spawn(red_square);
 }
