@@ -1,19 +1,36 @@
 mod camera;
+mod gizmo;
 
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::{
+  dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
+  prelude::*,
+  window::WindowResolution,
+};
 use camera::camera_setup;
+use gizmo::gizmo;
 
 fn main() -> AppExit {
   App::new()
-    .add_plugins(DefaultPlugins.set(WindowPlugin {
-      primary_window: Some(Window {
-        title: "RTTE".into(),
-        resolution: WindowResolution::new(800., 600.),
+    .add_plugins((
+      DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+          title: "RTTE".into(),
+          resolution: WindowResolution::new(800., 600.),
+          ..Default::default()
+        }),
         ..Default::default()
       }),
-      ..Default::default()
-    }))
+      FpsOverlayPlugin {
+        config: FpsOverlayConfig {
+          text_config: TextStyle {
+            font_size: 20.,
+            ..default()
+          },
+        },
+      },
+    ))
     .add_systems(Startup, (camera_setup, red_square_setup))
+    .add_systems(Update, gizmo)
     .run()
 }
 
