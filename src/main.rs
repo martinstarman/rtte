@@ -6,7 +6,7 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
-use camera::camera_setup;
+use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 
 fn main() -> AppExit {
@@ -30,7 +30,7 @@ fn main() -> AppExit {
       },
     ))
     .add_systems(Startup, (camera_setup, red_square_setup))
-    .add_systems(Update, gizmo)
+    .add_systems(Update, (camera_pan, gizmo))
     .run()
 }
 
