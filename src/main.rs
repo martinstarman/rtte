@@ -1,5 +1,6 @@
 mod camera;
 mod gizmo;
+mod player;
 
 use bevy::{
   dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
@@ -8,18 +9,21 @@ use bevy::{
 };
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
+use player::{player_animation, player_setup};
 
 fn main() -> AppExit {
   App::new()
     .add_plugins((
-      DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-          title: "RTTE".into(),
-          resolution: WindowResolution::new(800., 600.),
+      DefaultPlugins
+        .set(WindowPlugin {
+          primary_window: Some(Window {
+            title: "RTTE".into(),
+            resolution: WindowResolution::new(800., 600.),
+            ..Default::default()
+          }),
           ..Default::default()
-        }),
-        ..Default::default()
-      }),
+        })
+        .set(ImagePlugin::default_nearest()),
       FpsOverlayPlugin {
         config: FpsOverlayConfig {
           text_config: TextStyle {
@@ -29,16 +33,7 @@ fn main() -> AppExit {
         },
       },
     ))
-    .add_systems(Startup, (camera_setup, red_square_setup))
-    .add_systems(Update, (camera_pan, gizmo))
+    .add_systems(Startup, (camera_setup, player_setup))
+    .add_systems(Update, (camera_pan, gizmo, player_animation))
     .run()
-}
-
-fn red_square_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-  let red_square = SpriteBundle {
-    texture: asset_server.load("red_square.png"),
-    ..default()
-  };
-
-  commands.spawn(red_square);
 }
