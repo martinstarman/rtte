@@ -1,5 +1,7 @@
-use bevy::prelude::*;
-use std::time::Duration;
+use bevy::{prelude::*, window::PrimaryWindow};
+use std::{collections::HashMap, time::Duration};
+
+use crate::{camera::MainCamera, direction::Direction};
 
 #[derive(Component)]
 pub struct Player;
@@ -8,6 +10,11 @@ pub struct Player;
 pub struct PlayerAnimationConfig {
   pub fps: u8,
   pub frame_timer: Timer,
+}
+
+#[derive(Resource)]
+pub struct PlayerAtlasConfig {
+  map: HashMap<Direction, Handle<TextureAtlasLayout>>,
 }
 
 impl PlayerAnimationConfig {
@@ -26,34 +33,92 @@ impl PlayerAnimationConfig {
 pub fn player_setup(
   mut commands: Commands,
   asset_server: Res<AssetServer>,
-  mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+  mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-  let texture_handle = asset_server.load("test.png");
-  let texture_atlas = TextureAtlasLayout::from_grid(UVec2 { x: 256, y: 256 }, 4, 3, None, None);
-  let texture_atlas_handle = texture_atlases.add(texture_atlas);
+  let texture = asset_server.load("player_walk.png");
+
+  let tile_size = UVec2::new(256, 256);
+  let mut atlas_config = HashMap::new();
+
+  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, None);
+  let handle = atlases.add(atlas);
+  atlas_config.insert(Direction::North, handle);
+
+  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(1024, 0)));
+  let handle = atlases.add(atlas);
+  atlas_config.insert(Direction::NorthEast, handle);
+
+  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(2048, 0)));
+  let handle = atlases.add(atlas);
+  atlas_config.insert(Direction::East, handle);
+
+  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(3072, 0)));
+  let handle = atlases.add(atlas);
+  atlas_config.insert(Direction::SouthEast, handle);
+
+  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(4096, 0)));
+  let handle = atlases.add(atlas);
+  atlas_config.insert(Direction::South, handle);
+
+  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(5120, 0)));
+  let handle = atlases.add(atlas);
+  atlas_config.insert(Direction::SouthWest, handle);
+
+  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(6144, 0)));
+  let handle = atlases.add(atlas);
+  atlas_config.insert(Direction::West, handle);
+
+  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(7168, 0)));
+  let handle = atlases.add(atlas);
+  atlas_config.insert(Direction::NorthWest, handle);
+
+  commands.insert_resource(PlayerAtlasConfig {
+    map: atlas_config.clone(),
+  });
 
   commands.spawn((
     Player,
     SpriteBundle {
-      texture: texture_handle,
+      texture,
       ..default()
     },
-    TextureAtlas::from(texture_atlas_handle),
+    TextureAtlas::from(atlas_config.get(&Direction::South).unwrap().clone()),
     PlayerAnimationConfig::new(10),
   ));
 }
 
 pub fn player_animation(
   time: Res<Time>,
-  mut texture_atlas_q: Query<(&mut TextureAtlas, &mut PlayerAnimationConfig), With<Player>>,
+  mut animation_q: Query<(&mut TextureAtlas, &mut PlayerAnimationConfig), With<Player>>,
 ) {
-  for (mut texture_atlas, mut player_animation_config) in &mut texture_atlas_q {
-    player_animation_config.frame_timer.tick(time.delta());
+  for (mut atlas, mut animation_config) in &mut animation_q {
+    animation_config.frame_timer.tick(time.delta());
 
-    if player_animation_config.frame_timer.just_finished() {
-      texture_atlas.index = (texture_atlas.index + 1) % 8;
-      player_animation_config.frame_timer =
-        PlayerAnimationConfig::timer_from_fps(player_animation_config.fps);
+    if animation_config.frame_timer.just_finished() {
+      atlas.index = (atlas.index + 1) % 8;
+
+      animation_config.frame_timer = PlayerAnimationConfig::timer_from_fps(animation_config.fps);
+    }
+  }
+}
+
+pub fn player_direction(
+  windows_q: Query<&Window, With<PrimaryWindow>>,
+  camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+  mut atlas_q: Query<&mut TextureAtlas, With<Player>>,
+  atlas_config: Res<PlayerAtlasConfig>,
+) {
+  let window = windows_q.single();
+
+  if let Some(cursor_position) = window.cursor_position() {
+    let (camera, global_transform) = camera_q.single();
+
+    if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
+      let angle = position.to_angle();
+      let direction = Direction::try_from(angle).unwrap();
+
+      let mut atlas = atlas_q.single_mut();
+      atlas.layout = atlas_config.map.get(&direction).unwrap().clone();
     }
   }
 }

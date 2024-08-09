@@ -3,19 +3,15 @@ use bevy::prelude::*;
 const PAN_SPEED: f32 = 5.;
 
 #[derive(Component)]
-pub struct Camera;
+pub struct MainCamera;
 
 pub fn camera_setup(mut commands: Commands) {
-  let camera2d = Camera2dBundle {
-    transform: Transform::from_xyz(0., 10., 10.).looking_at(Vec3::ZERO, Vec3::Y),
-    ..default()
-  };
-
-  commands.spawn((camera2d, Camera));
+  let camera2d = Camera2dBundle::default();
+  commands.spawn((camera2d, MainCamera));
 }
 
 pub fn camera_pan(
-  mut transform_q: Query<&mut Transform, With<Camera>>,
+  mut transform_q: Query<&mut Transform, With<MainCamera>>,
   keys_r: Res<ButtonInput<KeyCode>>,
 ) {
   let mut transform = transform_q.single_mut();
