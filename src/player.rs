@@ -4,7 +4,9 @@ use std::{collections::HashMap, time::Duration};
 use crate::{camera::MainCamera, direction::Direction};
 
 #[derive(Component)]
-pub struct Player;
+pub struct Player {
+  state: PlayerState,
+}
 
 #[derive(Component)]
 pub struct PlayerAnimationConfig {
@@ -14,7 +16,13 @@ pub struct PlayerAnimationConfig {
 
 #[derive(Resource)]
 pub struct PlayerAtlasConfig {
-  map: HashMap<Direction, Handle<TextureAtlasLayout>>,
+  map: HashMap<PlayerState, HashMap<Direction, Handle<TextureAtlasLayout>>>,
+}
+
+#[derive(PartialEq, Eq, Hash, Clone)]
+pub enum PlayerState {
+  Idle = 1,
+  Walk = 2,
 }
 
 impl PlayerAnimationConfig {
@@ -35,10 +43,13 @@ pub fn player_setup(
   asset_server: Res<AssetServer>,
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-  let texture = asset_server.load("player_walk.png");
+  let texture = asset_server.load("player_atlas.png");
 
   let tile_size = UVec2::new(256, 256);
   let mut atlas_config = HashMap::new();
+
+  let states = [PlayerState::Idle, PlayerState::Walk];
+
   let directions = [
     Direction::North,
     Direction::NorthEast,
@@ -50,11 +61,17 @@ pub fn player_setup(
     Direction::NorthWest,
   ];
 
-  for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(i as u32 * 1024, 0));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, offset);
-    let handle = atlases.add(atlas);
-    atlas_config.insert(direction.clone(), handle);
+  for (is, state) in states.iter().enumerate() {
+    let mut direction_config = HashMap::new();
+
+    for (id, direction) in directions.iter().enumerate() {
+      let offset = Some(UVec2::new(id as u32 * 1024, is as u32 * 1024));
+      let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, offset);
+      let handle = atlases.add(atlas);
+      direction_config.insert(direction.clone(), handle);
+    }
+
+    atlas_config.insert(state.clone(), direction_config);
   }
 
   commands.insert_resource(PlayerAtlasConfig {
@@ -62,12 +79,22 @@ pub fn player_setup(
   });
 
   commands.spawn((
-    Player,
+    Player {
+      state: PlayerState::Idle,
+    },
     SpriteBundle {
       texture,
       ..default()
     },
-    TextureAtlas::from(atlas_config.get(&Direction::South).unwrap().clone()),
+    TextureAtlas::from(
+      atlas_config
+        .get(&PlayerState::Idle)
+        .unwrap()
+        .clone()
+        .get(&Direction::South)
+        .unwrap()
+        .clone(),
+    ),
     PlayerAnimationConfig::new(10),
   ));
 }
@@ -90,7 +117,7 @@ pub fn player_animation(
 pub fn player_direction(
   windows_q: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-  mut atlas_q: Query<&mut TextureAtlas, With<Player>>,
+  mut player_atlas_q: Query<(&mut TextureAtlas, &Player)>,
   atlas_config: Res<PlayerAtlasConfig>,
 ) {
   let window = windows_q.single();
@@ -102,8 +129,15 @@ pub fn player_direction(
       let angle = position.to_angle();
       let direction = Direction::try_from(angle).unwrap();
 
-      let mut atlas = atlas_q.single_mut();
-      atlas.layout = atlas_config.map.get(&direction).unwrap().clone();
+      let (mut atlas, player) = player_atlas_q.single_mut();
+      atlas.layout = atlas_config
+        .map
+        .get(&player.state)
+        .unwrap()
+        .clone()
+        .get(&direction)
+        .unwrap()
+        .clone();
     }
   }
 }
