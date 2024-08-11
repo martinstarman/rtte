@@ -39,38 +39,23 @@ pub fn player_setup(
 
   let tile_size = UVec2::new(256, 256);
   let mut atlas_config = HashMap::new();
+  let directions = [
+    Direction::North,
+    Direction::NorthEast,
+    Direction::East,
+    Direction::SouthEast,
+    Direction::South,
+    Direction::SouthWest,
+    Direction::West,
+    Direction::NorthWest,
+  ];
 
-  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, None);
-  let handle = atlases.add(atlas);
-  atlas_config.insert(Direction::North, handle);
-
-  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(1024, 0)));
-  let handle = atlases.add(atlas);
-  atlas_config.insert(Direction::NorthEast, handle);
-
-  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(2048, 0)));
-  let handle = atlases.add(atlas);
-  atlas_config.insert(Direction::East, handle);
-
-  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(3072, 0)));
-  let handle = atlases.add(atlas);
-  atlas_config.insert(Direction::SouthEast, handle);
-
-  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(4096, 0)));
-  let handle = atlases.add(atlas);
-  atlas_config.insert(Direction::South, handle);
-
-  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(5120, 0)));
-  let handle = atlases.add(atlas);
-  atlas_config.insert(Direction::SouthWest, handle);
-
-  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(6144, 0)));
-  let handle = atlases.add(atlas);
-  atlas_config.insert(Direction::West, handle);
-
-  let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, Some(UVec2::new(7168, 0)));
-  let handle = atlases.add(atlas);
-  atlas_config.insert(Direction::NorthWest, handle);
+  for (i, direction) in directions.iter().enumerate() {
+    let offset = Some(UVec2::new(i as u32 * 1024, 0));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, offset);
+    let handle = atlases.add(atlas);
+    atlas_config.insert(direction.clone(), handle);
+  }
 
   commands.insert_resource(PlayerAtlasConfig {
     map: atlas_config.clone(),
