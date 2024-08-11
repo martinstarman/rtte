@@ -10,7 +10,10 @@ use bevy::{
 };
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
-use player::{player_animation, player_direction, player_setup};
+use player::{
+  player_animation, player_direction, player_follow_path, player_setup, player_state,
+  player_update_path,
+};
 
 fn main() -> AppExit {
   App::new()
@@ -37,7 +40,15 @@ fn main() -> AppExit {
     .add_systems(Startup, (camera_setup, player_setup))
     .add_systems(
       Update,
-      (camera_pan, gizmo, player_animation, player_direction),
+      (
+        camera_pan,
+        gizmo,
+        player_animation,
+        player_direction,
+        player_update_path,
+        player_follow_path,
+        player_state,
+      ),
     )
     .run()
 }
