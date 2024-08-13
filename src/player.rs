@@ -5,11 +5,13 @@ use crate::{camera::MainCamera, direction::Direction};
 
 const PLAYER_SPEED: f32 = 2.;
 
+// TODO: split fields into components
 #[derive(Component)]
 pub struct Player {
   path: Vec<Vec2>,
   position: Vec3,
   state: PlayerState,
+  // TODO: direction: Direction,
 }
 
 #[derive(Component)]
@@ -23,6 +25,13 @@ pub struct PlayerAtlasConfig {
   map: HashMap<PlayerState, HashMap<Direction, Handle<TextureAtlasLayout>>>,
 }
 
+// TODO: consider
+// pub struct PlayerState {
+//   type: Idle,
+//   atlas: HashMap<Direction, Handle<TextureAtlasLayout>>,
+//   animation_config: ...
+// }
+
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub enum PlayerState {
   Idle = 1,
@@ -30,6 +39,7 @@ pub enum PlayerState {
 }
 
 impl PlayerAnimationConfig {
+  // TODO: config
   fn new(fps: u8) -> Self {
     Self {
       fps,
@@ -49,9 +59,11 @@ pub fn player_setup(
 ) {
   let texture = asset_server.load("player_atlas.png");
 
+  // TODO: config
   let tile_size = UVec2::new(256, 256);
   let mut atlas_config = HashMap::new();
 
+  // TODO: config
   let directions = [
     Direction::North,
     Direction::NorthEast,
@@ -89,6 +101,7 @@ pub fn player_setup(
     map: atlas_config.clone(),
   });
 
+  // TODO: PlayerBundle
   commands.spawn((
     Player {
       path: vec![],
