@@ -52,8 +52,6 @@ pub fn player_setup(
   let tile_size = UVec2::new(256, 256);
   let mut atlas_config = HashMap::new();
 
-  let states = [PlayerState::Idle, PlayerState::Walk];
-
   let directions = [
     Direction::North,
     Direction::NorthEast,
@@ -65,18 +63,27 @@ pub fn player_setup(
     Direction::NorthWest,
   ];
 
-  for (is, state) in states.iter().enumerate() {
-    let mut direction_config = HashMap::new();
+  let mut idle_config = HashMap::new();
 
-    for (id, direction) in directions.iter().enumerate() {
-      let offset = Some(UVec2::new(id as u32 * 1024, is as u32 * 1024));
-      let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, offset);
-      let handle = atlases.add(atlas);
-      direction_config.insert(direction.clone(), handle);
-    }
-
-    atlas_config.insert(state.clone(), direction_config);
+  for (i, direction) in directions.iter().enumerate() {
+    let offset = Some(UVec2::new(i as u32 * 1024, 0));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 4, None, offset);
+    let handle = atlases.add(atlas);
+    idle_config.insert(direction.clone(), handle);
   }
+
+  atlas_config.insert(PlayerState::Idle, idle_config);
+
+  let mut walk_config = HashMap::new();
+
+  for (i, direction) in directions.iter().enumerate() {
+    let offset = Some(UVec2::new(i as u32 * 1024, 1024));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, offset);
+    let handle = atlases.add(atlas);
+    walk_config.insert(direction.clone(), handle);
+  }
+
+  atlas_config.insert(PlayerState::Walk, walk_config);
 
   commands.insert_resource(PlayerAtlasConfig {
     map: atlas_config.clone(),
@@ -107,13 +114,19 @@ pub fn player_setup(
 
 pub fn player_animation(
   time: Res<Time>,
-  mut animation_q: Query<(&mut TextureAtlas, &mut PlayerAnimationConfig), With<Player>>,
+  mut animation_q: Query<(&Player, &mut TextureAtlas, &mut PlayerAnimationConfig)>,
 ) {
-  for (mut atlas, mut animation_config) in &mut animation_q {
+  for (player, mut atlas, mut animation_config) in &mut animation_q {
     animation_config.frame_timer.tick(time.delta());
 
     if animation_config.frame_timer.just_finished() {
-      atlas.index = (atlas.index + 1) % 8;
+      // TODO: config
+      let frame_count = if player.state == PlayerState::Idle {
+        13
+      } else {
+        8
+      };
+      atlas.index = (atlas.index + 1) % frame_count;
 
       animation_config.frame_timer = PlayerAnimationConfig::timer_from_fps(animation_config.fps);
     }
@@ -182,7 +195,7 @@ pub fn player_follow_path(mut player_transform_q: Query<(&mut Player, &mut Trans
 pub fn player_state(mut player_q: Query<&mut Player, Changed<Player>>) {
   for mut player in &mut player_q {
     if player.path.len() == 0 && player.state != PlayerState::Idle {
-      player.state = PlayerState::Idle;
+      player.state = PlayerState::Idle; // TODO: update atlas layout
     }
 
     if player.path.len() > 0 && player.state != PlayerState::Walk {
