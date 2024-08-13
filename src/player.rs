@@ -120,23 +120,15 @@ pub fn player_animation(
   }
 }
 
-// TODO: update me
 pub fn player_direction(
-  windows_q: Query<&Window, With<PrimaryWindow>>,
-  camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-  mut player_atlas_q: Query<(&mut TextureAtlas, &Player)>,
+  mut player_atlas_q: Query<(&Player, &mut TextureAtlas)>,
   atlas_config: Res<PlayerAtlasConfig>,
 ) {
-  let window = windows_q.single();
-
-  if let Some(cursor_position) = window.cursor_position() {
-    let (camera, global_transform) = camera_q.single();
-
-    if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-      let angle = position.to_angle();
+  for (player, mut atlas) in &mut player_atlas_q {
+    if player.path.len() > 0 {
+      let angle = (player.path[0] - Vec2::new(player.position.x, player.position.y)).to_angle();
       let direction = Direction::try_from(angle).unwrap();
 
-      let (mut atlas, player) = player_atlas_q.single_mut();
       atlas.layout = atlas_config
         .map
         .get(&player.state)
