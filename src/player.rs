@@ -9,7 +9,6 @@ const PLAYER_SPEED: f32 = 2.;
 #[derive(Component)]
 pub struct Player {
   path: Vec<Vec2>,
-  position: Vec3,
   state: PlayerState,
   // TODO: direction: Direction,
 }
@@ -105,7 +104,6 @@ pub fn player_setup(
   commands.spawn((
     Player {
       path: vec![],
-      position: Vec3::new(0., 0., 0.),
       state: PlayerState::Idle,
     },
     SpriteBundle {
@@ -147,12 +145,13 @@ pub fn player_animation(
 }
 
 pub fn player_direction(
-  mut player_atlas_q: Query<(&Player, &mut TextureAtlas)>,
+  mut player_atlas_q: Query<(&Player, &Transform, &mut TextureAtlas)>,
   atlas_config: Res<PlayerAtlasConfig>,
 ) {
-  for (player, mut atlas) in &mut player_atlas_q {
+  for (player, transform, mut atlas) in &mut player_atlas_q {
     if player.path.len() > 0 {
-      let angle = (player.path[0] - Vec2::new(player.position.x, player.position.y)).to_angle();
+      let angle =
+        (player.path[0] - Vec2::new(transform.translation.x, transform.translation.y)).to_angle();
       let direction = Direction::try_from(angle).unwrap();
 
       atlas.layout = atlas_config
@@ -191,16 +190,15 @@ pub fn player_update_path(
 pub fn player_follow_path(mut player_transform_q: Query<(&mut Player, &mut Transform)>) {
   for (mut player, mut transform) in &mut player_transform_q {
     if player.path.len() > 0 {
+      let curr = transform.translation;
       let next = Vec3::new(player.path[0].x, player.path[0].y, 0.);
-      let norm = (next - player.position).normalize();
+      let norm = (next - curr).normalize();
 
-      player.position = player.position + norm * PLAYER_SPEED;
+      transform.translation = curr + norm * PLAYER_SPEED;
 
-      if player.position.distance(next) <= 1. {
+      if transform.translation.distance(next) <= 1. {
         player.path.remove(0);
       }
-
-      transform.translation = player.position;
     }
   }
 }
