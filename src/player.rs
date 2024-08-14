@@ -1,14 +1,13 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use std::{collections::HashMap, time::Duration};
 
-use crate::{camera::MainCamera, direction::Direction};
+use crate::{camera::MainCamera, direction::Direction, movable::Movable};
 
 const PLAYER_SPEED: f32 = 2.;
 
 // TODO: split fields into components
 #[derive(Component)]
 pub struct Player {
-  path: Vec<Vec2>,
   state: PlayerState,
   // TODO: direction: Direction,
 }
@@ -103,9 +102,9 @@ pub fn player_setup(
   // TODO: PlayerBundle
   commands.spawn((
     Player {
-      path: vec![],
       state: PlayerState::Idle,
     },
+    Movable { path: vec![] },
     SpriteBundle {
       texture,
       ..default()
@@ -145,13 +144,13 @@ pub fn player_animation(
 }
 
 pub fn player_direction(
-  mut player_atlas_q: Query<(&Player, &Transform, &mut TextureAtlas)>,
+  mut player_atlas_q: Query<(&Player, &Movable, &Transform, &mut TextureAtlas)>,
   atlas_config: Res<PlayerAtlasConfig>,
 ) {
-  for (player, transform, mut atlas) in &mut player_atlas_q {
-    if player.path.len() > 0 {
+  for (player, movable, transform, mut atlas) in &mut player_atlas_q {
+    if movable.path.len() > 0 {
       let angle =
-        (player.path[0] - Vec2::new(transform.translation.x, transform.translation.y)).to_angle();
+        (movable.path[0] - Vec2::new(transform.translation.x, transform.translation.y)).to_angle();
       let direction = Direction::try_from(angle).unwrap();
 
       atlas.layout = atlas_config
@@ -167,7 +166,7 @@ pub fn player_direction(
 }
 
 pub fn player_update_path(
-  mut player_q: Query<&mut Player>,
+  mut player_q: Query<&mut Movable, With<Player>>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows_q: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -179,37 +178,39 @@ pub fn player_update_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        let mut player = player_q.single_mut();
-
-        player.path.push(position);
+        for mut movable in &mut player_q {
+          movable.path.push(position);
+        }
       }
     }
   }
 }
 
-pub fn player_follow_path(mut player_transform_q: Query<(&mut Player, &mut Transform)>) {
-  for (mut player, mut transform) in &mut player_transform_q {
-    if player.path.len() > 0 {
+pub fn player_follow_path(
+  mut player_transform_q: Query<(&mut Movable, &mut Transform), With<Player>>,
+) {
+  for (mut movable, mut transform) in &mut player_transform_q {
+    if movable.path.len() > 0 {
       let curr = transform.translation;
-      let next = Vec3::new(player.path[0].x, player.path[0].y, 0.);
+      let next = Vec3::new(movable.path[0].x, movable.path[0].y, 0.);
       let norm = (next - curr).normalize();
 
       transform.translation = curr + norm * PLAYER_SPEED;
 
       if transform.translation.distance(next) <= 1. {
-        player.path.remove(0);
+        movable.path.remove(0);
       }
     }
   }
 }
 
-pub fn player_state(mut player_q: Query<&mut Player, Changed<Player>>) {
-  for mut player in &mut player_q {
-    if player.path.len() == 0 && player.state != PlayerState::Idle {
+pub fn player_state(mut player_q: Query<(&mut Player, &Movable), Changed<Movable>>) {
+  for (mut player, movable) in &mut player_q {
+    if movable.path.len() == 0 && player.state != PlayerState::Idle {
       player.state = PlayerState::Idle; // TODO: update atlas layout
     }
 
-    if player.path.len() > 0 && player.state != PlayerState::Walk {
+    if movable.path.len() > 0 && player.state != PlayerState::Walk {
       player.state = PlayerState::Walk;
     }
   }

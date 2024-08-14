@@ -1,6 +1,7 @@
 mod camera;
 mod direction;
 mod gizmo;
+mod movable;
 mod player;
 
 use bevy::{
