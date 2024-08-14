@@ -5,10 +5,8 @@ use crate::{camera::MainCamera, direction::Direction, movable::Movable};
 
 const PLAYER_SPEED: f32 = 2.;
 
-// TODO: split fields into components
 #[derive(Component)]
 pub struct Player {
-  state: PlayerState,
   // TODO: direction: Direction,
 }
 
@@ -20,7 +18,12 @@ pub struct PlayerAnimationConfig {
 
 #[derive(Resource)]
 pub struct PlayerAtlasConfig {
-  map: HashMap<PlayerState, HashMap<Direction, Handle<TextureAtlasLayout>>>,
+  map: HashMap<PlayerStates, HashMap<Direction, Handle<TextureAtlasLayout>>>,
+}
+
+#[derive(Component)]
+pub struct PlayerState {
+  pub value: PlayerStates,
 }
 
 // TODO: consider
@@ -31,7 +34,7 @@ pub struct PlayerAtlasConfig {
 // }
 
 #[derive(PartialEq, Eq, Hash, Clone)]
-pub enum PlayerState {
+pub enum PlayerStates {
   Idle = 1,
   Walk = 2,
 }
@@ -82,7 +85,7 @@ pub fn player_setup(
     idle_config.insert(direction.clone(), handle);
   }
 
-  atlas_config.insert(PlayerState::Idle, idle_config);
+  atlas_config.insert(PlayerStates::Idle, idle_config);
 
   let mut walk_config = HashMap::new();
 
@@ -93,7 +96,7 @@ pub fn player_setup(
     walk_config.insert(direction.clone(), handle);
   }
 
-  atlas_config.insert(PlayerState::Walk, walk_config);
+  atlas_config.insert(PlayerStates::Walk, walk_config);
 
   commands.insert_resource(PlayerAtlasConfig {
     map: atlas_config.clone(),
@@ -101,17 +104,18 @@ pub fn player_setup(
 
   // TODO: PlayerBundle
   commands.spawn((
-    Player {
-      state: PlayerState::Idle,
-    },
+    Player {},
     Movable { path: vec![] },
+    PlayerState {
+      value: PlayerStates::Idle,
+    },
     SpriteBundle {
       texture,
       ..default()
     },
     TextureAtlas::from(
       atlas_config
-        .get(&PlayerState::Idle)
+        .get(&PlayerStates::Idle)
         .unwrap()
         .clone()
         .get(&Direction::South)
@@ -124,14 +128,17 @@ pub fn player_setup(
 
 pub fn player_animation(
   time: Res<Time>,
-  mut animation_q: Query<(&Player, &mut TextureAtlas, &mut PlayerAnimationConfig)>,
+  mut animation_q: Query<
+    (&PlayerState, &mut TextureAtlas, &mut PlayerAnimationConfig),
+    With<Player>,
+  >,
 ) {
-  for (player, mut atlas, mut animation_config) in &mut animation_q {
+  for (player_state, mut atlas, mut animation_config) in &mut animation_q {
     animation_config.frame_timer.tick(time.delta());
 
     if animation_config.frame_timer.just_finished() {
       // TODO: config
-      let frame_count = if player.state == PlayerState::Idle {
+      let frame_count = if player_state.value == PlayerStates::Idle {
         13
       } else {
         8
@@ -144,10 +151,10 @@ pub fn player_animation(
 }
 
 pub fn player_direction(
-  mut player_atlas_q: Query<(&Player, &Movable, &Transform, &mut TextureAtlas)>,
+  mut player_atlas_q: Query<(&PlayerState, &Movable, &Transform, &mut TextureAtlas), With<Player>>,
   atlas_config: Res<PlayerAtlasConfig>,
 ) {
-  for (player, movable, transform, mut atlas) in &mut player_atlas_q {
+  for (player_state, movable, transform, mut atlas) in &mut player_atlas_q {
     if movable.path.len() > 0 {
       let angle =
         (movable.path[0] - Vec2::new(transform.translation.x, transform.translation.y)).to_angle();
@@ -155,7 +162,7 @@ pub fn player_direction(
 
       atlas.layout = atlas_config
         .map
-        .get(&player.state)
+        .get(&player_state.value)
         .unwrap()
         .clone()
         .get(&direction)
@@ -204,14 +211,14 @@ pub fn player_follow_path(
   }
 }
 
-pub fn player_state(mut player_q: Query<(&mut Player, &Movable), Changed<Movable>>) {
-  for (mut player, movable) in &mut player_q {
-    if movable.path.len() == 0 && player.state != PlayerState::Idle {
-      player.state = PlayerState::Idle; // TODO: update atlas layout
+pub fn player_state(mut player_q: Query<(&mut PlayerState, &Movable), Changed<Movable>>) {
+  for (mut player_state, movable) in &mut player_q {
+    if movable.path.len() == 0 && player_state.value != PlayerStates::Idle {
+      player_state.value = PlayerStates::Idle; // TODO: update atlas layout
     }
 
-    if movable.path.len() > 0 && player.state != PlayerState::Walk {
-      player.state = PlayerState::Walk;
+    if movable.path.len() > 0 && player_state.value != PlayerStates::Walk {
+      player_state.value = PlayerStates::Walk;
     }
   }
 }
