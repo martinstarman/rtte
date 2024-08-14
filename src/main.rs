@@ -12,7 +12,7 @@ use bevy::{
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 use player::{
-  player_animation, player_direction, player_follow_path, player_setup, player_state,
+  player_animation, player_atlas, player_direction, player_follow_path, player_setup, player_state,
   player_update_path,
 };
 
@@ -49,6 +49,7 @@ fn main() -> AppExit {
         player_update_path,
         player_follow_path,
         player_state,
+        player_atlas,
       ),
     )
     .run()

@@ -1,14 +1,16 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 use std::{collections::HashMap, time::Duration};
 
-use crate::{camera::MainCamera, direction::Direction, movable::Movable};
+use crate::{
+  camera::MainCamera,
+  direction::{Direction, Directions},
+  movable::Movable,
+};
 
 const PLAYER_SPEED: f32 = 2.;
 
 #[derive(Component)]
-pub struct Player {
-  // TODO: direction: Direction,
-}
+pub struct Player {}
 
 #[derive(Component)]
 pub struct PlayerAnimationConfig {
@@ -18,7 +20,7 @@ pub struct PlayerAnimationConfig {
 
 #[derive(Resource)]
 pub struct PlayerAtlasConfig {
-  map: HashMap<PlayerStates, HashMap<Direction, Handle<TextureAtlasLayout>>>,
+  map: HashMap<PlayerStates, HashMap<Directions, Handle<TextureAtlasLayout>>>,
 }
 
 #[derive(Component)]
@@ -66,14 +68,14 @@ pub fn player_setup(
 
   // TODO: config
   let directions = [
-    Direction::North,
-    Direction::NorthEast,
-    Direction::East,
-    Direction::SouthEast,
-    Direction::South,
-    Direction::SouthWest,
-    Direction::West,
-    Direction::NorthWest,
+    Directions::North,
+    Directions::NorthEast,
+    Directions::East,
+    Directions::SouthEast,
+    Directions::South,
+    Directions::SouthWest,
+    Directions::West,
+    Directions::NorthWest,
   ];
 
   let mut idle_config = HashMap::new();
@@ -109,6 +111,9 @@ pub fn player_setup(
     PlayerState {
       value: PlayerStates::Idle,
     },
+    Direction {
+      value: Directions::East,
+    },
     SpriteBundle {
       texture,
       ..default()
@@ -118,7 +123,7 @@ pub fn player_setup(
         .get(&PlayerStates::Idle)
         .unwrap()
         .clone()
-        .get(&Direction::South)
+        .get(&Directions::South)
         .unwrap()
         .clone(),
     ),
@@ -150,24 +155,33 @@ pub fn player_animation(
   }
 }
 
-pub fn player_direction(
-  mut player_atlas_q: Query<(&PlayerState, &Movable, &Transform, &mut TextureAtlas), With<Player>>,
+pub fn player_atlas(
+  mut query: Query<
+    (&PlayerState, &Direction, &mut TextureAtlas),
+    (With<Player>, Or<(Changed<Direction>, Changed<PlayerState>)>),
+  >,
   atlas_config: Res<PlayerAtlasConfig>,
 ) {
-  for (player_state, movable, transform, mut atlas) in &mut player_atlas_q {
+  for (player_state, direction, mut atlas) in &mut query {
+    atlas.layout = atlas_config
+      .map
+      .get(&player_state.value)
+      .unwrap()
+      .clone()
+      .get(&direction.value)
+      .unwrap()
+      .clone();
+  }
+}
+
+pub fn player_direction(
+  mut player_atlas_q: Query<(&Movable, &mut Direction, &Transform), With<Player>>,
+) {
+  for (movable, mut direction, transform) in &mut player_atlas_q {
     if movable.path.len() > 0 {
       let angle =
         (movable.path[0] - Vec2::new(transform.translation.x, transform.translation.y)).to_angle();
-      let direction = Direction::try_from(angle).unwrap();
-
-      atlas.layout = atlas_config
-        .map
-        .get(&player_state.value)
-        .unwrap()
-        .clone()
-        .get(&direction)
-        .unwrap()
-        .clone();
+      direction.value = Directions::try_from(angle).unwrap();
     }
   }
 }
@@ -214,7 +228,7 @@ pub fn player_follow_path(
 pub fn player_state(mut player_q: Query<(&mut PlayerState, &Movable), Changed<Movable>>) {
   for (mut player_state, movable) in &mut player_q {
     if movable.path.len() == 0 && player_state.value != PlayerStates::Idle {
-      player_state.value = PlayerStates::Idle; // TODO: update atlas layout
+      player_state.value = PlayerStates::Idle;
     }
 
     if movable.path.len() > 0 && player_state.value != PlayerStates::Walk {
