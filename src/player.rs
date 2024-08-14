@@ -28,18 +28,18 @@ pub struct PlayerState {
   pub value: PlayerStates,
 }
 
+#[derive(PartialEq, Eq, Hash, Clone)]
+pub enum PlayerStates {
+  Idle = 1,
+  Walk = 2,
+}
+
 // TODO: consider
 // pub struct PlayerState {
 //   type: Idle,
 //   atlas: HashMap<Direction, Handle<TextureAtlasLayout>>,
 //   animation_config: ...
 // }
-
-#[derive(PartialEq, Eq, Hash, Clone)]
-pub enum PlayerStates {
-  Idle = 1,
-  Walk = 2,
-}
 
 impl PlayerAnimationConfig {
   // TODO: config
@@ -132,13 +132,10 @@ pub fn player_setup(
 }
 
 pub fn player_animation(
+  mut query: Query<(&PlayerState, &mut TextureAtlas, &mut PlayerAnimationConfig), With<Player>>,
   time: Res<Time>,
-  mut animation_q: Query<
-    (&PlayerState, &mut TextureAtlas, &mut PlayerAnimationConfig),
-    With<Player>,
-  >,
 ) {
-  for (player_state, mut atlas, mut animation_config) in &mut animation_q {
+  for (player_state, mut atlas, mut animation_config) in &mut query {
     animation_config.frame_timer.tick(time.delta());
 
     if animation_config.frame_timer.just_finished() {
@@ -155,7 +152,7 @@ pub fn player_animation(
   }
 }
 
-pub fn player_atlas(
+pub fn player_atlas_layout(
   mut query: Query<
     (&PlayerState, &Direction, &mut TextureAtlas),
     (With<Player>, Or<(Changed<Direction>, Changed<PlayerState>)>),
@@ -174,10 +171,8 @@ pub fn player_atlas(
   }
 }
 
-pub fn player_direction(
-  mut player_atlas_q: Query<(&Movable, &mut Direction, &Transform), With<Player>>,
-) {
-  for (movable, mut direction, transform) in &mut player_atlas_q {
+pub fn player_direction(mut query: Query<(&Movable, &mut Direction, &Transform), With<Player>>) {
+  for (movable, mut direction, transform) in &mut query {
     if movable.path.len() > 0 {
       let angle =
         (movable.path[0] - Vec2::new(transform.translation.x, transform.translation.y)).to_angle();
@@ -186,8 +181,8 @@ pub fn player_direction(
   }
 }
 
-pub fn player_update_path(
-  mut player_q: Query<&mut Movable, With<Player>>,
+pub fn player_path(
+  mut query: Query<&mut Movable, With<Player>>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows_q: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -199,7 +194,7 @@ pub fn player_update_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for mut movable in &mut player_q {
+        for mut movable in &mut query {
           movable.path.push(position);
         }
       }
@@ -207,10 +202,8 @@ pub fn player_update_path(
   }
 }
 
-pub fn player_follow_path(
-  mut player_transform_q: Query<(&mut Movable, &mut Transform), With<Player>>,
-) {
-  for (mut movable, mut transform) in &mut player_transform_q {
+pub fn player_follow_path(mut query: Query<(&mut Movable, &mut Transform), With<Player>>) {
+  for (mut movable, mut transform) in &mut query {
     if movable.path.len() > 0 {
       let curr = transform.translation;
       let next = Vec3::new(movable.path[0].x, movable.path[0].y, 0.);
@@ -225,8 +218,8 @@ pub fn player_follow_path(
   }
 }
 
-pub fn player_state(mut player_q: Query<(&mut PlayerState, &Movable), Changed<Movable>>) {
-  for (mut player_state, movable) in &mut player_q {
+pub fn player_state(mut query: Query<(&mut PlayerState, &Movable), Changed<Movable>>) {
+  for (mut player_state, movable) in &mut query {
     if movable.path.len() == 0 && player_state.value != PlayerStates::Idle {
       player_state.value = PlayerStates::Idle;
     }

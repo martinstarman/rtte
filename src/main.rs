@@ -12,8 +12,8 @@ use bevy::{
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 use player::{
-  player_animation, player_atlas, player_direction, player_follow_path, player_setup, player_state,
-  player_update_path,
+  player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
+  player_setup, player_state,
 };
 
 fn main() -> AppExit {
@@ -46,10 +46,10 @@ fn main() -> AppExit {
         gizmo,
         player_animation,
         player_direction,
-        player_update_path,
+        player_path,
         player_follow_path,
         player_state,
-        player_atlas,
+        player_atlas_layout,
       ),
     )
     .run()
