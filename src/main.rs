@@ -3,6 +3,7 @@ mod direction;
 mod gizmo;
 mod movable;
 mod player;
+mod utils;
 
 use bevy::{
   dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},

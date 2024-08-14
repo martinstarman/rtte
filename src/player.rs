@@ -1,10 +1,11 @@
 use bevy::{prelude::*, window::PrimaryWindow};
-use std::{collections::HashMap, time::Duration};
+use std::collections::HashMap;
 
 use crate::{
   camera::MainCamera,
   direction::{Direction, Directions},
   movable::Movable,
+  utils::timer_from_fps,
 };
 
 const PLAYER_SPEED: f32 = 2.;
@@ -32,27 +33,6 @@ pub struct PlayerState {
 pub enum PlayerStates {
   Idle = 1,
   Walk = 2,
-}
-
-// TODO: consider
-// pub struct PlayerState {
-//   type: Idle,
-//   atlas: HashMap<Direction, Handle<TextureAtlasLayout>>,
-//   animation_config: ...
-// }
-
-impl PlayerAnimationConfig {
-  // TODO: config
-  fn new(fps: u8) -> Self {
-    Self {
-      fps,
-      frame_timer: Self::timer_from_fps(fps),
-    }
-  }
-
-  fn timer_from_fps(fps: u8) -> Timer {
-    Timer::new(Duration::from_secs_f32(1.0 / (fps as f32)), TimerMode::Once)
-  }
 }
 
 pub fn player_setup(
@@ -112,11 +92,15 @@ pub fn player_setup(
       value: PlayerStates::Idle,
     },
     Direction {
-      value: Directions::East,
+      value: Directions::South,
     },
     SpriteBundle {
       texture,
       ..default()
+    },
+    PlayerAnimationConfig {
+      fps: 10,
+      frame_timer: timer_from_fps(10),
     },
     TextureAtlas::from(
       atlas_config
@@ -127,7 +111,6 @@ pub fn player_setup(
         .unwrap()
         .clone(),
     ),
-    PlayerAnimationConfig::new(10),
   ));
 }
 
@@ -147,7 +130,7 @@ pub fn player_animation(
       };
       atlas.index = (atlas.index + 1) % frame_count;
 
-      animation_config.frame_timer = PlayerAnimationConfig::timer_from_fps(animation_config.fps);
+      animation_config.frame_timer = timer_from_fps(animation_config.fps);
     }
   }
 }
