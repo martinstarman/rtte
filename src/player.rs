@@ -27,13 +27,14 @@ pub struct AtlasConfig {
   layouts: HashMap<Directions, Handle<TextureAtlasLayout>>,
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct PlayerState {
   pub value: PlayerStates,
 }
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(Default, PartialEq, Eq, Hash, Clone)]
 pub enum PlayerStates {
+  #[default]
   Idle = 1,
   Walk = 2,
 }
@@ -109,13 +110,9 @@ pub fn player_setup(
 
   commands.spawn((
     Player,
-    Movable { path: vec![] },
-    PlayerState {
-      value: PlayerStates::Idle,
-    },
-    Direction {
-      value: Directions::South,
-    },
+    Movable::default(),
+    PlayerState::default(),
+    Direction::default(),
     SpriteBundle {
       texture,
       ..default()

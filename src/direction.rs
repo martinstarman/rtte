@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use std::convert::TryFrom;
 
-#[derive(Component)]
+#[derive(Default, Component)]
 pub struct Direction {
   pub value: Directions,
 }
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(Default, PartialEq, Eq, Hash, Clone)]
 pub enum Directions {
   East = 0,
   NorthEast = 1,
@@ -14,6 +14,7 @@ pub enum Directions {
   NorthWest = 3,
   West = 4,
   SouthWest = 5,
+  #[default]
   South = 6,
   SouthEast = 7,
 }
