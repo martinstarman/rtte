@@ -6,6 +6,7 @@ use crate::{
   direction::{Direction, Directions},
   movable::Movable,
   utils::timer_from_fps,
+  ysort::YSort,
 };
 
 const PLAYER_SPEED: f32 = 2.;
@@ -118,6 +119,9 @@ pub fn player_setup(
       ..default()
     },
     TextureAtlas::from(default_layout),
+    YSort {
+      height: 74, // sprite in atlas are not in exact center but shifted up (sprite height is 114)
+    },
   ));
 }
 
@@ -191,7 +195,11 @@ pub fn player_follow_path(mut query: Query<(&mut Movable, &mut Transform), With<
   for (mut movable, mut transform) in &mut query {
     if movable.path.len() > 0 {
       let curr = transform.translation;
-      let next = Vec3::new(movable.path[0].x, movable.path[0].y, 0.);
+      let next = Vec3::new(
+        movable.path[0].x,
+        movable.path[0].y,
+        transform.translation.z,
+      );
       let norm = (next - curr).normalize();
 
       transform.translation = curr + norm * PLAYER_SPEED;
