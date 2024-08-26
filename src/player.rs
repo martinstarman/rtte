@@ -182,7 +182,7 @@ pub fn player_direction(
 ) {
   for (movable, mut direction, transform) in &mut query {
     if movable.path.len() > 0 {
-      let angle = (movable.path[0].next
+      let angle = (movable.path[0].position
         - Vec2::new(transform.translation.x, transform.translation.y))
       .to_angle();
       direction.value = Directions::try_from(angle).unwrap();
@@ -206,7 +206,7 @@ pub fn player_path(
       if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
         for mut movable in &mut query {
           movable.path.push(PathItem {
-            next: position,
+            position,
             state: if keys.pressed(KeyCode::ShiftLeft) {
               PlayerStates::Run
             } else {
@@ -226,8 +226,8 @@ pub fn player_follow_path(
     if movable.path.len() > 0 {
       let curr = transform.translation;
       let next = Vec3::new(
-        movable.path[0].next.x,
-        movable.path[0].next.y,
+        movable.path[0].position.x,
+        movable.path[0].position.y,
         transform.translation.z,
       );
       let norm = (next - curr).normalize();

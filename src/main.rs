@@ -15,6 +15,7 @@ use bevy::{
 use building::building_setup;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
+use movable::draw_player_path;
 use player::{
   player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
   player_setup, player_state,
@@ -55,6 +56,7 @@ fn main() -> AppExit {
         player_follow_path,
         player_state,
         player_atlas_layout,
+        draw_player_path,
       ),
     )
     .add_systems(PostUpdate, y_sort)
