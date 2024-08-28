@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::{
   camera::MainCamera,
   direction::{Direction, Directions},
-  movable::{Movable, PathItem},
+  movable::{Movable, PathItem, Speed},
   utils::timer_from_fps,
   ysort::YSort,
 };
@@ -128,7 +128,7 @@ pub fn player_setup(
 
   commands.spawn((
     Player,
-    Movable::<PlayerStates>::default(),
+    Movable::default(),
     PlayerState::default(),
     Direction::default(),
     SpriteBundle {
@@ -177,9 +177,7 @@ pub fn player_atlas_layout(
   }
 }
 
-pub fn player_direction(
-  mut query: Query<(&Movable<PlayerStates>, &mut Direction, &Transform), With<Player>>,
-) {
+pub fn player_direction(mut query: Query<(&Movable, &mut Direction, &Transform), With<Player>>) {
   for (movable, mut direction, transform) in &mut query {
     if movable.path.len() > 0 {
       let angle = (movable.path[0].position
@@ -191,7 +189,7 @@ pub fn player_direction(
 }
 
 pub fn player_path(
-  mut query: Query<&mut Movable<PlayerStates>, With<Player>>,
+  mut query: Query<&mut Movable, With<Player>>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -207,21 +205,25 @@ pub fn player_path(
         for mut movable in &mut query {
           movable.path.push(PathItem {
             position,
-            state: if keys.pressed(KeyCode::ShiftLeft) {
-              PlayerStates::Run
+            speed: if keys.pressed(KeyCode::ShiftLeft) {
+              Speed::Fast
             } else {
-              PlayerStates::Walk
+              Speed::Slow
             },
           });
         }
       }
     }
   }
+
+  if buttons.just_pressed(MouseButton::Right) {
+    for mut movable in &mut query {
+      movable.path = vec![];
+    }
+  }
 }
 
-pub fn player_follow_path(
-  mut query: Query<(&mut Movable<PlayerStates>, &mut Transform), With<Player>>,
-) {
+pub fn player_follow_path(mut query: Query<(&mut Movable, &mut Transform), With<Player>>) {
   for (mut movable, mut transform) in &mut query {
     if movable.path.len() > 0 {
       let curr = transform.translation;
@@ -231,7 +233,7 @@ pub fn player_follow_path(
         transform.translation.z,
       );
       let norm = (next - curr).normalize();
-      let speed = if movable.path[0].state == PlayerStates::Walk {
+      let speed = if movable.path[0].speed == Speed::Slow {
         PLAYER_SPEED_WALK
       } else {
         PLAYER_SPEED_RUN
@@ -246,16 +248,18 @@ pub fn player_follow_path(
   }
 }
 
-pub fn player_state(
-  mut query: Query<(&mut PlayerState, &Movable<PlayerStates>), Changed<Movable<PlayerStates>>>,
-) {
+pub fn player_state(mut query: Query<(&mut PlayerState, &Movable), Changed<Movable>>) {
   for (mut player_state, movable) in &mut query {
     if movable.path.len() == 0 && player_state.value != PlayerStates::Idle {
       player_state.value = PlayerStates::Idle;
     }
 
     if movable.path.len() > 0 {
-      player_state.value = movable.path[0].state;
+      player_state.value = if movable.path[0].speed == Speed::Slow {
+        PlayerStates::Walk
+      } else {
+        PlayerStates::Run
+      };
     }
   }
 }
