@@ -1,4 +1,8 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{
+  math::bounding::{Aabb2d, BoundingVolume},
+  prelude::*,
+  window::PrimaryWindow,
+};
 use std::collections::HashMap;
 
 use crate::{
@@ -14,6 +18,11 @@ const PLAYER_SPEED_RUN: f32 = 4.;
 
 #[derive(Component)]
 pub struct Player;
+
+#[derive(Component)]
+pub struct BoundingBox {
+  value: Aabb2d,
+}
 
 #[derive(Resource)]
 pub struct PlayerAnimation {
@@ -126,6 +135,8 @@ pub fn player_setup(
     atlas_config,
   });
 
+  let bb = Aabb2d::new(Vec2::new(128., 100.), Vec2::new(16., 64.));
+
   commands.spawn((
     Player,
     Movable::<PlayerStates>::default(),
@@ -139,6 +150,7 @@ pub fn player_setup(
     YSort {
       height: 74, // sprite in atlas are not in exact center but shifted up (sprite height is 114)
     },
+    BoundingBox { value: bb },
   ));
 }
 
@@ -257,5 +269,24 @@ pub fn player_state(
     if movable.path.len() > 0 {
       player_state.value = movable.path[0].state;
     }
+  }
+}
+
+pub fn player_bounding_box(
+  query: Query<(&BoundingBox, &Transform), With<Player>>,
+  mut gizmos: Gizmos,
+) {
+  for (bb, transform) in &query {
+    let hs = bb.value.half_size();
+
+    let rectandle = Rectangle { half_size: hs };
+
+    // TODO: this shoudl be child of player or updated with player
+    let pos = Vec2::new(
+      transform.translation.x - hs.x / 2.,
+      transform.translation.y - hs.y / 2.,
+    );
+
+    gizmos.primitive_2d(&rectandle, pos, 0., Color::WHITE);
   }
 }
