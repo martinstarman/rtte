@@ -1,3 +1,4 @@
+mod bounding_box;
 mod building;
 mod camera;
 mod direction;
@@ -13,12 +14,14 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
+use bounding_box::draw_bounding_box;
 use building::building_setup;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 use line_of_sight::{
   line_of_sight_rotation, line_of_sight_setup, line_of_sight_shift, line_of_sight_update,
 };
+use movable::draw_path;
 use player::{
   player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
   player_setup, player_state,
@@ -70,6 +73,8 @@ fn main() -> AppExit {
         line_of_sight_update,
         line_of_sight_rotation,
         line_of_sight_shift,
+        draw_bounding_box,
+        draw_path,
       ),
     )
     .add_systems(PostUpdate, y_sort)

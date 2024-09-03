@@ -11,24 +11,24 @@ pub fn camera_setup(mut commands: Commands) {
 }
 
 pub fn camera_pan(
-  mut transform_q: Query<&mut Transform, With<MainCamera>>,
-  keys_r: Res<ButtonInput<KeyCode>>,
+  mut transform: Query<&mut Transform, With<MainCamera>>,
+  keys: Res<ButtonInput<KeyCode>>,
 ) {
-  let mut transform = transform_q.single_mut();
+  let mut transform = transform.single_mut();
 
-  if keys_r.pressed(KeyCode::ArrowLeft) {
+  if keys.pressed(KeyCode::ArrowLeft) {
     transform.translation.x -= PAN_SPEED;
   }
 
-  if keys_r.pressed(KeyCode::ArrowRight) {
+  if keys.pressed(KeyCode::ArrowRight) {
     transform.translation.x += PAN_SPEED;
   }
 
-  if keys_r.pressed(KeyCode::ArrowUp) {
+  if keys.pressed(KeyCode::ArrowUp) {
     transform.translation.y += PAN_SPEED;
   }
 
-  if keys_r.pressed(KeyCode::ArrowDown) {
+  if keys.pressed(KeyCode::ArrowDown) {
     transform.translation.y -= PAN_SPEED;
   }
 }
