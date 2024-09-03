@@ -6,6 +6,7 @@ use bevy::{
 use std::collections::HashMap;
 
 use crate::{
+  bounding_box::BoundingBox,
   camera::MainCamera,
   direction::{Direction, Directions},
   movable::{Movable, PathItem},
@@ -18,11 +19,6 @@ const PLAYER_SPEED_RUN: f32 = 4.;
 
 #[derive(Component)]
 pub struct Player;
-
-#[derive(Component)]
-pub struct BoundingBox {
-  value: Aabb2d,
-}
 
 #[derive(Resource)]
 pub struct PlayerAnimation {
@@ -135,8 +131,6 @@ pub fn player_setup(
     atlas_config,
   });
 
-  let bb = Aabb2d::new(Vec2::new(128., 100.), Vec2::new(16., 64.));
-
   commands.spawn((
     Player,
     Movable::<PlayerStates>::default(),
@@ -148,9 +142,13 @@ pub fn player_setup(
     },
     TextureAtlas::from(default_layout),
     YSort {
-      height: 74, // sprite in atlas are not in exact center but shifted up (sprite height is 114)
+      // TODO: sprite is shiftep up
+      height: 74,
     },
-    BoundingBox { value: bb },
+    BoundingBox {
+      // TODO: sprite is shiftep up
+      value: Aabb2d::new(Vec2::new(0., 20.), Vec2::new(16., 64.)),
+    },
   ));
 }
 
@@ -232,9 +230,9 @@ pub fn player_path(
 }
 
 pub fn player_follow_path(
-  mut query: Query<(&mut Movable<PlayerStates>, &mut Transform), With<Player>>,
+  mut query: Query<(&mut Movable<PlayerStates>, &mut BoundingBox, &mut Transform), With<Player>>,
 ) {
-  for (mut movable, mut transform) in &mut query {
+  for (mut movable, mut bounding_box, mut transform) in &mut query {
     if movable.path.len() > 0 {
       let curr = transform.translation;
       let next = Vec3::new(
@@ -250,6 +248,11 @@ pub fn player_follow_path(
       };
 
       transform.translation = curr + norm * speed;
+
+      // TODO: this should be in bounding_box.rs (Query<&mut BoundingBox, (With<Player>, Changed<Movable>)>)
+      bounding_box
+        .value
+        .translate_by(Vec2::new(norm.x * speed, norm.y * speed));
 
       if transform.translation.distance(next) <= speed / 2. {
         movable.path.remove(0);
@@ -269,24 +272,5 @@ pub fn player_state(
     if movable.path.len() > 0 {
       player_state.value = movable.path[0].state;
     }
-  }
-}
-
-pub fn player_bounding_box(
-  query: Query<(&BoundingBox, &Transform), With<Player>>,
-  mut gizmos: Gizmos,
-) {
-  for (bb, transform) in &query {
-    let hs = bb.value.half_size();
-
-    let rectandle = Rectangle { half_size: hs };
-
-    // TODO: this shoudl be child of player or updated with player
-    let pos = Vec2::new(
-      transform.translation.x - hs.x / 2.,
-      transform.translation.y - hs.y / 2.,
-    );
-
-    gizmos.primitive_2d(&rectandle, pos, 0., Color::WHITE);
   }
 }
