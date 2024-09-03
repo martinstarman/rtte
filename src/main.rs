@@ -17,6 +17,7 @@ use bounding_box::draw_bounding_box;
 use building::building_setup;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
+use movable::draw_path;
 use player::{
   player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
   player_setup, player_state,
@@ -58,6 +59,7 @@ fn main() -> AppExit {
         player_state,
         player_atlas_layout,
         draw_bounding_box,
+        draw_path,
       ),
     )
     .add_systems(PostUpdate, y_sort)
