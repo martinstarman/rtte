@@ -1,7 +1,12 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{
+  math::bounding::{Aabb2d, BoundingVolume},
+  prelude::*,
+  window::PrimaryWindow,
+};
 use std::collections::HashMap;
 
 use crate::{
+  bounding_box::BoundingBox,
   camera::MainCamera,
   direction::{Direction, Directions},
   movable::{Movable, PathItem, Speed},
@@ -137,7 +142,12 @@ pub fn player_setup(
     },
     TextureAtlas::from(default_layout),
     YSort {
-      height: 74, // sprite in atlas are not in exact center but shifted up (sprite height is 114)
+      // TODO: sprite is shiftep up
+      height: 74,
+    },
+    BoundingBox {
+      // TODO: sprite is shiftep up
+      value: Aabb2d::new(Vec2::new(0., 20.), Vec2::new(16., 64.)),
     },
   ));
 }
@@ -223,8 +233,10 @@ pub fn player_path(
   }
 }
 
-pub fn player_follow_path(mut query: Query<(&mut Movable, &mut Transform), With<Player>>) {
-  for (mut movable, mut transform) in &mut query {
+pub fn player_follow_path(
+  mut query: Query<(&mut Movable, &mut BoundingBox, &mut Transform), With<Player>>,
+) {
+  for (mut movable, mut bounding_box, mut transform) in &mut query {
     if movable.path.len() > 0 {
       let curr = transform.translation;
       let next = Vec3::new(
@@ -240,6 +252,11 @@ pub fn player_follow_path(mut query: Query<(&mut Movable, &mut Transform), With<
       };
 
       transform.translation = curr + norm * speed;
+
+      // TODO: this should be in bounding_box.rs (Query<&mut BoundingBox, (With<Player>, Changed<Movable>)>)
+      bounding_box
+        .value
+        .translate_by(Vec2::new(norm.x * speed, norm.y * speed));
 
       if transform.translation.distance(next) <= speed / 2. {
         movable.path.remove(0);
