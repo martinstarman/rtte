@@ -19,7 +19,8 @@ use building::building_setup;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 use line_of_sight::{
-  line_of_sight_rotation, line_of_sight_setup, line_of_sight_shift, line_of_sight_update,
+  draw_line_of_sight, line_of_sight_rotation, line_of_sight_setup, line_of_sight_shift,
+  line_of_sight_target, line_of_sight_update,
 };
 use movable::draw_path;
 use player::{
@@ -73,6 +74,8 @@ fn main() -> AppExit {
         line_of_sight_update,
         line_of_sight_rotation,
         line_of_sight_shift,
+        line_of_sight_target,
+        draw_line_of_sight,
         draw_bounding_box,
         draw_path,
       ),
