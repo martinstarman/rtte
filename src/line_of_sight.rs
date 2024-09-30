@@ -1,8 +1,12 @@
 use bevy::prelude::*;
+use core::f32;
+
+const RAD: f32 = f32::consts::PI / 180.;
+const DEG_45: f32 = f32::consts::FRAC_PI_4;
 
 #[derive(Component)]
 pub struct LineOfSight {
-  pub _target: Vec2, // TODO: use rotation
+  pub target: Vec2,
   pub polygon: Polygon<60>,
   pub shift: LineOfSightShift,
 }
@@ -10,7 +14,7 @@ pub struct LineOfSight {
 #[derive(Component, PartialEq, Eq)]
 pub enum LineOfSightShift {
   Left = 0,
-  // Right = 1,
+  Right = 1,
 }
 
 pub fn line_of_sight_setup(
@@ -24,13 +28,14 @@ pub fn line_of_sight_setup(
 
   commands.spawn((
     LineOfSight {
-      _target: Vec2::new(100., 100.),
+      target: Vec2::Y.normalize(),
       polygon: Polygon {
         vertices: [Vec2::ZERO; 60],
       },
       shift: LineOfSightShift::Left,
     },
-    Transform::from_xyz(0., 0., 0.),
+    // TODO: this must match target
+    Transform::from_rotation(Quat::from_rotation_z(f32::consts::FRAC_PI_2)),
     // MaterialMesh2dBundle {
     //   mesh: mesh.into(),
     //   material: material.clone(),
@@ -45,9 +50,9 @@ pub fn line_of_sight_update(mut query: Query<&mut LineOfSight>) {
   // for (mut line_of_sight, _transform) in &mut query {
   for mut line_of_sight in &mut query {
     // TODO
-    line_of_sight.polygon.vertices[0] = Vec2::new(100., 100.);
-    line_of_sight.polygon.vertices[1] = Vec2::new(200., 100.);
-    line_of_sight.polygon.vertices[2] = Vec2::new(0., 0.);
+    line_of_sight.polygon.vertices[0] = Vec2::new(0., 0.);
+    line_of_sight.polygon.vertices[2] = Vec2::new(50., 50.);
+    line_of_sight.polygon.vertices[1] = Vec2::new(50., -50.);
 
     // for v in line_of_sight.polygon.vertices {
     //   // TODO: calculate current vertices
@@ -55,24 +60,32 @@ pub fn line_of_sight_update(mut query: Query<&mut LineOfSight>) {
   }
 }
 
-pub fn line_of_sight_rotation(mut query: Query<(&LineOfSight, &mut Transform)>, time: Res<Time>) {
+pub fn line_of_sight_rotation(mut query: Query<(&LineOfSight, &mut Transform)>) {
   for (line_of_sight, mut transform) in &mut query {
-    let rotation = Quat::from_mat3(&Mat3::from_angle(time.elapsed_seconds()));
-
-    transform.rotation = if line_of_sight.shift == LineOfSightShift::Left {
-      -rotation
+    transform.rotation.z += if line_of_sight.shift == LineOfSightShift::Left {
+      -RAD
     } else {
-      rotation
+      RAD
     };
   }
 }
 
-pub fn line_of_sight_shift(mut query: Query<(&LineOfSight, &mut Transform)>) {
-  for (_line_of_sight, mut _transform) in &mut query {
-    // let rotation = transform.translation.normalize();
-    // let angle = (line_of_sight.target.normalize() - Vec2::new(rotation.x, rotation.y)).to_angle();
-    // println!("{}", angle);
-    // TODO: change between left and right shift
+pub fn line_of_sight_shift(mut query: Query<(&mut LineOfSight, &Transform)>) {
+  for (mut line_of_sight, transform) in &mut query {
+    let position = Vec2::new(transform.translation.x, transform.translation.y);
+    let target_angle = ((line_of_sight.target - position).to_angle() + (2. * f32::consts::PI))
+      % (2. * f32::consts::PI);
+
+    let (axis, angle) = transform.rotation.to_axis_angle();
+    let rotation_angle = ((angle * axis.z) + (2. * f32::consts::PI)) % (2. * f32::consts::PI);
+
+    if f32::abs(target_angle - rotation_angle) > DEG_45 {
+      line_of_sight.shift = if line_of_sight.shift == LineOfSightShift::Left {
+        LineOfSightShift::Right
+      } else {
+        LineOfSightShift::Left
+      }
+    }
   }
 }
 
