@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use core::f32;
 
 const RAD: f32 = f32::consts::PI / 180.;
-const DEG_45: f32 = f32::consts::FRAC_PI_4;
 
 #[derive(Component)]
 pub struct LineOfSight {
@@ -62,11 +61,11 @@ pub fn line_of_sight_update(mut query: Query<&mut LineOfSight>) {
 
 pub fn line_of_sight_rotation(mut query: Query<(&LineOfSight, &mut Transform)>) {
   for (line_of_sight, mut transform) in &mut query {
-    transform.rotation.z += if line_of_sight.shift == LineOfSightShift::Left {
+    transform.rotate_z(if line_of_sight.shift == LineOfSightShift::Left {
       -RAD
     } else {
       RAD
-    };
+    });
   }
 }
 
@@ -79,7 +78,7 @@ pub fn line_of_sight_shift(mut query: Query<(&mut LineOfSight, &Transform)>) {
     let (axis, angle) = transform.rotation.to_axis_angle();
     let rotation_angle = ((angle * axis.z) + (2. * f32::consts::PI)) % (2. * f32::consts::PI);
 
-    if f32::abs(target_angle - rotation_angle) > DEG_45 {
+    if f32::abs(target_angle - rotation_angle).to_degrees().floor() > 45. {
       line_of_sight.shift = if line_of_sight.shift == LineOfSightShift::Left {
         LineOfSightShift::Right
       } else {
