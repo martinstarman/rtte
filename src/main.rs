@@ -3,6 +3,7 @@ mod building;
 mod camera;
 mod direction;
 mod gizmo;
+mod line_of_sight;
 mod movable;
 mod player;
 mod utils;
@@ -17,6 +18,10 @@ use bounding_box::draw_bounding_box;
 use building::building_setup;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
+use line_of_sight::{
+  draw_line_of_sight, line_of_sight_rotation, line_of_sight_setup, line_of_sight_shift,
+  line_of_sight_target, line_of_sight_update,
+};
 use movable::draw_path;
 use player::{
   player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
@@ -46,7 +51,15 @@ fn main() -> AppExit {
         },
       },
     ))
-    .add_systems(Startup, (camera_setup, player_setup, building_setup))
+    .add_systems(
+      Startup,
+      (
+        camera_setup,
+        player_setup,
+        building_setup,
+        line_of_sight_setup,
+      ),
+    )
     .add_systems(
       Update,
       (
@@ -58,6 +71,11 @@ fn main() -> AppExit {
         player_follow_path,
         player_state,
         player_atlas_layout,
+        line_of_sight_update,
+        line_of_sight_rotation,
+        line_of_sight_shift,
+        line_of_sight_target,
+        draw_line_of_sight,
         draw_bounding_box,
         draw_path,
       ),
