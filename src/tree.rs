@@ -3,13 +3,13 @@ use bevy::prelude::*;
 use crate::ysort::YSort;
 
 #[derive(Component)]
-pub struct Building;
+pub struct Tree;
 
-pub fn building_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-  let texture = asset_server.load("building.png");
+pub fn tree_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+  let texture = asset_server.load("tree.png");
 
   commands.spawn((
-    Building,
+    Tree,
     SpriteBundle {
       texture,
       transform: Transform {
@@ -22,6 +22,6 @@ pub fn building_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
       },
       ..default()
     },
-    YSort { height: 270 },
+    YSort { height: 116 },
   ));
 }
