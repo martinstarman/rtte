@@ -11,9 +11,14 @@ pub struct BoundingBox {
 pub fn draw_bounding_box(query: Query<&BoundingBox>, mut gizmos: Gizmos) {
   for bounding_box in &query {
     let half_size = bounding_box.value.half_size();
-    let rectandle = Rectangle { half_size };
+    let rectangle = Rectangle { half_size };
 
     // TODO: do not use gizmos
-    gizmos.primitive_2d(&rectandle, bounding_box.value.center(), 0., Color::WHITE);
+    gizmos.primitive_2d(
+      &rectangle,
+      bounding_box.value.center(),
+      0.,
+      Color::srgb(1., 0., 0.),
+    );
   }
 }
