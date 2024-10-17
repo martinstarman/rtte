@@ -10,7 +10,6 @@ mod utils;
 mod ysort;
 
 use bevy::{
-  color::palettes,
   dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
   prelude::*,
   window::WindowResolution,

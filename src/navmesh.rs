@@ -25,7 +25,7 @@ pub fn navmesh_setup(mut commands: Commands) {
   // TODO
   let transform = Transform::from_translation(Vec3::new(75., 60., 0.0));
   commands.spawn((
-    PrimitiveObstacle::RegularPolygon(RegularPolygon::new(100., 5)),
+    PrimitiveObstacle::RegularPolygon(RegularPolygon::new(50., 5)),
     SpatialBundle::from_transform(transform),
   ));
 }
