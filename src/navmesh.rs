@@ -14,11 +14,7 @@ pub fn navmesh_setup(mut commands: Commands) {
       ..default()
     },
     update_mode: NavMeshUpdateMode::Direct,
-    transform: Transform::from_translation(Vec3::new(
-      -400.,
-      -300.,
-      0.,
-    )),
+    transform: Transform::from_translation(Vec3::new(-400., -300., 0.)),
     ..NavMeshBundle::with_default_id()
   });
 

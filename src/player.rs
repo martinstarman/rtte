@@ -15,8 +15,8 @@ use crate::{
   ysort::YSort,
 };
 
-const PLAYER_SPEED_WALK: f32 = 2.;
-const PLAYER_SPEED_RUN: f32 = 4.;
+const PLAYER_SPEED_WALK: f32 = 1.;
+const PLAYER_SPEED_RUN: f32 = 2.;
 
 #[derive(Component)]
 pub struct Player;
@@ -53,31 +53,31 @@ pub fn player_setup(
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
   let mut atlas_config = HashMap::new();
-  let texture = asset_server.load("player_atlas.png");
-  let tile_size = UVec2::new(256, 256);
+  let texture = asset_server.load("player/export.png");
+  let tile_size = UVec2::new(16, 32);
   let directions = vec![
-    Directions::North,
-    Directions::NorthEast,
     Directions::East,
-    Directions::SouthEast,
-    Directions::South,
-    Directions::SouthWest,
-    Directions::West,
+    Directions::NorthEast,
+    Directions::North,
     Directions::NorthWest,
+    Directions::West,
+    Directions::SouthWest,
+    Directions::South,
+    Directions::SouthEast,
   ];
 
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(i as u32 * 1024, 0));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 4, None, offset);
+    let offset = Some(UVec2::new(0, i as u32 * tile_size.y));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
     let handle = atlases.add(atlas);
     layouts.insert(direction.clone(), handle);
   }
 
   let config = AtlasConfig {
     fps: 10,
-    frame_count: 14,
+    frame_count: 4,
     layouts,
   };
 
@@ -86,15 +86,15 @@ pub fn player_setup(
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(i as u32 * 1024, 1024));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, offset);
+    let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 256));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
     let handle = atlases.add(atlas);
     layouts.insert(direction.clone(), handle);
   }
 
   let config = AtlasConfig {
     fps: 10,
-    frame_count: 9,
+    frame_count: 4,
     layouts,
   };
 
@@ -103,15 +103,15 @@ pub fn player_setup(
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(i as u32 * 1024, 1792));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 2, None, offset);
+    let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 512));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
     let handle = atlases.add(atlas);
     layouts.insert(direction.clone(), handle);
   }
 
   let config = AtlasConfig {
-    fps: 5,
-    frame_count: 5,
+    fps: 10,
+    frame_count: 4,
     layouts,
   };
 
@@ -142,13 +142,9 @@ pub fn player_setup(
       ..default()
     },
     TextureAtlas::from(default_layout),
-    YSort {
-      // TODO: sprite is shiftep up
-      height: 74,
-    },
+    YSort { height: 32 },
     BoundingBox {
-      // TODO: sprite is shiftep up
-      value: Aabb2d::new(Vec2::new(0., 20.), Vec2::new(16., 64.)),
+      value: Aabb2d::new(Vec2::new(0., 0.), Vec2::new(8., 16.)),
     },
   ));
 }

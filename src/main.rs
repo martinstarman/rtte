@@ -1,11 +1,11 @@
 mod bounding_box;
-mod building;
 mod camera;
 mod direction;
 mod gizmo;
 mod movable;
 mod navmesh;
 mod player;
+mod tree;
 mod utils;
 mod ysort;
 
@@ -15,7 +15,6 @@ use bevy::{
   window::WindowResolution,
 };
 use bounding_box::draw_bounding_box;
-use building::building_setup;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 use movable::draw_path;
@@ -24,6 +23,7 @@ use player::{
   player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
   player_setup, player_state,
 };
+use tree::tree_setup;
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
@@ -56,7 +56,7 @@ fn main() -> AppExit {
     ))
     .add_systems(
       Startup,
-      (camera_setup, player_setup, building_setup, navmesh_setup),
+      (camera_setup, player_setup, tree_setup, navmesh_setup),
     )
     .add_systems(
       Update,
