@@ -3,6 +3,7 @@ mod camera;
 mod direction;
 mod gizmo;
 mod movable;
+mod navmesh;
 mod player;
 mod tree;
 mod utils;
@@ -17,11 +18,16 @@ use bounding_box::draw_bounding_box;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 use movable::draw_path;
+use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
 use player::{
   player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
   player_setup, player_state,
 };
 use tree::tree_setup;
+use vleue_navigator::{
+  prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
+  VleueNavigatorPlugin,
+};
 use ysort::y_sort;
 
 fn main() -> AppExit {
@@ -45,8 +51,13 @@ fn main() -> AppExit {
           },
         },
       },
+      VleueNavigatorPlugin,
+      NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
     ))
-    .add_systems(Startup, (camera_setup, player_setup, tree_setup))
+    .add_systems(
+      Startup,
+      (camera_setup, player_setup, tree_setup, navmesh_setup),
+    )
     .add_systems(
       Update,
       (
@@ -58,8 +69,10 @@ fn main() -> AppExit {
         player_follow_path,
         player_state,
         player_atlas_layout,
-        draw_bounding_box,
-        draw_path,
+        draw_bounding_box, // TODO: bounding_box_draw
+        draw_path,         // TODO: path_draw
+        navmesh_draw,
+        navmesh_obstacle_draw,
       ),
     )
     .add_systems(PostUpdate, y_sort)

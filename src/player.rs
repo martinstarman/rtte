@@ -4,6 +4,7 @@ use bevy::{
   window::PrimaryWindow,
 };
 use std::collections::HashMap;
+use vleue_navigator::NavMesh;
 
 use crate::{
   bounding_box::BoundingBox,
@@ -195,7 +196,9 @@ pub fn player_direction(mut query: Query<(&Movable, &mut Direction, &Transform),
 }
 
 pub fn player_path(
-  mut query: Query<&mut Movable, With<Player>>,
+  mut query: Query<(&mut Movable, &Transform), With<Player>>,
+  navmeshes: Res<Assets<NavMesh>>,
+  navmesh: Query<&Handle<NavMesh>>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -208,22 +211,39 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for mut movable in &mut query {
-          movable.path.push(PathItem {
-            position,
-            speed: if keys.pressed(KeyCode::ShiftLeft) {
-              Speed::Fast
-            } else {
-              Speed::Slow
-            },
-          });
+        for (mut movable, transform) in &mut query {
+          let Some(navmesh) = navmeshes.get(navmesh.single()) else {
+            continue;
+          };
+
+          let Some(path) = navmesh.transformed_path(
+            transform.translation.xyz(),
+            navmesh
+              .transform()
+              .transform_point(Vec3::new(position.x, position.y, 0.0)),
+          ) else {
+            break;
+          };
+
+          movable.path = path
+            .path
+            .iter()
+            .map(|v| PathItem {
+              position: Vec2::new(v.x, v.y),
+              speed: if keys.pressed(KeyCode::ShiftLeft) {
+                Speed::Fast
+              } else {
+                Speed::Slow
+              },
+            })
+            .collect();
         }
       }
     }
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for mut movable in &mut query {
+    for (mut movable, _) in &mut query {
       movable.path = vec![];
     }
   }
