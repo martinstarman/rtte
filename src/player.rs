@@ -215,7 +215,8 @@ pub fn player_path(
           let Some(navmesh) = navmeshes.get(navmesh.single()) else {
             continue;
           };
-          let Some(pathx) = navmesh.transformed_path(
+
+          let Some(path) = navmesh.transformed_path(
             transform.translation.xyz(),
             navmesh
               .transform()
@@ -224,25 +225,18 @@ pub fn player_path(
             break;
           };
 
-          println!("{:?}", pathx);
-
-          movable.path = pathx
+          movable.path = path
             .path
             .iter()
             .map(|v| PathItem {
               position: Vec2::new(v.x, v.y),
-              speed: Speed::Slow,
+              speed: if keys.pressed(KeyCode::ShiftLeft) {
+                Speed::Fast
+              } else {
+                Speed::Slow
+              },
             })
             .collect();
-
-          // movable.path.push(PathItem {
-          //   position,
-          //   speed: if keys.pressed(KeyCode::ShiftLeft) {
-          //     Speed::Fast
-          //   } else {
-          //     Speed::Slow
-          //   },
-          // });
         }
       }
     }
