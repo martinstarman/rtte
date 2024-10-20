@@ -8,7 +8,7 @@ pub struct BoundingBox {
   pub value: Aabb2d,
 }
 
-pub fn draw_bounding_box(query: Query<&BoundingBox>, mut gizmos: Gizmos) {
+pub fn bounding_box_draw(query: Query<&BoundingBox>, mut gizmos: Gizmos) {
   for bounding_box in &query {
     let half_size = bounding_box.value.half_size();
     let rectangle = Rectangle { half_size };

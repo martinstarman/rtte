@@ -14,10 +14,10 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
-use bounding_box::draw_bounding_box;
+use bounding_box::bounding_box_draw;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
-use movable::draw_path;
+use movable::path_draw;
 use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
 use player::{
   player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
@@ -69,8 +69,8 @@ fn main() -> AppExit {
         player_follow_path,
         player_state,
         player_atlas_layout,
-        draw_bounding_box, // TODO: bounding_box_draw
-        draw_path,         // TODO: path_draw
+        bounding_box_draw,
+        path_draw,
         navmesh_draw,
         navmesh_obstacle_draw,
       ),

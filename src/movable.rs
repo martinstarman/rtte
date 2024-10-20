@@ -17,7 +17,7 @@ pub struct Movable {
   pub path: Vec<PathItem>,
 }
 
-pub fn draw_path(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
+pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
   for (transform, movable) in &query {
     if movable.path.len() > 0 {
       let start = PathItem {
@@ -31,7 +31,7 @@ pub fn draw_path(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
       for i in 0..path.len() - 1 {
         let (line, center) = Segment2d::from_points(path[i].position, path[i + 1].position);
 
-        // TODO: do not use gizmos when bevy has support for drawing segment primitive
+        // TODO: do not use gizmos
         gizmos.primitive_2d(
           &line,
           center,
