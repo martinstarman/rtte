@@ -17,7 +17,7 @@ pub struct Movable {
   pub path: Vec<PathItem>,
 }
 
-pub fn draw_path(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
+pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
   for (transform, movable) in &query {
     if movable.path.len() > 0 {
       let start = PathItem {

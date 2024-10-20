@@ -4,6 +4,7 @@ use bevy::{
   window::PrimaryWindow,
 };
 use std::collections::HashMap;
+use vleue_navigator::NavMesh;
 
 use crate::{
   bounding_box::BoundingBox,
@@ -14,8 +15,8 @@ use crate::{
   ysort::YSort,
 };
 
-const PLAYER_SPEED_WALK: f32 = 2.;
-const PLAYER_SPEED_RUN: f32 = 4.;
+const PLAYER_SPEED_WALK: f32 = 1.;
+const PLAYER_SPEED_RUN: f32 = 2.;
 
 #[derive(Component)]
 pub struct Player;
@@ -52,31 +53,31 @@ pub fn player_setup(
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
   let mut atlas_config = HashMap::new();
-  let texture = asset_server.load("player_atlas.png");
-  let tile_size = UVec2::new(256, 256);
+  let texture = asset_server.load("player/export.png");
+  let tile_size = UVec2::new(16, 32);
   let directions = vec![
-    Directions::North,
-    Directions::NorthEast,
     Directions::East,
-    Directions::SouthEast,
-    Directions::South,
-    Directions::SouthWest,
-    Directions::West,
+    Directions::NorthEast,
+    Directions::North,
     Directions::NorthWest,
+    Directions::West,
+    Directions::SouthWest,
+    Directions::South,
+    Directions::SouthEast,
   ];
 
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(i as u32 * 1024, 0));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 4, None, offset);
+    let offset = Some(UVec2::new(0, i as u32 * tile_size.y));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
     let handle = atlases.add(atlas);
     layouts.insert(direction.clone(), handle);
   }
 
   let config = AtlasConfig {
     fps: 10,
-    frame_count: 14,
+    frame_count: 4,
     layouts,
   };
 
@@ -85,15 +86,15 @@ pub fn player_setup(
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(i as u32 * 1024, 1024));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 3, None, offset);
+    let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 256));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
     let handle = atlases.add(atlas);
     layouts.insert(direction.clone(), handle);
   }
 
   let config = AtlasConfig {
     fps: 10,
-    frame_count: 9,
+    frame_count: 4,
     layouts,
   };
 
@@ -102,15 +103,15 @@ pub fn player_setup(
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(i as u32 * 1024, 1792));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 2, None, offset);
+    let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 512));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
     let handle = atlases.add(atlas);
     layouts.insert(direction.clone(), handle);
   }
 
   let config = AtlasConfig {
-    fps: 5,
-    frame_count: 5,
+    fps: 10,
+    frame_count: 4,
     layouts,
   };
 
@@ -141,13 +142,9 @@ pub fn player_setup(
       ..default()
     },
     TextureAtlas::from(default_layout),
-    YSort {
-      // TODO: sprite is shiftep up
-      height: 74,
-    },
+    YSort { height: 32 },
     BoundingBox {
-      // TODO: sprite is shiftep up
-      value: Aabb2d::new(Vec2::new(0., 20.), Vec2::new(16., 64.)),
+      value: Aabb2d::new(Vec2::new(0., 0.), Vec2::new(8., 16.)),
     },
   ));
 }
@@ -199,7 +196,9 @@ pub fn player_direction(mut query: Query<(&Movable, &mut Direction, &Transform),
 }
 
 pub fn player_path(
-  mut query: Query<&mut Movable, With<Player>>,
+  mut query: Query<(&mut Movable, &Transform), With<Player>>,
+  navmeshes: Res<Assets<NavMesh>>,
+  navmesh: Query<&Handle<NavMesh>>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -212,22 +211,39 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for mut movable in &mut query {
-          movable.path.push(PathItem {
-            position,
-            speed: if keys.pressed(KeyCode::ShiftLeft) {
-              Speed::Fast
-            } else {
-              Speed::Slow
-            },
-          });
+        for (mut movable, transform) in &mut query {
+          let Some(navmesh) = navmeshes.get(navmesh.single()) else {
+            continue;
+          };
+
+          let Some(path) = navmesh.transformed_path(
+            transform.translation.xyz(),
+            navmesh
+              .transform()
+              .transform_point(Vec3::new(position.x, position.y, 0.0)),
+          ) else {
+            break;
+          };
+
+          movable.path = path
+            .path
+            .iter()
+            .map(|v| PathItem {
+              position: Vec2::new(v.x, v.y),
+              speed: if keys.pressed(KeyCode::ShiftLeft) {
+                Speed::Fast
+              } else {
+                Speed::Slow
+              },
+            })
+            .collect();
         }
       }
     }
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for mut movable in &mut query {
+    for (mut movable, _) in &mut query {
       movable.path = vec![];
     }
   }

@@ -1,11 +1,12 @@
 mod bounding_box;
-mod building;
 mod camera;
 mod direction;
 mod gizmo;
 mod line_of_sight;
 mod movable;
+mod navmesh;
 mod player;
+mod tree;
 mod utils;
 mod ysort;
 
@@ -14,18 +15,23 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
-use bounding_box::draw_bounding_box;
-use building::building_setup;
+use bounding_box::bounding_box_draw;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 use line_of_sight::{
   draw_line_of_sight, line_of_sight_rotation, line_of_sight_setup, line_of_sight_shift,
   line_of_sight_target, line_of_sight_update,
 };
-use movable::draw_path;
+use movable::path_draw;
+use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
 use player::{
   player_animation, player_atlas_layout, player_direction, player_follow_path, player_path,
   player_setup, player_state,
+};
+use tree::tree_setup;
+use vleue_navigator::{
+  prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
+  VleueNavigatorPlugin,
 };
 use ysort::y_sort;
 
@@ -50,13 +56,16 @@ fn main() -> AppExit {
           },
         },
       },
+      VleueNavigatorPlugin,
+      NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
     ))
     .add_systems(
       Startup,
       (
         camera_setup,
         player_setup,
-        building_setup,
+        tree_setup,
+        navmesh_setup,
         line_of_sight_setup,
       ),
     )
@@ -76,8 +85,10 @@ fn main() -> AppExit {
         line_of_sight_shift,
         line_of_sight_target,
         draw_line_of_sight,
-        draw_bounding_box,
-        draw_path,
+        bounding_box_draw,
+        path_draw,
+        navmesh_draw,
+        navmesh_obstacle_draw,
       ),
     )
     .add_systems(PostUpdate, y_sort)
