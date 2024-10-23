@@ -19,8 +19,8 @@ use bounding_box::bounding_box_draw;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
 use line_of_sight::{
-  draw_line_of_sight, line_of_sight_rotation, line_of_sight_setup, line_of_sight_shift,
-  line_of_sight_target, line_of_sight_update,
+  line_of_sight_draw, line_of_sight_setup, line_of_sight_shift, line_of_sight_target,
+  line_of_sight_update,
 };
 use movable::path_draw;
 use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
@@ -81,10 +81,9 @@ fn main() -> AppExit {
         player_state,
         player_atlas_layout,
         line_of_sight_update,
-        line_of_sight_rotation,
         line_of_sight_shift,
         line_of_sight_target,
-        draw_line_of_sight,
+        line_of_sight_draw,
         bounding_box_draw,
         path_draw,
         navmesh_draw,
