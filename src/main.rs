@@ -2,6 +2,7 @@ mod bounding_box;
 mod camera;
 mod direction;
 mod gizmo;
+mod line_of_sight;
 mod movable;
 mod navmesh;
 mod player;
@@ -17,6 +18,10 @@ use bevy::{
 use bounding_box::bounding_box_draw;
 use camera::{camera_pan, camera_setup};
 use gizmo::gizmo;
+use line_of_sight::{
+  line_of_sight_draw, line_of_sight_setup, line_of_sight_shift, line_of_sight_target,
+  line_of_sight_update,
+};
 use movable::path_draw;
 use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
 use player::{
@@ -56,7 +61,13 @@ fn main() -> AppExit {
     ))
     .add_systems(
       Startup,
-      (camera_setup, player_setup, tree_setup, navmesh_setup),
+      (
+        camera_setup,
+        player_setup,
+        tree_setup,
+        navmesh_setup,
+        line_of_sight_setup,
+      ),
     )
     .add_systems(
       Update,
@@ -69,6 +80,10 @@ fn main() -> AppExit {
         player_follow_path,
         player_state,
         player_atlas_layout,
+        line_of_sight_update,
+        line_of_sight_shift,
+        line_of_sight_target,
+        line_of_sight_draw,
         bounding_box_draw,
         path_draw,
         navmesh_draw,
