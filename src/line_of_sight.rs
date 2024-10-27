@@ -1,5 +1,7 @@
-use bevy::prelude::*;
+use bevy::{math::bounding::*, prelude::*};
 use core::f32;
+
+use crate::{bounding_box::BoundingBox, tree::Obstacle};
 
 const DISTANCE: i32 = 150;
 const INNER_ANGLE: i32 = 46;
@@ -42,7 +44,10 @@ pub fn line_of_sight_setup(mut commands: Commands) {
   ));
 }
 
-pub fn line_of_sight_update(mut query: Query<(&mut LineOfSight, &Transform)>) {
+pub fn line_of_sight_update(
+  mut query: Query<(&mut LineOfSight, &Transform)>,
+  obstacles: Query<&BoundingBox, With<Obstacle>>,
+) {
   for (mut line_of_sight, transform) in &mut query {
     let position = Vec2::new(transform.translation.x, transform.translation.y);
     let looking_at = line_of_sight.looking_at;
@@ -66,10 +71,29 @@ pub fn line_of_sight_update(mut query: Query<(&mut LineOfSight, &Transform)>) {
         Quat::from_axis_angle(Vec3::Z, (1 as f32).to_radians()),
       );
 
-      points[i as usize + 1] = Vec2::new(
+      let v = Vec2::new(
         center_transform.translation.x,
         center_transform.translation.y,
       );
+
+      let ray = Ray2d {
+        origin: position,
+        direction: Dir2::new((v - position).normalize()).unwrap(),
+      };
+
+      let ray_cast = RayCast2d::from_ray(ray, DISTANCE as f32);
+
+      points[i as usize + 1] = v;
+
+      for bounding_box in &obstacles {
+        if let Some(toi) = ray_cast.aabb_intersection_at(&bounding_box.value) {
+          let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
+
+          if position.distance(intersection) < position.distance(points[i as usize + 1]) {
+            points[i as usize + 1] = intersection;
+          }
+        }
+      }
     }
 
     line_of_sight.polygon = Polygon::new(points);
