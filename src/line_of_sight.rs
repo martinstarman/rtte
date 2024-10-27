@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 use core::f32;
 
-const DISTANCE: i32 = 100;
-const INNER_ANGLE: i32 = 60;
+const DISTANCE: i32 = 150;
+const INNER_ANGLE: i32 = 46;
+const VERTICES: usize = INNER_ANGLE as usize + 1;
 
 #[derive(Component)]
 pub struct LineOfSight {
@@ -14,6 +15,9 @@ pub struct LineOfSight {
 
   /// current line of sight shift
   pub shift: LineOfSightShift,
+
+  ///
+  pub polygon: Polygon<VERTICES>,
 }
 
 #[derive(Component, PartialEq, Eq)]
@@ -28,6 +32,7 @@ pub fn line_of_sight_setup(mut commands: Commands) {
       looking_at: Vec2::new(-100., 40.).normalize() * DISTANCE as f32,
       offset: 0,
       shift: LineOfSightShift::Left,
+      polygon: Polygon::new([Vec2::ZERO; VERTICES]),
     },
     Transform {
       rotation: Quat::default(),
@@ -37,8 +42,38 @@ pub fn line_of_sight_setup(mut commands: Commands) {
   ));
 }
 
-pub fn line_of_sight_update(mut _query: Query<&mut LineOfSight>) {
-  // TODO: get line of sight polygon
+pub fn line_of_sight_update(mut query: Query<(&mut LineOfSight, &Transform)>) {
+  for (mut line_of_sight, transform) in &mut query {
+    let position = Vec2::new(transform.translation.x, transform.translation.y);
+    let looking_at = line_of_sight.looking_at;
+
+    let mut center_transform = Transform::from_xyz(looking_at.x, looking_at.y, 0.);
+
+    let start_angle = line_of_sight.offset - INNER_ANGLE / 2;
+
+    center_transform.rotate_around(
+      Vec3::new(position.x, position.y, 0.),
+      Quat::from_axis_angle(Vec3::Z, (start_angle as f32).to_radians()),
+    );
+
+    let mut points = [Vec2::ZERO; VERTICES];
+
+    points[0] = position;
+
+    for i in 0..INNER_ANGLE {
+      center_transform.rotate_around(
+        Vec3::new(position.x, position.y, 0.),
+        Quat::from_axis_angle(Vec3::Z, (1 as f32).to_radians()),
+      );
+
+      points[i as usize + 1] = Vec2::new(
+        center_transform.translation.x,
+        center_transform.translation.y,
+      );
+    }
+
+    line_of_sight.polygon = Polygon::new(points);
+  }
 }
 
 pub fn line_of_sight_shift(mut query: Query<&mut LineOfSight>) {
@@ -89,5 +124,7 @@ pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Transform)>, mut gizmos: 
       0.,
       Color::WHITE,
     );
+
+    gizmos.primitive_2d(&line_of_sight.polygon, position, 0., Color::WHITE);
   }
 }
