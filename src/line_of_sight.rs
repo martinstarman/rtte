@@ -1,7 +1,7 @@
 use bevy::{math::bounding::*, prelude::*};
 use core::f32;
 
-use crate::{bounding_box::BoundingBox, tree::Obstacle};
+use crate::{bounding_box::BoundingBox, obstacle::Obstacle};
 
 const DISTANCE: i32 = 150;
 const INNER_ANGLE: i32 = 46;
@@ -31,7 +31,8 @@ pub enum LineOfSightShift {
 pub fn line_of_sight_setup(mut commands: Commands) {
   commands.spawn((
     LineOfSight {
-      looking_at: Vec2::new(-100., 40.).normalize() * DISTANCE as f32,
+      // TODO: consider Dir2
+      looking_at: Vec2::new(100., 40.).normalize() * DISTANCE as f32,
       offset: 0,
       shift: LineOfSightShift::Left,
       polygon: Polygon::new([Vec2::ZERO; VERTICES]),

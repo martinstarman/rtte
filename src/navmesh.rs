@@ -72,7 +72,7 @@ pub fn navmesh_obstacle_draw(mut gizmos: Gizmos, query: Query<(&PrimitiveObstacl
           Color::srgb(1., 0., 0.),
         );
       }
-      _ => panic!("Use reactangle"),
+      _ => panic!("Use rectangle"),
     }
   }
 }

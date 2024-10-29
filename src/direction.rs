@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use std::convert::TryFrom;
 
+// TODO: use https://docs.rs/bevy/latest/bevy/math/enum.CompassOctant.html
 #[derive(Default, Component)]
 pub struct Direction {
   pub value: Directions,

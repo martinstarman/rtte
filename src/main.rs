@@ -5,6 +5,7 @@ mod gizmo;
 mod line_of_sight;
 mod movable;
 mod navmesh;
+mod obstacle;
 mod player;
 mod tree;
 mod utils;
@@ -73,7 +74,7 @@ fn main() -> AppExit {
       Update,
       (
         camera_pan,
-        gizmo,
+        gizmo, // TODO: .run_if(DEBUG)
         player_animation,
         player_direction,
         player_path,

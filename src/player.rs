@@ -190,6 +190,9 @@ pub fn player_direction(mut query: Query<(&Movable, &mut Direction, &Transform),
       let angle = (movable.path[0].position
         - Vec2::new(transform.translation.x, transform.translation.y))
       .to_angle();
+      // let v: Vec2  = position - translation
+      // Dir2::new(v)
+      // CompassOctant::from(Dir2)
       direction.value = Directions::try_from(angle).unwrap();
     }
   }
