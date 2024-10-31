@@ -24,13 +24,12 @@ pub fn tree_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
   ));
 
   // obstacle
-  // TODO: child?
   commands.spawn((
     Obstacle,
     PrimitiveObstacle::Rectangle(Rectangle::new(10., 10.)),
     SpatialBundle::from_transform(Transform::from_xyz(x, y - 58., z)),
     BoundingBox {
-      value: Aabb2d::new(Vec2::new(x, y - 58.), Vec2::new(5., 5.)), // TODO: Vec2::splat()
+      value: Aabb2d::new(Vec2::new(x, y - 58.), Vec2::splat(5.)),
     },
   ));
 }
