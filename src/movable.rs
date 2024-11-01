@@ -21,7 +21,7 @@ pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
   for (transform, movable) in &query {
     if movable.path.len() > 0 {
       let start = PathItem {
-        position: Vec2::new(transform.translation.x, transform.translation.y),
+        position: transform.translation.xy(),
         speed: movable.path[0].speed,
       };
       let mut path = vec![start];

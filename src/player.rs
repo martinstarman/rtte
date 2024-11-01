@@ -187,9 +187,7 @@ pub fn player_atlas_layout(
 pub fn player_direction(mut query: Query<(&Movable, &mut Direction, &Transform), With<Player>>) {
   for (movable, mut direction, transform) in &mut query {
     if movable.path.len() > 0 {
-      let angle = (movable.path[0].position
-        - Vec2::new(transform.translation.x, transform.translation.y))
-      .to_angle();
+      let angle = (movable.path[0].position - transform.translation.xy()).to_angle();
       // let v: Vec2  = position - translation
       // Dir2::new(v)
       // CompassOctant::from(Dir2)
@@ -221,9 +219,7 @@ pub fn player_path(
 
           let Some(path) = navmesh.transformed_path(
             transform.translation.xyz(),
-            navmesh
-              .transform()
-              .transform_point(Vec3::new(position.x, position.y, 0.0)),
+            navmesh.transform().transform_point(position.extend(0.)),
           ) else {
             break;
           };
@@ -232,7 +228,7 @@ pub fn player_path(
             .path
             .iter()
             .map(|v| PathItem {
-              position: Vec2::new(v.x, v.y),
+              position: v.xy(),
               speed: if keys.pressed(KeyCode::ShiftLeft) {
                 Speed::Fast
               } else {
@@ -257,25 +253,17 @@ pub fn player_follow_path(
 ) {
   for (mut movable, mut bounding_box, mut transform) in &mut query {
     if movable.path.len() > 0 {
-      let curr = transform.translation;
-      let next = Vec3::new(
-        movable.path[0].position.x,
-        movable.path[0].position.y,
-        transform.translation.z,
-      );
-      let norm = (next - curr).normalize();
+      let next = movable.path[0].position.extend(transform.translation.z);
       let speed = if movable.path[0].speed == Speed::Slow {
         PLAYER_SPEED_WALK
       } else {
         PLAYER_SPEED_RUN
       };
 
-      transform.translation = curr + norm * speed;
+      let step = (next - transform.translation).normalize() * speed;
 
-      // TODO: this should be in bounding_box.rs (Query<&mut BoundingBox, (With<Player>, Changed<Movable>)>)
-      bounding_box
-        .value
-        .translate_by(Vec2::new(norm.x * speed, norm.y * speed));
+      transform.translation += step;
+      bounding_box.value.translate_by(step.xy());
 
       if transform.translation.distance(next) <= speed / 2. {
         movable.path.remove(0);
