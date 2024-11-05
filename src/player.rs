@@ -1,12 +1,9 @@
-use bevy::{
-  math::bounding::{Aabb2d, BoundingVolume},
-  prelude::*,
-  window::PrimaryWindow,
-};
+use bevy::{math::bounding::Aabb2d, prelude::*, window::PrimaryWindow};
 use std::collections::HashMap;
 use vleue_navigator::NavMesh;
 
 use crate::{
+  animation::{Animation, AnimationAtlasConfig},
   bounding_box::BoundingBox,
   camera::MainCamera,
   direction::{Direction, Directions},
@@ -15,24 +12,8 @@ use crate::{
   ysort::YSort,
 };
 
-const PLAYER_SPEED_WALK: f32 = 1.;
-const PLAYER_SPEED_RUN: f32 = 2.;
-
-#[derive(Component)]
+#[derive(Component, PartialEq, Eq, Hash)]
 pub struct Player;
-
-#[derive(Resource)]
-pub struct PlayerAnimation {
-  pub frame_timer: Timer,
-  pub atlas_config: HashMap<PlayerStates, AtlasConfig>,
-}
-
-#[derive(Clone)]
-pub struct AtlasConfig {
-  fps: u8,
-  frame_count: u8,
-  layouts: HashMap<Directions, Handle<TextureAtlasLayout>>,
-}
 
 #[derive(Component, Default)]
 pub struct PlayerState {
@@ -75,7 +56,7 @@ pub fn player_setup(
     layouts.insert(direction.clone(), handle);
   }
 
-  let config = AtlasConfig {
+  let config = AnimationAtlasConfig {
     fps: 10,
     frame_count: 4,
     layouts,
@@ -92,7 +73,7 @@ pub fn player_setup(
     layouts.insert(direction.clone(), handle);
   }
 
-  let config = AtlasConfig {
+  let config = AnimationAtlasConfig {
     fps: 10,
     frame_count: 4,
     layouts,
@@ -109,7 +90,7 @@ pub fn player_setup(
     layouts.insert(direction.clone(), handle);
   }
 
-  let config = AtlasConfig {
+  let config = AnimationAtlasConfig {
     fps: 10,
     frame_count: 4,
     layouts,
@@ -127,7 +108,7 @@ pub fn player_setup(
     .unwrap()
     .clone();
 
-  commands.insert_resource(PlayerAnimation {
+  commands.insert_resource(Animation {
     frame_timer: timer_from_fps(default_fps),
     atlas_config,
   });
@@ -151,7 +132,7 @@ pub fn player_setup(
 
 pub fn player_animation(
   mut query: Query<(&PlayerState, &mut TextureAtlas), With<Player>>,
-  mut animation: ResMut<PlayerAnimation>,
+  mut animation: ResMut<Animation<PlayerStates>>,
   time: Res<Time>,
 ) {
   for (player_state, mut atlas) in &mut query {
@@ -170,7 +151,7 @@ pub fn player_atlas_layout(
     (&PlayerState, &Direction, &mut TextureAtlas),
     (With<Player>, Or<(Changed<Direction>, Changed<PlayerState>)>),
   >,
-  animation: Res<PlayerAnimation>,
+  animation: Res<Animation<PlayerStates>>,
 ) {
   for (player_state, direction, mut atlas) in &mut query {
     atlas.layout = animation
@@ -181,18 +162,6 @@ pub fn player_atlas_layout(
       .get(&direction.value)
       .unwrap()
       .clone();
-  }
-}
-
-pub fn player_direction(mut query: Query<(&Movable, &mut Direction, &Transform), With<Player>>) {
-  for (movable, mut direction, transform) in &mut query {
-    if movable.path.len() > 0 {
-      let angle = (movable.path[0].position - transform.translation.xy()).to_angle();
-      // let v: Vec2  = position - translation
-      // Dir2::new(v)
-      // CompassOctant::from(Dir2)
-      direction.value = Directions::try_from(angle).unwrap();
-    }
   }
 }
 
@@ -244,30 +213,6 @@ pub fn player_path(
   if buttons.just_pressed(MouseButton::Right) {
     for (mut movable, _) in &mut query {
       movable.path = vec![];
-    }
-  }
-}
-
-pub fn player_follow_path(
-  mut query: Query<(&mut Movable, &mut BoundingBox, &mut Transform), With<Player>>,
-) {
-  for (mut movable, mut bounding_box, mut transform) in &mut query {
-    if movable.path.len() > 0 {
-      let next = movable.path[0].position.extend(transform.translation.z);
-      let speed = if movable.path[0].speed == Speed::Slow {
-        PLAYER_SPEED_WALK
-      } else {
-        PLAYER_SPEED_RUN
-      };
-
-      let step = (next - transform.translation).normalize() * speed;
-
-      transform.translation += step;
-      bounding_box.value.translate_by(step.xy());
-
-      if transform.translation.distance(next) <= speed / 2. {
-        movable.path.remove(0);
-      }
     }
   }
 }
