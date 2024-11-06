@@ -5,8 +5,8 @@ use crate::{
   animation::{Animation, AnimationAtlasConfig},
   bounding_box::BoundingBox,
   direction::{Direction, Directions},
-  movable::Speed::Slow,
-  movable::{Movable, PathItem},
+  line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
+  movable::{Movable, PathItem, Speed::Slow},
   utils::timer_from_fps,
   ysort::YSort,
 };
@@ -137,12 +137,19 @@ pub fn enemy_setup(
     Direction::default(),
     SpriteBundle {
       texture,
+      transform: Transform::from_xyz(0., 100., 0.),
       ..default()
     },
     TextureAtlas::from(default_layout),
     YSort { height: 32 },
     BoundingBox {
-      value: Aabb2d::new(Vec2::new(0., 0.), Vec2::new(8., 16.)),
+      value: Aabb2d::new(Vec2::new(0., 100.), Vec2::new(8., 16.)),
+    },
+    LineOfSight {
+      looking_at: Vec2::X.normalize(),
+      offset: 0,
+      shift: LineOfSightShift::Left,
+      polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
     },
   ));
 }

@@ -120,12 +120,13 @@ pub fn player_setup(
     Direction::default(),
     SpriteBundle {
       texture,
+      transform: Transform::from_translation(Vec3::new(-100., 100., 0.)),
       ..default()
     },
     TextureAtlas::from(default_layout),
     YSort { height: 32 },
     BoundingBox {
-      value: Aabb2d::new(Vec2::new(0., 0.), Vec2::new(8., 16.)),
+      value: Aabb2d::new(Vec2::new(-100., 100.), Vec2::new(8., 16.)),
     },
   ));
 }

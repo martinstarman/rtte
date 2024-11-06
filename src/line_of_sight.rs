@@ -3,9 +3,9 @@ use core::f32;
 
 use crate::{bounding_box::BoundingBox, obstacle::Obstacle};
 
-const DISTANCE: i32 = 150;
-const INNER_ANGLE: i32 = 60;
-const VERTICES: usize = INNER_ANGLE as usize + 1;
+const LINE_OF_SIGHT_DISTANCE: i32 = 150;
+const LINE_OF_SIGHT_INNER_ANGLE: i32 = 60;
+pub const LINE_OF_SIGHT_VERTICES: usize = LINE_OF_SIGHT_INNER_ANGLE as usize + 1;
 
 #[derive(Component)]
 pub struct LineOfSight {
@@ -25,7 +25,7 @@ pub struct LineOfSight {
   pub shift: LineOfSightShift,
 
   /// current line of sight polygon
-  pub polygon: Polygon<VERTICES>,
+  pub polygon: Polygon<LINE_OF_SIGHT_VERTICES>,
 }
 
 #[derive(Component, PartialEq, Eq)]
@@ -34,30 +34,14 @@ pub enum LineOfSightShift {
   Right = 1,
 }
 
-pub fn line_of_sight_setup(mut commands: Commands) {
-  commands.spawn((
-    LineOfSight {
-      looking_at: Vec2::new(100., 40.).normalize() * DISTANCE as f32,
-      offset: 0,
-      shift: LineOfSightShift::Left,
-      polygon: Polygon::new([Vec2::ZERO; VERTICES]),
-    },
-    Transform {
-      rotation: Quat::default(),
-      translation: Vec3::default(),
-      ..Default::default()
-    },
-  ));
-}
-
 pub fn line_of_sight_update(
   mut query: Query<(&mut LineOfSight, &Transform)>,
   obstacles: Query<&BoundingBox, With<Obstacle>>,
 ) {
   for (mut line_of_sight, transform) in &mut query {
     let position = transform.translation.xy();
-    let looking_at = line_of_sight.looking_at;
-    let mut points = [Vec2::ZERO; VERTICES];
+    let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
+    let mut points = [Vec2::ZERO; LINE_OF_SIGHT_VERTICES];
     points[0] = position;
 
     let mut point_transform = Transform::from_translation(looking_at.extend(0.));
@@ -73,11 +57,11 @@ pub fn line_of_sight_update(
       transform.translation,
       Quat::from_axis_angle(
         Vec3::Z,
-        ((line_of_sight.offset - INNER_ANGLE / 2) as f32).to_radians(),
+        ((line_of_sight.offset - LINE_OF_SIGHT_INNER_ANGLE / 2) as f32).to_radians(),
       ),
     );
 
-    for i in 0..INNER_ANGLE {
+    for i in 0..LINE_OF_SIGHT_INNER_ANGLE {
       // get next point by rotating by 1 degree
       point_transform.rotate_around(
         transform.translation,
@@ -86,7 +70,7 @@ pub fn line_of_sight_update(
 
       let point = point_transform.translation.xy();
       let ray = Ray2d::new(position, (point - position).normalize());
-      let ray_cast = RayCast2d::from_ray(ray, DISTANCE as f32);
+      let ray_cast = RayCast2d::from_ray(ray, LINE_OF_SIGHT_DISTANCE as f32);
 
       points[i as usize + 1] = point;
 
@@ -113,11 +97,11 @@ pub fn line_of_sight_shift(mut query: Query<&mut LineOfSight>) {
       -1
     };
 
-    if line_of_sight.offset >= INNER_ANGLE / 2 {
+    if line_of_sight.offset >= LINE_OF_SIGHT_INNER_ANGLE / 2 {
       line_of_sight.shift = LineOfSightShift::Right;
     }
 
-    if line_of_sight.offset <= -INNER_ANGLE / 2 {
+    if line_of_sight.offset <= -LINE_OF_SIGHT_INNER_ANGLE / 2 {
       line_of_sight.shift = LineOfSightShift::Left;
     }
   }
@@ -131,10 +115,10 @@ pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Transform)>, mut gizmos: 
   for (line_of_sight, transform) in &query {
     let rect = Rectangle::new(10., 10.);
     let position = transform.translation.xy();
-    let looking_at = line_of_sight.looking_at;
+    let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
 
     gizmos.primitive_2d(&rect, position, 0., Color::WHITE);
     gizmos.primitive_2d(&rect, looking_at, 0., Color::WHITE);
-    gizmos.primitive_2d(&line_of_sight.polygon, position, 0., Color::WHITE);
+    gizmos.primitive_2d(&line_of_sight.polygon, Vec2::ZERO, 0., Color::WHITE);
   }
 }

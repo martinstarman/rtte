@@ -83,7 +83,7 @@ pub fn path_follow(mut query: Query<(&mut Movable, &mut BoundingBox, &mut Transf
       let step = (next - transform.translation).normalize() * speed;
 
       transform.translation += step;
-      bounding_box.value.translate_by(step.xy());
+      bounding_box.value.translate_by(step.xy()); // TODO: move to BB
 
       if transform.translation.distance(next) <= speed / 2. {
         movable.path.remove(0);
