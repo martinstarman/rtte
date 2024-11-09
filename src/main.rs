@@ -23,7 +23,7 @@ use camera::{camera_pan, camera_setup};
 use enemy::{enemy_atlas_layout, enemy_setup, enemy_state};
 use gizmo::gizmo;
 use line_of_sight::{
-  line_of_sight_draw, line_of_sight_shift, line_of_sight_target, line_of_sight_update,
+  line_of_sight_draw, line_of_sight_looking_at, line_of_sight_shift, line_of_sight_update,
 };
 use movable::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
@@ -86,7 +86,7 @@ fn main() -> AppExit {
         //
         line_of_sight_update,
         line_of_sight_shift,
-        line_of_sight_target,
+        line_of_sight_looking_at,
         line_of_sight_draw,
         //
         bounding_box_draw,

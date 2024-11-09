@@ -114,15 +114,15 @@ pub fn enemy_setup(
 
   let path = vec![
     PathItem {
-      position: Vec2::new(100., 100.),
+      position: Vec2::new(200., 150.),
       speed: Slow,
     },
     PathItem {
-      position: Vec2::new(100., 0.),
+      position: Vec2::new(200., -100.),
       speed: Slow,
     },
     PathItem {
-      position: Vec2::new(0., 0.),
+      position: Vec2::new(0., 100.),
       speed: Slow,
     },
   ];

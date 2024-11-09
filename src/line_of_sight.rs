@@ -1,7 +1,7 @@
 use bevy::{math::bounding::*, prelude::*};
 use core::f32;
 
-use crate::{bounding_box::BoundingBox, obstacle::Obstacle};
+use crate::{bounding_box::BoundingBox, movable::Movable, obstacle::Obstacle};
 
 const LINE_OF_SIGHT_DISTANCE: i32 = 150;
 const LINE_OF_SIGHT_INNER_ANGLE: i32 = 60;
@@ -107,8 +107,15 @@ pub fn line_of_sight_shift(mut query: Query<&mut LineOfSight>) {
   }
 }
 
-pub fn line_of_sight_target(mut _query: Query<(&LineOfSight, &Transform)>) {
-  // TODO: change target when enemy change path
+pub fn line_of_sight_looking_at(
+  mut query: Query<(&mut LineOfSight, &Movable, &Transform), Changed<Movable>>,
+) {
+  for (mut line_of_sight, movable, transform) in &mut query {
+    if movable.path.len() > 0 {
+      line_of_sight.looking_at =
+        (movable.path[0].position - transform.translation.xy()).normalize();
+    }
+  }
 }
 
 pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Transform)>, mut gizmos: Gizmos) {
