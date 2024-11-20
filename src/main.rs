@@ -18,12 +18,13 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
-use bounding_box::bounding_box_draw;
+use bounding_box::{bounding_box_draw, bounding_box_translation};
 use camera::{camera_pan, camera_setup};
 use enemy::{enemy_atlas_layout, enemy_setup, enemy_state};
 use gizmo::gizmo;
 use line_of_sight::{
-  line_of_sight_draw, line_of_sight_looking_at, line_of_sight_shift, line_of_sight_update,
+  line_of_sight_draw, line_of_sight_looking_at, line_of_sight_looking_at_draw, line_of_sight_shift,
+  line_of_sight_update,
 };
 use movable::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
@@ -74,8 +75,6 @@ fn main() -> AppExit {
       (
         camera_pan,
         //
-        gizmo, // TODO: .run_if(DEBUG)
-        //
         player_animation,
         player_path,
         player_state,
@@ -89,17 +88,28 @@ fn main() -> AppExit {
         line_of_sight_looking_at,
         line_of_sight_draw,
         //
-        bounding_box_draw,
+        bounding_box_translation,
         //
-        path_draw,
         path_reset,
         path_follow,
         path_direction,
-        //
-        navmesh_draw,
-        navmesh_obstacle_draw,
+      ),
+    )
+    .add_systems(
+      Update,
+      (
+        gizmo.run_if(debug),
+        line_of_sight_looking_at_draw.run_if(debug),
+        bounding_box_draw.run_if(debug),
+        path_draw.run_if(debug),
+        navmesh_draw.run_if(debug),
+        navmesh_obstacle_draw.run_if(debug),
       ),
     )
     .add_systems(PostUpdate, y_sort)
     .run()
+}
+
+fn debug() -> bool {
+  true
 }

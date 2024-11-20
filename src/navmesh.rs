@@ -65,6 +65,7 @@ pub fn navmesh_obstacle_draw(mut gizmos: Gizmos, query: Query<(&PrimitiveObstacl
   for (obstacle, transform) in &query {
     match obstacle {
       PrimitiveObstacle::Rectangle(primitive) => {
+        // TODO: stop using gizmos
         gizmos.primitive_2d(
           primitive,
           transform.translation.xy(),

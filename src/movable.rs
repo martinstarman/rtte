@@ -1,9 +1,6 @@
-use bevy::{math::bounding::BoundingVolume, prelude::*};
+use bevy::prelude::*;
 
-use crate::{
-  bounding_box::BoundingBox,
-  direction::{Direction, Directions},
-};
+use crate::direction::{Direction, Directions};
 
 const SPEED_WALK: f32 = 1.;
 const SPEED_RUN: f32 = 2.;
@@ -14,11 +11,10 @@ pub enum Speed {
   Fast = 2,
 }
 
-// TODO: idle for 5s/fps?
 #[derive(Clone)]
 pub struct PathItem {
   pub position: Vec2,
-  pub speed: Speed, //
+  pub speed: Speed,
 }
 
 #[derive(Component, Default)]
@@ -41,7 +37,7 @@ pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
       for i in 0..path.len() - 1 {
         let (line, center) = Segment2d::from_points(path[i].position, path[i + 1].position);
 
-        // TODO: do not use gizmos
+        // TODO: stop using gizmos
         gizmos.primitive_2d(
           &line,
           center,
@@ -70,8 +66,8 @@ pub fn path_reset(mut query: Query<&mut Movable, Changed<Movable>>) {
   }
 }
 
-pub fn path_follow(mut query: Query<(&mut Movable, &mut BoundingBox, &mut Transform)>) {
-  for (mut movable, mut bounding_box, mut transform) in &mut query {
+pub fn path_follow(mut query: Query<(&mut Movable, &mut Transform)>) {
+  for (mut movable, mut transform) in &mut query {
     if movable.path.len() > 0 {
       let next = movable.path[0].position.extend(transform.translation.z);
       let speed = if movable.path[0].speed == Speed::Slow {
@@ -83,7 +79,6 @@ pub fn path_follow(mut query: Query<(&mut Movable, &mut BoundingBox, &mut Transf
       let step = (next - transform.translation).normalize() * speed;
 
       transform.translation += step;
-      bounding_box.value.translate_by(step.xy()); // TODO: move to BB
 
       if transform.translation.distance(next) <= speed / 2. {
         movable.path.remove(0);
@@ -96,10 +91,6 @@ pub fn path_direction(mut query: Query<(&Movable, &mut Direction, &Transform), C
   for (movable, mut direction, transform) in &mut query {
     if movable.path.len() > 0 {
       let angle = (movable.path[0].position - transform.translation.xy()).to_angle();
-      // TODO:
-      // let v: Vec2  = position - translation
-      // Dir2::new(v)
-      // CompassOctant::from(Dir2)
       direction.value = Directions::try_from(angle).unwrap();
     }
   }

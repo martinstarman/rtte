@@ -118,14 +118,20 @@ pub fn line_of_sight_looking_at(
   }
 }
 
-pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Transform)>, mut gizmos: Gizmos) {
+pub fn line_of_sight_looking_at_draw(query: Query<(&LineOfSight, &Transform)>, mut gizmos: Gizmos) {
   for (line_of_sight, transform) in &query {
     let rect = Rectangle::new(10., 10.);
     let position = transform.translation.xy();
     let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
 
-    gizmos.primitive_2d(&rect, position, 0., Color::WHITE);
+    // TODO: stop using gizmos
     gizmos.primitive_2d(&rect, looking_at, 0., Color::WHITE);
+  }
+}
+
+pub fn line_of_sight_draw(query: Query<&LineOfSight>, mut gizmos: Gizmos) {
+  for line_of_sight in &query {
+    // TODO: stop using gizmos
     gizmos.primitive_2d(&line_of_sight.polygon, Vec2::ZERO, 0., Color::WHITE);
   }
 }
