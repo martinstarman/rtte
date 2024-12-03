@@ -10,6 +10,7 @@ mod navmesh;
 mod obstacle;
 mod player;
 mod tree;
+mod ui;
 mod utils;
 mod ysort;
 
@@ -30,6 +31,7 @@ use movable::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
 use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};
 use tree::tree_setup;
+use ui::ui_setup;
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
@@ -68,28 +70,24 @@ fn main() -> AppExit {
         enemy_setup,
         tree_setup,
         navmesh_setup,
+        ui_setup,
       ),
     )
     .add_systems(
       Update,
       (
         camera_pan,
-        //
         player_animation,
         player_path,
         player_state,
         player_atlas_layout,
-        //
         enemy_atlas_layout,
         enemy_state,
-        //
         line_of_sight_update,
         line_of_sight_shift,
         line_of_sight_looking_at,
         line_of_sight_draw,
-        //
         bounding_box_translation,
-        //
         path_reset,
         path_follow,
         path_direction,
