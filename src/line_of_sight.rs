@@ -69,7 +69,7 @@ pub fn line_of_sight_update(
       );
 
       let point = point_transform.translation.xy();
-      let ray = Ray2d::new(position, (point - position).normalize());
+      let ray = Ray2d::new(position, Dir2::new(point - position).unwrap());
       let ray_cast = RayCast2d::from_ray(ray, LINE_OF_SIGHT_DISTANCE as f32);
 
       points[i as usize + 1] = point;
@@ -125,13 +125,21 @@ pub fn line_of_sight_looking_at_draw(query: Query<(&LineOfSight, &Transform)>, m
     let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
 
     // TODO: stop using gizmos
-    gizmos.primitive_2d(&rect, looking_at, 0., Color::WHITE);
+    gizmos.primitive_2d(
+      &rect,
+      Isometry2d::from_translation(looking_at),
+      Color::WHITE,
+    );
   }
 }
 
 pub fn line_of_sight_draw(query: Query<&LineOfSight>, mut gizmos: Gizmos) {
   for line_of_sight in &query {
     // TODO: stop using gizmos
-    gizmos.primitive_2d(&line_of_sight.polygon, Vec2::ZERO, 0., Color::WHITE);
+    gizmos.primitive_2d(
+      &line_of_sight.polygon,
+      Isometry2d::from_translation(Vec2::ZERO),
+      Color::WHITE,
+    );
   }
 }
