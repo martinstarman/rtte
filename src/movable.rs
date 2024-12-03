@@ -40,8 +40,7 @@ pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
         // TODO: stop using gizmos
         gizmos.primitive_2d(
           &line,
-          center,
-          0.,
+          Isometry2d::from_translation(center),
           Color::linear_rgba(
             1.,
             1.,

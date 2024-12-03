@@ -68,8 +68,10 @@ pub fn navmesh_obstacle_draw(mut gizmos: Gizmos, query: Query<(&PrimitiveObstacl
         // TODO: stop using gizmos
         gizmos.primitive_2d(
           primitive,
-          transform.translation.xy(),
-          transform.rotation.to_axis_angle().1,
+          Isometry2d::new(
+            transform.translation.xy(),
+            transform.rotation.to_axis_angle().1,
+          ),
           Color::srgb(1., 0., 0.),
         );
       }

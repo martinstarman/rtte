@@ -33,7 +33,7 @@ pub fn enemy_setup(
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
   let mut atlas_config = HashMap::new();
-  let texture = asset_server.load("enemy/export.png");
+  let image = asset_server.load("enemy/export.png");
   let tile_size = UVec2::new(16, 32);
   let directions = vec![
     Directions::East,
@@ -135,12 +135,12 @@ pub fn enemy_setup(
     },
     EnemyState::default(),
     Direction::default(),
-    SpriteBundle {
-      texture,
-      transform: Transform::from_xyz(0., 100., 0.),
+    Sprite {
+      image,
+      texture_atlas: Some(TextureAtlas::from(default_layout)),
       ..default()
     },
-    TextureAtlas::from(default_layout),
+    Transform::from_xyz(0., 100., 0.),
     YSort { height: 32 },
     BoundingBox {
       value: Aabb2d::new(Vec2::new(0., 100.), Vec2::new(8., 16.)),
@@ -156,13 +156,13 @@ pub fn enemy_setup(
 
 pub fn enemy_atlas_layout(
   mut query: Query<
-    (&EnemyState, &Direction, &mut TextureAtlas),
+    (&EnemyState, &Direction, &mut Sprite),
     (With<Enemy>, Or<(Changed<Direction>, Changed<EnemyState>)>),
   >,
   animation: Res<Animation<EnemyStates>>,
 ) {
-  for (enemy_state, direction, mut atlas) in &mut query {
-    atlas.layout = animation
+  for (enemy_state, direction, mut sprite) in &mut query {
+    sprite.texture_atlas.as_mut().unwrap().layout = animation
       .atlas_config
       .get(&enemy_state.value)
       .unwrap()

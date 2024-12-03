@@ -16,8 +16,7 @@ pub fn bounding_box_draw(query: Query<&BoundingBox>, mut gizmos: Gizmos) {
     // TODO: stop using gizmos
     gizmos.primitive_2d(
       &rectangle,
-      bounding_box.value.center(),
-      0.,
+      Isometry2d::from_translation(bounding_box.value.center()),
       Color::srgb(0., 1., 0.),
     );
   }

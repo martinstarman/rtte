@@ -6,7 +6,7 @@ const PAN_SPEED: f32 = 5.;
 pub struct MainCamera;
 
 pub fn camera_setup(mut commands: Commands) {
-  let camera2d = Camera2dBundle::default();
+  let camera2d = Camera2d::default();
   commands.spawn((camera2d, MainCamera));
 }
 
