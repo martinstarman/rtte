@@ -51,10 +51,11 @@ fn main() -> AppExit {
         .set(ImagePlugin::default_nearest()),
       FpsOverlayPlugin {
         config: FpsOverlayConfig {
-          text_config: TextStyle {
+          text_config: TextFont {
             font_size: 20.,
             ..default()
           },
+          ..default()
         },
       },
       VleueNavigatorPlugin,

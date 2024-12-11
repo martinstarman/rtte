@@ -1,6 +1,6 @@
 use bevy::{math::bounding::Aabb2d, prelude::*, window::PrimaryWindow};
 use std::collections::HashMap;
-use vleue_navigator::NavMesh;
+use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
@@ -34,7 +34,7 @@ pub fn player_setup(
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
   let mut atlas_config = HashMap::new();
-  let texture = asset_server.load("player/export.png");
+  let image = asset_server.load("player/export.png");
   let tile_size = UVec2::new(16, 32);
   let directions = vec![
     Directions::East,
@@ -118,12 +118,12 @@ pub fn player_setup(
     Movable::default(),
     PlayerState::default(),
     Direction::default(),
-    SpriteBundle {
-      texture,
-      transform: Transform::from_translation(Vec3::new(-100., 100., 0.)),
+    Sprite {
+      image,
+      texture_atlas: Some(TextureAtlas::from(default_layout)),
       ..default()
     },
-    TextureAtlas::from(default_layout),
+    Transform::from_translation(Vec3::new(-100., 100., 0.)),
     YSort { height: 32 },
     BoundingBox {
       value: Aabb2d::new(Vec2::new(-100., 100.), Vec2::new(8., 16.)),
@@ -132,16 +132,18 @@ pub fn player_setup(
 }
 
 pub fn player_animation(
-  mut query: Query<(&PlayerState, &mut TextureAtlas), With<Player>>,
+  mut query: Query<(&PlayerState, &mut Sprite), With<Player>>,
   mut animation: ResMut<Animation<PlayerStates>>,
   time: Res<Time>,
 ) {
-  for (player_state, mut atlas) in &mut query {
+  for (player_state, mut sprite) in &mut query {
     animation.frame_timer.tick(time.delta());
 
     if animation.frame_timer.just_finished() {
       let atlas_config = animation.atlas_config.get(&player_state.value).unwrap();
-      atlas.index = (atlas.index + 1) % (atlas_config.frame_count as usize - 1);
+      sprite.texture_atlas.as_mut().unwrap().index = (sprite.texture_atlas.as_mut().unwrap().index
+        + 1)
+        % (atlas_config.frame_count as usize - 1);
       animation.frame_timer = timer_from_fps(atlas_config.fps);
     }
   }
@@ -149,13 +151,13 @@ pub fn player_animation(
 
 pub fn player_atlas_layout(
   mut query: Query<
-    (&PlayerState, &Direction, &mut TextureAtlas),
+    (&PlayerState, &Direction, &mut Sprite),
     (With<Player>, Or<(Changed<Direction>, Changed<PlayerState>)>),
   >,
   animation: Res<Animation<PlayerStates>>,
 ) {
-  for (player_state, direction, mut atlas) in &mut query {
-    atlas.layout = animation
+  for (player_state, direction, mut sprite) in &mut query {
+    sprite.texture_atlas.as_mut().unwrap().layout = animation
       .atlas_config
       .get(&player_state.value)
       .unwrap()
@@ -169,7 +171,7 @@ pub fn player_atlas_layout(
 pub fn player_path(
   mut query: Query<(&mut Movable, &Transform), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
-  navmesh: Query<&Handle<NavMesh>>,
+  navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -181,7 +183,7 @@ pub fn player_path(
     if let Some(cursor_position) = window.cursor_position() {
       let (camera, global_transform) = camera_q.single();
 
-      if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
+      if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
         for (mut movable, transform) in &mut query {
           let Some(navmesh) = navmeshes.get(navmesh.single()) else {
             continue;
