@@ -1,6 +1,6 @@
 use bevy::{math::bounding::Aabb2d, prelude::*, window::PrimaryWindow};
 use std::collections::HashMap;
-use vleue_navigator::NavMesh;
+use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
@@ -171,7 +171,7 @@ pub fn player_atlas_layout(
 pub fn player_path(
   mut query: Query<(&mut Movable, &Transform), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
-  navmesh: Query<&Handle<NavMesh>>,
+  navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -183,7 +183,7 @@ pub fn player_path(
     if let Some(cursor_position) = window.cursor_position() {
       let (camera, global_transform) = camera_q.single();
 
-      if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
+      if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
         for (mut movable, transform) in &mut query {
           let Some(navmesh) = navmeshes.get(navmesh.single()) else {
             continue;
