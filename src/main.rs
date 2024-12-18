@@ -1,6 +1,7 @@
 mod animation;
 mod bounding_box;
 mod camera;
+mod console;
 mod direction;
 mod enemy;
 mod gizmo;
@@ -18,8 +19,10 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
+use bevy_minibuffer::prelude::*;
 use bounding_box::{bounding_box_draw, bounding_box_translation};
 use camera::{camera_pan, camera_setup};
+use console::console_setup;
 use enemy::{enemy_atlas_layout, enemy_setup, enemy_state};
 use gizmo::gizmo;
 use line_of_sight::{
@@ -60,6 +63,7 @@ fn main() -> AppExit {
       },
       VleueNavigatorPlugin,
       NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
+      MinibufferPlugins,
     ))
     .add_systems(
       Startup,
@@ -69,6 +73,7 @@ fn main() -> AppExit {
         enemy_setup,
         tree_setup,
         navmesh_setup,
+        console_setup,
       ),
     )
     .add_systems(
@@ -108,6 +113,7 @@ fn main() -> AppExit {
       ),
     )
     .add_systems(PostUpdate, y_sort)
+    .add_acts((player_setup, BasicActs::default()))
     .run()
 }
 
