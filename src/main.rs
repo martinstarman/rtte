@@ -10,6 +10,7 @@ mod movable;
 mod navmesh;
 mod obstacle;
 mod player;
+mod selectable;
 mod tree;
 mod utils;
 mod ysort;
