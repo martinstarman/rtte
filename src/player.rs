@@ -1,5 +1,5 @@
 use bevy::{math::bounding::Aabb2d, prelude::*, window::PrimaryWindow};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
 use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
@@ -8,6 +8,7 @@ use crate::{
   camera::MainCamera,
   direction::{Direction, Directions},
   movable::{Movable, PathItem, Speed},
+  selectable::Selectable,
   utils::timer_from_fps,
   ysort::YSort,
 };
@@ -113,24 +114,34 @@ pub fn player_setup(
     atlas_config,
   });
 
-  commands.spawn((
-    Player,
-    Movable::default(),
-    PlayerState::default(),
-    Direction::default(),
-    Sprite {
-      image,
-      texture_atlas: Some(TextureAtlas::from(default_layout)),
-      ..default()
-    },
-    Transform::from_translation(Vec3::new(-100., 100., 0.)),
-    YSort { height: 32 },
-    BoundingBox {
-      value: Aabb2d::new(Vec2::new(-100., 100.), Vec2::new(8., 16.)),
-    },
-  ));
+  commands
+    .spawn((
+      Player,
+      Movable::default(),
+      PlayerState::default(),
+      Direction::default(),
+      Sprite {
+        image,
+        texture_atlas: Some(TextureAtlas::from(default_layout)),
+        ..default()
+      },
+      Transform::from_translation(Vec3::new(-100., 100., 0.)),
+      YSort { height: 32 },
+      BoundingBox {
+        value: Aabb2d::new(Vec2::new(-100., 100.), Vec2::new(8., 16.)),
+      },
+      Selectable::default(),
+    ))
+    .observe(player_select::<Pointer<Up>>());
 }
 
+fn player_select<E: Debug>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable)>) {
+  move |ev, mut query| {
+    for (entity, mut selectable) in &mut query {
+      selectable.selected = entity == ev.entity();
+    }
+  }
+}
 pub fn player_animation(
   mut query: Query<(&PlayerState, &mut Sprite), With<Player>>,
   mut animation: ResMut<Animation<PlayerStates>>,
@@ -169,7 +180,7 @@ pub fn player_atlas_layout(
 }
 
 pub fn player_path(
-  mut query: Query<(&mut Movable, &Transform), With<Player>>,
+  mut query: Query<(&mut Movable, &Transform, &Selectable), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
   navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
@@ -184,7 +195,11 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for (mut movable, transform) in &mut query {
+        for (mut movable, transform, selectable) in &mut query {
+          if !selectable.selected {
+            return;
+          }
+
           let Some(navmesh) = navmeshes.get(navmesh.single()) else {
             continue;
           };
@@ -214,7 +229,7 @@ pub fn player_path(
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for (mut movable, _) in &mut query {
+    for (mut movable, _, _) in &mut query {
       movable.path = vec![];
     }
   }
