@@ -8,4 +8,4 @@ version = "0.9.0"
 [dependencies]
 bevy = {version = "0.15.0", features = ["bevy_dev_tools"]}
 bevy_minibuffer = "0.2.0"
-vleue_navigator = "0.11.0"
+vleue_navigator = "0.11.1"
