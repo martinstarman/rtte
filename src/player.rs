@@ -197,7 +197,7 @@ pub fn player_path(
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
         for (mut movable, transform, selectable) in &mut query {
           if !selectable.selected {
-            return;
+            continue;
           }
 
           let Some(navmesh) = navmeshes.get(navmesh.single()) else {
