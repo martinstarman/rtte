@@ -9,7 +9,7 @@ use crate::{
   direction::{Direction, Directions},
   movable::{Movable, PathItem, Speed},
   selectable::Selectable,
-  utils::timer_from_fps,
+  utils::{contains, timer_from_fps},
   ysort::YSort,
 };
 
@@ -180,7 +180,7 @@ pub fn player_atlas_layout(
 }
 
 pub fn player_path(
-  mut query: Query<(&mut Movable, &Transform, &Selectable), With<Player>>,
+  mut query: Query<(&mut Movable, &Transform, &Selectable, &BoundingBox), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
   navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
@@ -195,7 +195,14 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for (mut movable, transform, selectable) in &mut query {
+        if query
+          .iter()
+          .any(|(_, _, _, bounding_box)| contains(bounding_box.value, position))
+        {
+          return;
+        }
+
+        for (mut movable, transform, selectable, _) in &mut query {
           if !selectable.selected {
             continue;
           }
@@ -229,7 +236,7 @@ pub fn player_path(
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for (mut movable, _, _) in &mut query {
+    for (mut movable, _, _, _) in &mut query {
       movable.path = vec![];
     }
   }
