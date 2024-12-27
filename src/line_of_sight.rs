@@ -1,7 +1,9 @@
 use bevy::{math::bounding::*, prelude::*};
 use core::f32;
 
-use crate::{bounding_box::BoundingBox, movable::Movable, obstacle::Obstacle};
+use crate::{
+  bounding_box::BoundingBox, movable::Movable, obstacle::Obstacle, selectable::Selectable,
+};
 
 const LINE_OF_SIGHT_DISTANCE: i32 = 150;
 const LINE_OF_SIGHT_INNER_ANGLE: i32 = 60;
@@ -133,13 +135,15 @@ pub fn line_of_sight_looking_at_draw(query: Query<(&LineOfSight, &Transform)>, m
   }
 }
 
-pub fn line_of_sight_draw(query: Query<&LineOfSight>, mut gizmos: Gizmos) {
-  for line_of_sight in &query {
-    // TODO: stop using gizmos
-    gizmos.primitive_2d(
-      &line_of_sight.polygon,
-      Isometry2d::from_translation(Vec2::ZERO),
-      Color::WHITE,
-    );
+pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Selectable)>, mut gizmos: Gizmos) {
+  for (line_of_sight, selectable) in &query {
+    if selectable.selected {
+      // TODO: stop using gizmos
+      gizmos.primitive_2d(
+        &line_of_sight.polygon,
+        Isometry2d::from_translation(Vec2::ZERO),
+        Color::WHITE,
+      );
+    }
   }
 }

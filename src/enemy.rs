@@ -7,6 +7,7 @@ use crate::{
   direction::{Direction, Directions},
   line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
   movable::{Movable, PathItem, Speed::Slow},
+  selectable::Selectable,
   utils::timer_from_fps,
   ysort::YSort,
 };
@@ -127,31 +128,46 @@ pub fn enemy_setup(
     },
   ];
 
-  commands.spawn((
-    Enemy,
-    Movable {
-      path: path.clone(),
-      default_path: path.clone(),
-    },
-    EnemyState::default(),
-    Direction::default(),
-    Sprite {
-      image,
-      texture_atlas: Some(TextureAtlas::from(default_layout)),
-      ..default()
-    },
-    Transform::from_xyz(0., 100., 0.),
-    YSort { height: 32 },
-    BoundingBox {
-      value: Aabb2d::new(Vec2::new(0., 100.), Vec2::new(8., 16.)),
-    },
-    LineOfSight {
-      looking_at: Vec2::X.normalize(),
-      offset: 0,
-      shift: LineOfSightShift::Left,
-      polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
-    },
-  ));
+  commands
+    .spawn((
+      Enemy,
+      Movable {
+        path: path.clone(),
+        default_path: path.clone(),
+      },
+      EnemyState::default(),
+      Direction::default(),
+      Sprite {
+        image,
+        texture_atlas: Some(TextureAtlas::from(default_layout)),
+        ..default()
+      },
+      Transform::from_xyz(0., 100., 0.),
+      YSort { height: 32 },
+      BoundingBox {
+        value: Aabb2d::new(Vec2::new(0., 100.), Vec2::new(8., 16.)),
+      },
+      LineOfSight {
+        looking_at: Vec2::X.normalize(),
+        offset: 0,
+        shift: LineOfSightShift::Left,
+        polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
+      },
+      Selectable::default(),
+    ))
+    .observe(enemy_select::<Pointer<Up>>());
+}
+
+fn enemy_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable), With<Enemy>>) {
+  move |event, mut query| {
+    for (entity, mut selectable) in &mut query {
+      if entity == event.entity() {
+        selectable.selected = !selectable.selected;
+      } else {
+        selectable.selected = false;
+      }
+    }
+  }
 }
 
 pub fn enemy_atlas_layout(

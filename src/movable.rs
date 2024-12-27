@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::direction::{Direction, Directions};
 
-const SPEED_WALK: f32 = 1.;
+const SPEED_WALK: f32 = 0.5;
 const SPEED_RUN: f32 = 2.;
 
 #[derive(Clone, Copy, PartialEq, Eq)]

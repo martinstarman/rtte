@@ -135,13 +135,14 @@ pub fn player_setup(
     .observe(player_select::<Pointer<Up>>());
 }
 
-fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable)>) {
+fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable), With<Player>>) {
   move |event, mut query| {
     for (entity, mut selectable) in &mut query {
       selectable.selected = entity == event.entity();
     }
   }
 }
+
 pub fn player_animation(
   mut query: Query<(&PlayerState, &mut Sprite), With<Player>>,
   mut animation: ResMut<Animation<PlayerStates>>,
@@ -180,7 +181,8 @@ pub fn player_atlas_layout(
 }
 
 pub fn player_path(
-  mut query: Query<(&mut Movable, &Transform, &Selectable, &BoundingBox), With<Player>>,
+  mut query: Query<(&mut Movable, &Transform, &Selectable), With<Player>>,
+  bounding_box_query: Query<&BoundingBox>,
   navmeshes: Res<Assets<NavMesh>>,
   navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
@@ -195,14 +197,14 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        if query
+        if bounding_box_query
           .iter()
-          .any(|(_, _, _, bounding_box)| contains(bounding_box.value, position))
+          .any(|bounding_box| contains(bounding_box.value, position))
         {
           return;
         }
 
-        for (mut movable, transform, selectable, _) in &mut query {
+        for (mut movable, transform, selectable) in &mut query {
           if !selectable.selected {
             continue;
           }
@@ -236,7 +238,7 @@ pub fn player_path(
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for (mut movable, _, _, _) in &mut query {
+    for (mut movable, _, _) in &mut query {
       movable.path = vec![];
     }
   }
