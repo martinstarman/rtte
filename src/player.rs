@@ -1,5 +1,5 @@
 use bevy::{math::bounding::Aabb2d, prelude::*, window::PrimaryWindow};
-use std::{collections::HashMap, fmt::Debug};
+use std::collections::HashMap;
 use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
@@ -135,10 +135,10 @@ pub fn player_setup(
     .observe(player_select::<Pointer<Up>>());
 }
 
-fn player_select<E: Debug>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable)>) {
-  move |ev, mut query| {
+fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable)>) {
+  move |event, mut query| {
     for (entity, mut selectable) in &mut query {
-      selectable.selected = entity == ev.entity();
+      selectable.selected = entity == event.entity();
     }
   }
 }
