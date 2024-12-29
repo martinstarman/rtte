@@ -1,6 +1,9 @@
 use bevy::{math::bounding::Aabb2d, prelude::*, window::PrimaryWindow};
 use std::collections::HashMap;
-use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
+use vleue_navigator::{
+  prelude::{ManagedNavMesh, PrimitiveObstacle},
+  NavMesh,
+};
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
@@ -132,6 +135,12 @@ pub fn player_setup(
       },
       Selectable::default(),
     ))
+    .with_children(|parent| {
+      parent.spawn((
+        Transform::from_translation(Vec3::new(0., -12., 0.)),
+        PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
+      ));
+    })
     .observe(player_select::<Pointer<Up>>());
 }
 

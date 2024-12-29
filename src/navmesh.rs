@@ -18,6 +18,7 @@ pub fn navmesh_setup(mut commands: Commands) {
   ));
 }
 
+// TODO: children are drawn twice
 pub fn navmesh_draw(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
