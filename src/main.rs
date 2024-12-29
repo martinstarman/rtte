@@ -21,7 +21,7 @@ use bevy::{
   window::WindowResolution,
 };
 use bevy_minibuffer::prelude::*;
-use bounding_box::{bounding_box_draw, bounding_box_translation};
+use bounding_box::bounding_box_draw;
 use camera::{camera_pan, camera_setup};
 use console::console_setup;
 use enemy::{enemy_atlas_layout, enemy_setup, enemy_state};
@@ -94,8 +94,6 @@ fn main() -> AppExit {
         line_of_sight_shift,
         line_of_sight_looking_at,
         line_of_sight_draw,
-        //
-        bounding_box_translation,
         //
         path_reset,
         path_follow,

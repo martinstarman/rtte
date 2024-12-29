@@ -145,9 +145,6 @@ pub fn enemy_setup(
       },
       Transform::from_xyz(0., 100., 0.),
       YSort { height: 32 },
-      BoundingBox {
-        value: Aabb2d::new(Vec2::new(0., 100.), Vec2::new(8., 16.)),
-      },
       LineOfSight {
         looking_at: Vec2::X.normalize(),
         offset: 0,
@@ -161,6 +158,10 @@ pub fn enemy_setup(
         Transform::from_translation(Vec3::new(0., -12., 0.)),
         PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
       ));
+
+      parent.spawn(BoundingBox {
+        value: Aabb2d::new(Vec2::ZERO, Vec2::new(8., 16.)),
+      });
     })
     .observe(enemy_select::<Pointer<Up>>());
 }
