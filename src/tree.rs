@@ -21,12 +21,15 @@ pub fn tree_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
   ));
 
   // obstacle
-  commands.spawn((
-    Obstacle,
-    PrimitiveObstacle::Rectangle(Rectangle::new(10., 10.)),
-    Transform::from_xyz(x, y - 58., z),
-    BoundingBox {
-      value: Aabb2d::new(Vec2::new(x, y - 58.), Vec2::splat(5.)),
-    },
-  ));
+  commands
+    .spawn((
+      Obstacle,
+      PrimitiveObstacle::Rectangle(Rectangle::new(10., 10.)),
+      Transform::from_xyz(x, y - 58., z),
+    ))
+    .with_children(|parent| {
+      parent.spawn(BoundingBox {
+        value: Aabb2d::new(Vec2::ZERO, Vec2::splat(5.)),
+      });
+    });
 }
