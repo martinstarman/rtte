@@ -18,7 +18,6 @@ pub fn navmesh_setup(mut commands: Commands) {
   ));
 }
 
-// TODO: children are drawn twice
 pub fn navmesh_draw(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
@@ -57,23 +56,4 @@ pub fn navmesh_draw(
       })
       .id(),
   );
-}
-
-pub fn navmesh_obstacle_draw(mut gizmos: Gizmos, query: Query<(&PrimitiveObstacle, &Transform)>) {
-  for (obstacle, transform) in &query {
-    match obstacle {
-      PrimitiveObstacle::Rectangle(primitive) => {
-        // TODO: stop using gizmos
-        gizmos.primitive_2d(
-          primitive,
-          Isometry2d::new(
-            transform.translation.xy(),
-            Rot2::radians(transform.rotation.to_axis_angle().1),
-          ),
-          Color::srgb(1., 0., 0.),
-        );
-      }
-      _ => panic!("Use rectangle"),
-    }
-  }
 }

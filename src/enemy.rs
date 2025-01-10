@@ -1,10 +1,8 @@
-use bevy::{math::bounding::Aabb2d, prelude::*};
+use bevy::prelude::*;
 use std::collections::HashMap;
-use vleue_navigator::prelude::PrimitiveObstacle;
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
-  bounding_box::BoundingBox,
   direction::{Direction, Directions},
   line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
   movable::{Movable, PathItem, Speed::Slow},
@@ -145,9 +143,6 @@ pub fn enemy_setup(
       },
       Transform::from_xyz(0., 100., 0.),
       YSort { height: 32 },
-      BoundingBox {
-        value: Aabb2d::new(Vec2::new(0., 100.), Vec2::new(8., 16.)),
-      },
       LineOfSight {
         looking_at: Vec2::X.normalize(),
         offset: 0,
@@ -156,12 +151,12 @@ pub fn enemy_setup(
       },
       Selectable::default(),
     ))
-    .with_children(|parent| {
-      parent.spawn((
-        Transform::from_translation(Vec3::new(0., -12., 0.)),
-        PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
-      ));
-    })
+    // .with_children(|parent| {
+    //   parent.spawn((
+    //     Transform::from_translation(Vec3::new(0., -12., 0.)),
+    //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
+    //   ));
+    // })
     .observe(enemy_select::<Pointer<Up>>());
 }
 

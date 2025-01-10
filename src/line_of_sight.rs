@@ -1,13 +1,15 @@
 use bevy::{math::bounding::*, prelude::*};
 use core::f32;
+use vleue_navigator::prelude::PrimitiveObstacle;
 
-use crate::{
-  bounding_box::BoundingBox, movable::Movable, obstacle::Obstacle, selectable::Selectable,
-};
+use crate::{movable::Movable, selectable::Selectable};
 
 const LINE_OF_SIGHT_DISTANCE: i32 = 150;
 const LINE_OF_SIGHT_INNER_ANGLE: i32 = 60;
 pub const LINE_OF_SIGHT_VERTICES: usize = LINE_OF_SIGHT_INNER_ANGLE as usize + 1;
+
+#[derive(Component)]
+pub struct LineOfSightObstacle;
 
 #[derive(Component)]
 pub struct LineOfSight {
@@ -38,7 +40,7 @@ pub enum LineOfSightShift {
 
 pub fn line_of_sight_update(
   mut query: Query<(&mut LineOfSight, &Transform)>,
-  obstacles: Query<&BoundingBox, With<Obstacle>>,
+  obstacles: Query<(&PrimitiveObstacle, &GlobalTransform), With<LineOfSightObstacle>>,
 ) {
   for (mut line_of_sight, transform) in &mut query {
     let position = transform.translation.xy();
@@ -76,13 +78,20 @@ pub fn line_of_sight_update(
 
       points[i as usize + 1] = point;
 
-      for bounding_box in &obstacles {
-        if let Some(toi) = ray_cast.aabb_intersection_at(&bounding_box.value) {
-          let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
+      for (primitive_obstacle, global_transform) in &obstacles {
+        match primitive_obstacle {
+          PrimitiveObstacle::Rectangle(primitive) => {
+            if let Some(toi) = ray_cast.aabb_intersection_at(&primitive.aabb_2d(
+              Isometry2d::from_translation(global_transform.translation().xy()),
+            )) {
+              let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
 
-          if position.distance(intersection) < position.distance(points[i as usize + 1]) {
-            points[i as usize + 1] = intersection;
+              if position.distance(intersection) < position.distance(points[i as usize + 1]) {
+                points[i as usize + 1] = intersection;
+              }
+            }
           }
+          _ => panic!("Use rectangle"), // TODO: use polygon
         }
       }
     }

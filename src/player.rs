@@ -1,18 +1,14 @@
-use bevy::{math::bounding::Aabb2d, prelude::*, window::PrimaryWindow};
+use bevy::{prelude::*, window::PrimaryWindow};
 use std::collections::HashMap;
-use vleue_navigator::{
-  prelude::{ManagedNavMesh, PrimitiveObstacle},
-  NavMesh,
-};
+use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
-  bounding_box::BoundingBox,
   camera::MainCamera,
   direction::{Direction, Directions},
   movable::{Movable, PathItem, Speed},
   selectable::Selectable,
-  utils::{contains, timer_from_fps},
+  utils::timer_from_fps,
   ysort::YSort,
 };
 
@@ -130,17 +126,14 @@ pub fn player_setup(
       },
       Transform::from_translation(Vec3::new(-100., 100., 0.)),
       YSort { height: 32 },
-      BoundingBox {
-        value: Aabb2d::new(Vec2::new(-100., 100.), Vec2::new(8., 16.)),
-      },
       Selectable::default(),
     ))
-    .with_children(|parent| {
-      parent.spawn((
-        Transform::from_translation(Vec3::new(0., -12., 0.)),
-        PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
-      ));
-    })
+    // .with_children(|parent| {
+    //   parent.spawn((
+    //     Transform::from_translation(Vec3::new(0., -12., 0.)),
+    //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
+    //   ));
+    // })
     .observe(player_select::<Pointer<Up>>());
 }
 
@@ -191,7 +184,6 @@ pub fn player_atlas_layout(
 
 pub fn player_path(
   mut query: Query<(&mut Movable, &Transform, &Selectable), With<Player>>,
-  bounding_box_query: Query<&BoundingBox>,
   navmeshes: Res<Assets<NavMesh>>,
   navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
@@ -206,12 +198,7 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        if bounding_box_query
-          .iter()
-          .any(|bounding_box| contains(bounding_box.value, position))
-        {
-          return;
-        }
+        // TODO: stop pathfinding on entity selection
 
         for (mut movable, transform, selectable) in &mut query {
           if !selectable.selected {

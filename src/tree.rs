@@ -1,8 +1,9 @@
-use bevy::{math::bounding::Aabb2d, prelude::*};
+use bevy::prelude::*;
 use vleue_navigator::prelude::*;
 
-use crate::{bounding_box::BoundingBox, obstacle::Obstacle, ysort::YSort};
+use crate::{line_of_sight::LineOfSightObstacle, ysort::YSort};
 
+// TODO: make it universal (rename to object?)
 #[derive(Component)]
 pub struct Tree;
 
@@ -13,20 +14,18 @@ pub fn tree_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
   let z = 0.;
 
   // sprite
-  commands.spawn((
-    Tree,
-    Sprite { image, ..default() },
-    Transform::from_xyz(x, y, z),
-    YSort { height: 116 },
-  ));
-
-  // obstacle
-  commands.spawn((
-    Obstacle,
-    PrimitiveObstacle::Rectangle(Rectangle::new(10., 10.)),
-    Transform::from_xyz(x, y - 58., z),
-    BoundingBox {
-      value: Aabb2d::new(Vec2::new(x, y - 58.), Vec2::splat(5.)),
-    },
-  ));
+  commands
+    .spawn((
+      Tree,
+      Sprite { image, ..default() },
+      Transform::from_xyz(x, y, z),
+      YSort { height: 116 },
+    ))
+    .with_children(|parent| {
+      parent.spawn((
+        LineOfSightObstacle,
+        Transform::from_xyz(0., -58., 0.),
+        PrimitiveObstacle::Rectangle(Rectangle::new(10., 10.)),
+      ));
+    });
 }
