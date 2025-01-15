@@ -129,18 +129,23 @@ pub fn line_of_sight_looking_at(
   }
 }
 
-pub fn line_of_sight_looking_at_draw(query: Query<(&LineOfSight, &Transform)>, mut gizmos: Gizmos) {
-  for (line_of_sight, transform) in &query {
-    let rect = Rectangle::new(10., 10.);
-    let position = transform.translation.xy();
-    let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
+pub fn line_of_sight_looking_at_draw(
+  query: Query<(&LineOfSight, &Transform, &Selectable)>,
+  mut gizmos: Gizmos,
+) {
+  for (line_of_sight, transform, selectable) in &query {
+    if selectable.selected {
+      let rect = Rectangle::new(10., 10.);
+      let position = transform.translation.xy();
+      let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
 
-    // TODO: stop using gizmos
-    gizmos.primitive_2d(
-      &rect,
-      Isometry2d::from_translation(looking_at),
-      Color::WHITE,
-    );
+      // TODO: stop using gizmos
+      gizmos.primitive_2d(
+        &rect,
+        Isometry2d::from_translation(looking_at),
+        Color::WHITE,
+      );
+    }
   }
 }
 
