@@ -1,6 +1,7 @@
 mod animation;
 mod camera;
 mod console;
+mod debug;
 mod direction;
 mod enemy;
 mod line_of_sight;
@@ -20,13 +21,14 @@ use bevy::{
 use bevy_minibuffer::prelude::*;
 use camera::{camera_pan, camera_setup};
 use console::console_setup;
+use debug::{is_debug_enabled, toggle_debug, Debug};
 use enemy::{enemy_atlas_layout, enemy_setup, enemy_state};
 use line_of_sight::{
   line_of_sight_draw, line_of_sight_looking_at, line_of_sight_looking_at_draw, line_of_sight_shift,
   line_of_sight_update,
 };
 use movable::{path_direction, path_draw, path_follow, path_reset};
-use navmesh::{navmesh_draw, navmesh_setup};
+use navmesh::navmesh_setup;
 use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};
 use tree::tree_setup;
 use vleue_navigator::{
@@ -54,6 +56,7 @@ fn main() -> AppExit {
             font_size: 20.,
             ..default()
           },
+          enabled: false,
           ..default()
         },
       },
@@ -61,6 +64,7 @@ fn main() -> AppExit {
       NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
       MinibufferPlugins,
     ))
+    .insert_resource(Debug::default())
     .add_systems(
       Startup,
       (
@@ -98,16 +102,11 @@ fn main() -> AppExit {
     .add_systems(
       Update,
       (
-        line_of_sight_looking_at_draw.run_if(debug),
-        path_draw.run_if(debug),
-        navmesh_draw.run_if(debug),
+        line_of_sight_looking_at_draw.run_if(is_debug_enabled),
+        path_draw.run_if(is_debug_enabled),
       ),
     )
     .add_systems(PostUpdate, y_sort)
-    .add_acts((player_setup, BasicActs::default()))
+    .add_acts((player_setup, toggle_debug, BasicActs::default()))
     .run()
-}
-
-fn debug() -> bool {
-  true
 }
