@@ -57,7 +57,7 @@ pub fn player_setup(
   }
 
   let config = AnimationAtlasConfig {
-    fps: 10,
+    fps: 5,
     frame_count: 4,
     layouts,
   };
