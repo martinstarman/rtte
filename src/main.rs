@@ -10,6 +10,7 @@ mod navmesh;
 mod object;
 mod player;
 mod selectable;
+mod serde;
 mod utils;
 mod ysort;
 
@@ -31,6 +32,7 @@ use movable::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::navmesh_setup;
 use object::object_setup;
 use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};
+use serde::{deserialize, serialize};
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
@@ -107,6 +109,12 @@ fn main() -> AppExit {
       ),
     )
     .add_systems(PostUpdate, y_sort)
-    .add_acts((player_setup, toggle_debug, BasicActs::default()))
+    .add_acts((
+      player_setup,
+      toggle_debug,
+      serialize,
+      deserialize,
+      BasicActs::default(),
+    ))
     .run()
 }
