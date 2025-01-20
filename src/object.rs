@@ -3,7 +3,8 @@ use vleue_navigator::prelude::*;
 
 use crate::{line_of_sight::LineOfSightObstacle, ysort::YSort};
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Object;
 
 pub struct ObjectSpawn {

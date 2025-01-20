@@ -10,6 +10,7 @@ mod navmesh;
 mod object;
 mod player;
 mod selectable;
+mod serde;
 mod utils;
 mod ysort;
 
@@ -29,13 +30,16 @@ use line_of_sight::{
 };
 use movable::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::navmesh_setup;
-use object::object_setup;
-use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};
+use object::{object_setup, Object};
+use player::{
+  player_animation, player_atlas_layout, player_path, player_setup, player_state, Player,
+};
+use serde::{deserialize, serialize};
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
 };
-use ysort::y_sort;
+use ysort::{y_sort, YSort};
 
 fn main() -> AppExit {
   App::new()
@@ -64,6 +68,14 @@ fn main() -> AppExit {
       NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
       MinibufferPlugins,
     ))
+    .register_type::<Object>()
+    .register_type::<Player>()
+    .register_type::<String>()
+    .register_type::<Vec2>()
+    .register_type::<u32>()
+    .register_type::<Sprite>()
+    .register_type::<Transform>()
+    .register_type::<YSort>()
     .insert_resource(Debug::default())
     .add_systems(
       Startup,
@@ -107,6 +119,12 @@ fn main() -> AppExit {
       ),
     )
     .add_systems(PostUpdate, y_sort)
-    .add_acts((player_setup, toggle_debug, BasicActs::default()))
+    .add_acts((
+      player_setup,
+      toggle_debug,
+      serialize,
+      deserialize,
+      BasicActs::default(),
+    ))
     .run()
 }
