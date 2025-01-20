@@ -12,7 +12,8 @@ use crate::{
   ysort::YSort,
 };
 
-#[derive(Component, PartialEq, Eq, Hash)]
+#[derive(Component, PartialEq, Eq, Hash, Reflect, Default)]
+#[reflect(Component)]
 pub struct Player;
 
 #[derive(Component, Default)]

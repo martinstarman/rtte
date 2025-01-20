@@ -11,7 +11,8 @@ use crate::{
   ysort::YSort,
 };
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Enemy;
 
 #[derive(Component, Default)]
