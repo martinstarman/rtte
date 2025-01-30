@@ -5,7 +5,7 @@ use crate::{
   animation::{Animation, AnimationAtlasConfig},
   direction::{Direction, Directions},
   line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
-  movable::{Movable, PathItem, Speed::Slow},
+  movable::{Movable, MovablePathItem, MovableSpeed::Walk},
   selectable::Selectable,
   utils::timer_from_fps,
   ysort::YSort,
@@ -113,17 +113,20 @@ pub fn enemy_setup(
   });
 
   let path = vec![
-    PathItem {
+    MovablePathItem {
       position: Vec2::new(200., 150.),
-      speed: Slow,
+      speed: Walk,
+      wait_frame_count: 0,
     },
-    PathItem {
+    MovablePathItem {
       position: Vec2::new(200., -100.),
-      speed: Slow,
+      speed: Walk,
+      wait_frame_count: 50,
     },
-    PathItem {
+    MovablePathItem {
       position: Vec2::new(0., 100.),
-      speed: Slow,
+      speed: Walk,
+      wait_frame_count: 0,
     },
   ];
 

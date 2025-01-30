@@ -6,7 +6,7 @@ use crate::{
   animation::{Animation, AnimationAtlasConfig},
   camera::MainCamera,
   direction::{Direction, Directions},
-  movable::{Movable, PathItem, Speed},
+  movable::{Movable, MovablePathItem, MovableSpeed},
   selectable::Selectable,
   utils::timer_from_fps,
   ysort::YSort,
@@ -219,13 +219,14 @@ pub fn player_path(
           movable.path = path
             .path
             .iter()
-            .map(|v| PathItem {
+            .map(|v| MovablePathItem {
               position: v.xy(),
               speed: if keys.pressed(KeyCode::ShiftLeft) {
-                Speed::Fast
+                MovableSpeed::Run
               } else {
-                Speed::Slow
+                MovableSpeed::Walk
               },
+              wait_frame_count: 0,
             })
             .collect();
         }
@@ -247,7 +248,7 @@ pub fn player_state(mut query: Query<(&mut PlayerState, &Movable), Changed<Movab
     }
 
     if movable.path.len() > 0 {
-      player_state.value = if movable.path[0].speed == Speed::Slow {
+      player_state.value = if movable.path[0].speed == MovableSpeed::Walk {
         PlayerStates::Walk
       } else {
         PlayerStates::Run
