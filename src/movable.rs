@@ -11,7 +11,7 @@ pub enum MovableSpeed {
   Run = 2,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct MovablePathItem {
   pub position: Vec2,
   pub speed: MovableSpeed,
@@ -64,23 +64,23 @@ pub fn path_reset(mut query: Query<&mut Movable, Changed<Movable>>) {
 pub fn path_follow(mut query: Query<(&mut Movable, &mut Transform)>) {
   for (mut movable, mut transform) in &mut query {
     if movable.path.len() > 0 {
-      let next = movable.path[0].position.extend(transform.translation.z);
+      let curr_pos = transform.translation.xy();
+      let next_pos = movable.path[0].position;
       let speed = if movable.path[0].speed == MovableSpeed::Walk {
         MOVABLE_SPEED_WALK
       } else {
         MOVABLE_SPEED_RUN
       };
 
-      let step = (next - transform.translation).normalize() * speed;
-
-      transform.translation += step;
-
-      if transform.translation.distance(next) <= speed / 2. {
+      if curr_pos.distance(next_pos) <= speed / 2. {
         if movable.path[0].wait_frame_count > 0 {
           movable.path[0].wait_frame_count -= 1;
         } else {
           movable.path.remove(0);
         }
+      } else {
+        let step = (next_pos - curr_pos).normalize() * speed;
+        transform.translation += step.extend(0.);
       }
     }
   }
