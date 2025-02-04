@@ -2,50 +2,55 @@ use bevy::prelude::*;
 
 use crate::direction::{Direction, Directions};
 
-const MOVABLE_SPEED_WALK: f32 = 0.5;
-const MOVABLE_SPEED_RUN: f32 = 2.;
+const SPEED_WALK: f32 = 0.5;
+const SPEED_RUN: f32 = 2.;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub enum MovableSpeed {
-  Walk = 1,
-  Run = 2,
+pub enum Speed {
+  Slow = 1,
+  Fast = 2,
 }
 
 #[derive(Clone)]
-pub struct MovablePathItem {
+pub struct PathItem {
   pub position: Vec2,
-  pub speed: MovableSpeed,
-  pub wait_frame_count: u8,
+  pub speed: Speed,
 }
 
 #[derive(Component, Default)]
 pub struct Movable {
-  pub path: Vec<MovablePathItem>,
-  pub default_path: Vec<MovablePathItem>,
+  pub path: Vec<PathItem>,
+  pub default_path: Vec<PathItem>,
 }
 
 pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
   for (transform, movable) in &query {
     if movable.path.len() > 0 {
-      let start = transform.translation.xy();
+      let start = PathItem {
+        position: transform.translation.xy(),
+        speed: movable.path[0].speed,
+      };
       let mut path = vec![start];
 
-      path.extend(
-        movable
-          .path
-          .iter()
-          .map(|item| item.position.xy())
-          .collect::<Vec<_>>(),
-      );
+      path.extend(movable.path.clone());
 
       for i in 0..path.len() - 1 {
-        let (line, center) = Segment2d::from_points(path[i], path[i + 1]);
+        let (line, center) = Segment2d::from_points(path[i].position, path[i + 1].position);
 
         // TODO: stop using gizmos
         gizmos.primitive_2d(
           &line,
           Isometry2d::from_translation(center),
-          Color::linear_rgba(1., 1., 1., 0.5),
+          Color::linear_rgba(
+            1.,
+            1.,
+            1.,
+            if movable.path[i].speed == Speed::Slow {
+              0.25
+            } else {
+              0.5
+            },
+          ),
         );
       }
     }
@@ -60,15 +65,14 @@ pub fn path_reset(mut query: Query<&mut Movable, Changed<Movable>>) {
   }
 }
 
-// TODO: line of sight is looking to wrong target when enemy is waiting
 pub fn path_follow(mut query: Query<(&mut Movable, &mut Transform)>) {
   for (mut movable, mut transform) in &mut query {
     if movable.path.len() > 0 {
       let next = movable.path[0].position.extend(transform.translation.z);
-      let speed = if movable.path[0].speed == MovableSpeed::Walk {
-        MOVABLE_SPEED_WALK
+      let speed = if movable.path[0].speed == Speed::Slow {
+        SPEED_WALK
       } else {
-        MOVABLE_SPEED_RUN
+        SPEED_RUN
       };
 
       let step = (next - transform.translation).normalize() * speed;
@@ -76,11 +80,7 @@ pub fn path_follow(mut query: Query<(&mut Movable, &mut Transform)>) {
       transform.translation += step;
 
       if transform.translation.distance(next) <= speed / 2. {
-        if movable.path[0].wait_frame_count > 0 {
-          movable.path[0].wait_frame_count -= 1;
-        } else {
-          movable.path.remove(0);
-        }
+        movable.path.remove(0);
       }
     }
   }
