@@ -30,7 +30,7 @@ impl Command for ObjectSpawn {
       .with_child((
         LineOfSightObstacle,
         Transform::from_translation(self.obstacle_position.extend(0.)),
-        PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)), // TODO: polygon
+        PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)),
       ));
   }
 }

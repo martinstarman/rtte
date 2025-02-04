@@ -91,7 +91,7 @@ pub fn line_of_sight_update(
               }
             }
           }
-          _ => panic!("Use rectangle"), // TODO: use polygon
+          _ => panic!("Use rectangle"),
         }
       }
     }
@@ -139,7 +139,6 @@ pub fn line_of_sight_looking_at_draw(
       let position = transform.translation.xy();
       let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
 
-      // TODO: stop using gizmos
       gizmos.primitive_2d(
         &rect,
         Isometry2d::from_translation(looking_at),
@@ -152,7 +151,6 @@ pub fn line_of_sight_looking_at_draw(
 pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Selectable)>, mut gizmos: Gizmos) {
   for (line_of_sight, selectable) in &query {
     if selectable.selected {
-      // TODO: stop using gizmos
       gizmos.primitive_2d(
         &line_of_sight.polygon,
         Isometry2d::from_translation(Vec2::ZERO),

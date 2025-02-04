@@ -198,8 +198,6 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        // TODO: stop pathfinding on entity selection
-
         for (mut movable, transform, selectable) in &mut query {
           if !selectable.selected {
             continue;

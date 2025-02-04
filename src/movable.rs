@@ -37,7 +37,6 @@ pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
       for i in 0..path.len() - 1 {
         let (line, center) = Segment2d::from_points(path[i].position, path[i + 1].position);
 
-        // TODO: stop using gizmos
         gizmos.primitive_2d(
           &line,
           Isometry2d::from_translation(center),
