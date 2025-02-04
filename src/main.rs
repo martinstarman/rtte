@@ -22,7 +22,7 @@ use bevy_minibuffer::prelude::*;
 use camera::{camera_pan, camera_setup};
 use console::console_setup;
 use debug::{is_debug_enabled, toggle_debug, Debug};
-use enemy::{enemy_atlas_layout, enemy_setup, enemy_state};
+use enemy::{enemy_animation, enemy_atlas_layout, enemy_setup, enemy_state};
 use line_of_sight::{
   line_of_sight_draw, line_of_sight_looking_at, line_of_sight_looking_at_draw, line_of_sight_shift,
   line_of_sight_update,
@@ -86,8 +86,9 @@ fn main() -> AppExit {
         player_state,
         player_atlas_layout,
         //
-        enemy_atlas_layout,
+        enemy_animation,
         enemy_state,
+        enemy_atlas_layout,
         //
         line_of_sight_update,
         line_of_sight_shift,

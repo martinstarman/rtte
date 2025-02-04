@@ -202,3 +202,21 @@ pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movable), Changed<Movable
     }
   }
 }
+
+pub fn enemy_animation(
+  mut query: Query<(&EnemyState, &mut Sprite), With<Enemy>>,
+  mut animation: ResMut<Animation<EnemyStates>>,
+  time: Res<Time>,
+) {
+  for (enemy_state, mut sprite) in &mut query {
+    animation.frame_timer.tick(time.delta());
+
+    if animation.frame_timer.just_finished() {
+      let atlas_config = animation.atlas_config.get(&enemy_state.value).unwrap();
+      sprite.texture_atlas.as_mut().unwrap().index = (sprite.texture_atlas.as_mut().unwrap().index
+        + 1)
+        % (atlas_config.frame_count as usize - 1);
+      animation.frame_timer = timer_from_fps(atlas_config.fps);
+    }
+  }
+}
