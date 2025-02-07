@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
 #[derive(Component, Default)]
-pub struct Selectable {
-  pub selected: bool,
+pub struct Selection {
+  pub active: bool,
 }

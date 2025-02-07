@@ -7,7 +7,7 @@ use crate::{
   camera::MainCamera,
   direction::Direction,
   movable::{Movable, PathItem, Speed},
-  selectable::Selectable,
+  selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
 };
@@ -126,7 +126,7 @@ pub fn player_setup(
       },
       Transform::from_translation(Vec3::new(-100., 100., 0.)),
       YSort { height: 32 },
-      Selectable::default(),
+      Selection::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -137,10 +137,10 @@ pub fn player_setup(
     .observe(player_select::<Pointer<Up>>());
 }
 
-fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable), With<Player>>) {
+fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection), With<Player>>) {
   move |event, mut query| {
-    for (entity, mut selectable) in &mut query {
-      selectable.selected = entity == event.entity();
+    for (entity, mut selection) in &mut query {
+      selection.active = entity == event.entity();
     }
   }
 }
@@ -183,7 +183,7 @@ pub fn player_atlas_layout(
 }
 
 pub fn player_path(
-  mut query: Query<(&mut Movable, &Transform, &Selectable), With<Player>>,
+  mut query: Query<(&mut Movable, &Transform, &Selection), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
   navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
@@ -198,8 +198,8 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for (mut movable, transform, selectable) in &mut query {
-          if !selectable.selected {
+        for (mut movable, transform, selection) in &mut query {
+          if !selection.active {
             continue;
           }
 

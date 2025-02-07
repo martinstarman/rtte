@@ -9,7 +9,7 @@ mod movable;
 mod navmesh;
 mod object;
 mod player;
-mod selectable;
+mod selection;
 mod utils;
 mod ysort;
 

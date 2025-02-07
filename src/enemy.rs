@@ -6,7 +6,7 @@ use crate::{
   direction::Direction,
   line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
   movable::{Movable, PathItem, Speed::Slow},
-  selectable::Selectable,
+  selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
 };
@@ -149,7 +149,7 @@ pub fn enemy_setup(
         shift: LineOfSightShift::Left,
         polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
       },
-      Selectable::default(),
+      Selection::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -160,13 +160,13 @@ pub fn enemy_setup(
     .observe(enemy_select::<Pointer<Up>>());
 }
 
-fn enemy_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable), With<Enemy>>) {
+fn enemy_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection), With<Enemy>>) {
   move |event, mut query| {
-    for (entity, mut selectable) in &mut query {
+    for (entity, mut selection) in &mut query {
       if entity == event.entity() {
-        selectable.selected = !selectable.selected;
+        selection.active = !selection.active;
       } else {
-        selectable.selected = false;
+        selection.active = false;
       }
     }
   }
