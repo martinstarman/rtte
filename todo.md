@@ -1,7 +1,7 @@
 # TODO
 
 - [ ] fix player pathfinding on entity selection
-- [ ] fix sprite selection under another sprite (eg. select enemy under tree)
+- [x] fix sprite selection under another sprite (eg. select enemy under tree)
 - [ ] use Commands for entity spawning (see `object.rs`)
 - [ ] add possibility to wait in enemy path (should be in idle state)
 - [x] replace `Directions` with Bevy CompasOctant

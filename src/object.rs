@@ -26,6 +26,7 @@ impl Command for ObjectSpawn {
         YSort {
           height: self.height,
         },
+        PickingBehavior::IGNORE,
       ))
       .with_child((
         LineOfSightObstacle,
