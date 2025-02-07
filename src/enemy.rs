@@ -1,9 +1,9 @@
-use bevy::prelude::*;
+use bevy::{math::CompassOctant, prelude::*};
 use std::collections::HashMap;
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
-  direction::{Direction, Directions},
+  direction::Direction,
   line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
   movable::{Movable, PathItem, Speed::Slow},
   selectable::Selectable,
@@ -36,14 +36,14 @@ pub fn enemy_setup(
   let image = asset_server.load("enemy/export.png");
   let tile_size = UVec2::new(16, 32);
   let directions = vec![
-    Directions::East,
-    Directions::NorthEast,
-    Directions::North,
-    Directions::NorthWest,
-    Directions::West,
-    Directions::SouthWest,
-    Directions::South,
-    Directions::SouthEast,
+    CompassOctant::East,
+    CompassOctant::NorthEast,
+    CompassOctant::North,
+    CompassOctant::NorthWest,
+    CompassOctant::West,
+    CompassOctant::SouthWest,
+    CompassOctant::South,
+    CompassOctant::SouthEast,
   ];
 
   let mut layouts = HashMap::new();
@@ -103,7 +103,7 @@ pub fn enemy_setup(
     .get(&EnemyStates::Idle)
     .unwrap()
     .layouts
-    .get(&Directions::South)
+    .get(&CompassOctant::South)
     .unwrap()
     .clone();
 

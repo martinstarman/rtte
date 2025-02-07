@@ -1,11 +1,11 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{math::CompassOctant, prelude::*, window::PrimaryWindow};
 use std::collections::HashMap;
 use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
   camera::MainCamera,
-  direction::{Direction, Directions},
+  direction::Direction,
   movable::{Movable, PathItem, Speed},
   selectable::Selectable,
   utils::timer_from_fps,
@@ -37,14 +37,14 @@ pub fn player_setup(
   let image = asset_server.load("player/export.png");
   let tile_size = UVec2::new(16, 32);
   let directions = vec![
-    Directions::East,
-    Directions::NorthEast,
-    Directions::North,
-    Directions::NorthWest,
-    Directions::West,
-    Directions::SouthWest,
-    Directions::South,
-    Directions::SouthEast,
+    CompassOctant::East,
+    CompassOctant::NorthEast,
+    CompassOctant::North,
+    CompassOctant::NorthWest,
+    CompassOctant::West,
+    CompassOctant::SouthWest,
+    CompassOctant::South,
+    CompassOctant::SouthEast,
   ];
 
   let mut layouts = HashMap::new();
@@ -104,7 +104,7 @@ pub fn player_setup(
     .get(&PlayerStates::Idle)
     .unwrap()
     .layouts
-    .get(&Directions::South)
+    .get(&CompassOctant::South)
     .unwrap()
     .clone();
 

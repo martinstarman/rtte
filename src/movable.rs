@@ -1,6 +1,6 @@
-use bevy::prelude::*;
+use bevy::{math::CompassOctant, prelude::*};
 
-use crate::direction::{Direction, Directions};
+use crate::direction::Direction;
 
 const SPEED_WALK: f32 = 0.5;
 const SPEED_RUN: f32 = 2.;
@@ -88,8 +88,8 @@ pub fn path_follow(mut query: Query<(&mut Movable, &mut Transform)>) {
 pub fn path_direction(mut query: Query<(&Movable, &mut Direction, &Transform), Changed<Movable>>) {
   for (movable, mut direction, transform) in &mut query {
     if movable.path.len() > 0 {
-      let angle = (movable.path[0].position - transform.translation.xy()).to_angle();
-      direction.value = Directions::try_from(angle).unwrap();
+      let dir = Dir2::new(movable.path[0].position - transform.translation.xy()).unwrap();
+      direction.value = CompassOctant::try_from(dir).unwrap();
     }
   }
 }
