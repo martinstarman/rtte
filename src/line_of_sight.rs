@@ -2,7 +2,7 @@ use bevy::{math::bounding::*, prelude::*};
 use core::f32;
 use vleue_navigator::prelude::PrimitiveObstacle;
 
-use crate::{movable::Movable, selection::Selection};
+use crate::{movement::Movement, selection::Selection};
 
 const LINE_OF_SIGHT_DISTANCE: i32 = 150;
 const LINE_OF_SIGHT_INNER_ANGLE: i32 = 60;
@@ -119,12 +119,12 @@ pub fn line_of_sight_shift(mut query: Query<&mut LineOfSight>) {
 }
 
 pub fn line_of_sight_looking_at(
-  mut query: Query<(&mut LineOfSight, &Movable, &Transform), Changed<Movable>>,
+  mut query: Query<(&mut LineOfSight, &Movement, &Transform), Changed<Movement>>,
 ) {
-  for (mut line_of_sight, movable, transform) in &mut query {
-    if movable.path.len() > 0 {
+  for (mut line_of_sight, movement, transform) in &mut query {
+    if movement.path.len() > 0 {
       line_of_sight.looking_at =
-        (movable.path[0].position - transform.translation.xy()).normalize();
+        (movement.path[0].position - transform.translation.xy()).normalize();
     }
   }
 }

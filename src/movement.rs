@@ -18,21 +18,21 @@ pub struct PathItem {
 }
 
 #[derive(Component, Default)]
-pub struct Movable {
+pub struct Movement {
   pub path: Vec<PathItem>,
   pub default_path: Vec<PathItem>,
 }
 
-pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
-  for (transform, movable) in &query {
-    if movable.path.len() > 0 {
+pub fn path_draw(query: Query<(&Transform, &Movement)>, mut gizmos: Gizmos) {
+  for (transform, movement) in &query {
+    if movement.path.len() > 0 {
       let start = PathItem {
         position: transform.translation.xy(),
-        speed: movable.path[0].speed,
+        speed: movement.path[0].speed,
       };
       let mut path = vec![start];
 
-      path.extend(movable.path.clone());
+      path.extend(movement.path.clone());
 
       for i in 0..path.len() - 1 {
         let (line, center) = Segment2d::from_points(path[i].position, path[i + 1].position);
@@ -44,7 +44,7 @@ pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
             1.,
             1.,
             1.,
-            if movable.path[i].speed == Speed::Slow {
+            if movement.path[i].speed == Speed::Slow {
               0.25
             } else {
               0.5
@@ -56,19 +56,19 @@ pub fn path_draw(query: Query<(&Transform, &Movable)>, mut gizmos: Gizmos) {
   }
 }
 
-pub fn path_reset(mut query: Query<&mut Movable, Changed<Movable>>) {
-  for mut movable in &mut query {
-    if movable.path.len() == 0 && movable.default_path.len() > 0 {
-      movable.path = movable.default_path.clone();
+pub fn path_reset(mut query: Query<&mut Movement, Changed<Movement>>) {
+  for mut movement in &mut query {
+    if movement.path.len() == 0 && movement.default_path.len() > 0 {
+      movement.path = movement.default_path.clone();
     }
   }
 }
 
-pub fn path_follow(mut query: Query<(&mut Movable, &mut Transform)>) {
-  for (mut movable, mut transform) in &mut query {
-    if movable.path.len() > 0 {
-      let next = movable.path[0].position.extend(transform.translation.z);
-      let speed = if movable.path[0].speed == Speed::Slow {
+pub fn path_follow(mut query: Query<(&mut Movement, &mut Transform)>) {
+  for (mut movement, mut transform) in &mut query {
+    if movement.path.len() > 0 {
+      let next = movement.path[0].position.extend(transform.translation.z);
+      let speed = if movement.path[0].speed == Speed::Slow {
         SPEED_WALK
       } else {
         SPEED_RUN
@@ -79,16 +79,18 @@ pub fn path_follow(mut query: Query<(&mut Movable, &mut Transform)>) {
       transform.translation += step;
 
       if transform.translation.distance(next) <= speed / 2. {
-        movable.path.remove(0);
+        movement.path.remove(0);
       }
     }
   }
 }
 
-pub fn path_direction(mut query: Query<(&Movable, &mut Direction, &Transform), Changed<Movable>>) {
-  for (movable, mut direction, transform) in &mut query {
-    if movable.path.len() > 0 {
-      let dir = Dir2::new(movable.path[0].position - transform.translation.xy()).unwrap();
+pub fn path_direction(
+  mut query: Query<(&Movement, &mut Direction, &Transform), Changed<Movement>>,
+) {
+  for (movement, mut direction, transform) in &mut query {
+    if movement.path.len() > 0 {
+      let dir = Dir2::new(movement.path[0].position - transform.translation.xy()).unwrap();
       direction.value = CompassOctant::try_from(dir).unwrap();
     }
   }

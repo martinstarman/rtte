@@ -6,7 +6,7 @@ use crate::{
   animation::{Animation, AnimationAtlasConfig},
   camera::MainCamera,
   direction::Direction,
-  movable::{Movable, PathItem, Speed},
+  movement::{Movement, PathItem, Speed},
   selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
@@ -116,7 +116,7 @@ pub fn player_setup(
   commands
     .spawn((
       Player,
-      Movable::default(),
+      Movement::default(),
       PlayerState::default(),
       Direction::default(),
       Sprite {
@@ -183,7 +183,7 @@ pub fn player_atlas_layout(
 }
 
 pub fn player_path(
-  mut query: Query<(&mut Movable, &Transform, &Selection), With<Player>>,
+  mut query: Query<(&mut Movement, &Transform, &Selection), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
   navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
@@ -198,7 +198,7 @@ pub fn player_path(
       let (camera, global_transform) = camera_q.single();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for (mut movable, transform, selection) in &mut query {
+        for (mut movement, transform, selection) in &mut query {
           if !selection.active {
             continue;
           }
@@ -214,7 +214,7 @@ pub fn player_path(
             break;
           };
 
-          movable.path = path
+          movement.path = path
             .path
             .iter()
             .map(|v| PathItem {
@@ -232,20 +232,20 @@ pub fn player_path(
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for (mut movable, _, _) in &mut query {
-      movable.path = vec![];
+    for (mut movement, _, _) in &mut query {
+      movement.path = vec![];
     }
   }
 }
 
-pub fn player_state(mut query: Query<(&mut PlayerState, &Movable), Changed<Movable>>) {
-  for (mut player_state, movable) in &mut query {
-    if movable.path.len() == 0 && player_state.value != PlayerStates::Idle {
+pub fn player_state(mut query: Query<(&mut PlayerState, &Movement), Changed<Movement>>) {
+  for (mut player_state, movement) in &mut query {
+    if movement.path.len() == 0 && player_state.value != PlayerStates::Idle {
       player_state.value = PlayerStates::Idle;
     }
 
-    if movable.path.len() > 0 {
-      player_state.value = if movable.path[0].speed == Speed::Slow {
+    if movement.path.len() > 0 {
+      player_state.value = if movement.path[0].speed == Speed::Slow {
         PlayerStates::Walk
       } else {
         PlayerStates::Run

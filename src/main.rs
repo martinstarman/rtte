@@ -5,7 +5,7 @@ mod debug;
 mod direction;
 mod enemy;
 mod line_of_sight;
-mod movable;
+mod movement;
 mod navmesh;
 mod object;
 mod player;
@@ -27,7 +27,7 @@ use line_of_sight::{
   line_of_sight_draw, line_of_sight_looking_at, line_of_sight_looking_at_draw, line_of_sight_shift,
   line_of_sight_update,
 };
-use movable::{path_direction, path_draw, path_follow, path_reset};
+use movement::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::navmesh_setup;
 use object::object_setup;
 use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};

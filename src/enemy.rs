@@ -5,7 +5,7 @@ use crate::{
   animation::{Animation, AnimationAtlasConfig},
   direction::Direction,
   line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
-  movable::{Movable, PathItem, Speed::Slow},
+  movement::{Movement, PathItem, Speed::Slow},
   selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
@@ -130,7 +130,7 @@ pub fn enemy_setup(
   commands
     .spawn((
       Enemy,
-      Movable {
+      Movement {
         path: path.clone(),
         default_path: path.clone(),
       },
@@ -191,13 +191,13 @@ pub fn enemy_atlas_layout(
   }
 }
 
-pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movable), Changed<Movable>>) {
-  for (mut enemy_state, movable) in &mut query {
-    if movable.path.len() == 0 && enemy_state.value != EnemyStates::Idle {
+pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movement), Changed<Movement>>) {
+  for (mut enemy_state, movement) in &mut query {
+    if movement.path.len() == 0 && enemy_state.value != EnemyStates::Idle {
       enemy_state.value = EnemyStates::Idle;
     }
 
-    if movable.path.len() > 0 && enemy_state.value != EnemyStates::Walk {
+    if movement.path.len() > 0 && enemy_state.value != EnemyStates::Walk {
       enemy_state.value = EnemyStates::Walk;
     }
   }
