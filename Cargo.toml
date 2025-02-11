@@ -6,6 +6,6 @@ version = "0.10.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = {version = "0.15.1", features = ["bevy_dev_tools"]}
+bevy = {version = "0.15.2", features = ["bevy_dev_tools"]}
 bevy_minibuffer = "0.3.0"
 vleue_navigator = "0.11.1"
