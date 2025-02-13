@@ -1,11 +1,15 @@
 use bevy::{math::bounding::*, prelude::*};
 use core::f32;
+use vleue_navigator::prelude::PrimitiveObstacle;
 
-use crate::{bounding_box::BoundingBox, movable::Movable, obstacle::Obstacle};
+use crate::{movement::Movement, selection::Selection};
 
 const LINE_OF_SIGHT_DISTANCE: i32 = 150;
 const LINE_OF_SIGHT_INNER_ANGLE: i32 = 60;
 pub const LINE_OF_SIGHT_VERTICES: usize = LINE_OF_SIGHT_INNER_ANGLE as usize + 1;
+
+#[derive(Component)]
+pub struct LineOfSightObstacle;
 
 #[derive(Component)]
 pub struct LineOfSight {
@@ -36,7 +40,7 @@ pub enum LineOfSightShift {
 
 pub fn line_of_sight_update(
   mut query: Query<(&mut LineOfSight, &Transform)>,
-  obstacles: Query<&BoundingBox, With<Obstacle>>,
+  obstacles: Query<(&PrimitiveObstacle, &GlobalTransform), With<LineOfSightObstacle>>,
 ) {
   for (mut line_of_sight, transform) in &mut query {
     let position = transform.translation.xy();
@@ -69,18 +73,25 @@ pub fn line_of_sight_update(
       );
 
       let point = point_transform.translation.xy();
-      let ray = Ray2d::new(position, (point - position).normalize());
+      let ray = Ray2d::new(position, Dir2::new(point - position).unwrap());
       let ray_cast = RayCast2d::from_ray(ray, LINE_OF_SIGHT_DISTANCE as f32);
 
       points[i as usize + 1] = point;
 
-      for bounding_box in &obstacles {
-        if let Some(toi) = ray_cast.aabb_intersection_at(&bounding_box.value) {
-          let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
+      for (primitive_obstacle, global_transform) in &obstacles {
+        match primitive_obstacle {
+          PrimitiveObstacle::Rectangle(primitive) => {
+            if let Some(toi) = ray_cast.aabb_intersection_at(&primitive.aabb_2d(
+              Isometry2d::from_translation(global_transform.translation().xy()),
+            )) {
+              let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
 
-          if position.distance(intersection) < position.distance(points[i as usize + 1]) {
-            points[i as usize + 1] = intersection;
+              if position.distance(intersection) < position.distance(points[i as usize + 1]) {
+                points[i as usize + 1] = intersection;
+              }
+            }
           }
+          _ => panic!("Use rectangle"),
         }
       }
     }
@@ -108,30 +119,43 @@ pub fn line_of_sight_shift(mut query: Query<&mut LineOfSight>) {
 }
 
 pub fn line_of_sight_looking_at(
-  mut query: Query<(&mut LineOfSight, &Movable, &Transform), Changed<Movable>>,
+  mut query: Query<(&mut LineOfSight, &Movement, &Transform), Changed<Movement>>,
 ) {
-  for (mut line_of_sight, movable, transform) in &mut query {
-    if movable.path.len() > 0 {
+  for (mut line_of_sight, movement, transform) in &mut query {
+    if movement.path.len() > 0 {
       line_of_sight.looking_at =
-        (movable.path[0].position - transform.translation.xy()).normalize();
+        (movement.path[0].position - transform.translation.xy()).normalize();
     }
   }
 }
 
-pub fn line_of_sight_looking_at_draw(query: Query<(&LineOfSight, &Transform)>, mut gizmos: Gizmos) {
-  for (line_of_sight, transform) in &query {
-    let rect = Rectangle::new(10., 10.);
-    let position = transform.translation.xy();
-    let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
+pub fn line_of_sight_looking_at_draw(
+  query: Query<(&LineOfSight, &Transform, &Selection)>,
+  mut gizmos: Gizmos,
+) {
+  for (line_of_sight, transform, selection) in &query {
+    if selection.active {
+      let rect = Rectangle::new(10., 10.);
+      let position = transform.translation.xy();
+      let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
 
-    // TODO: stop using gizmos
-    gizmos.primitive_2d(&rect, looking_at, 0., Color::WHITE);
+      gizmos.primitive_2d(
+        &rect,
+        Isometry2d::from_translation(looking_at),
+        Color::WHITE,
+      );
+    }
   }
 }
 
-pub fn line_of_sight_draw(query: Query<&LineOfSight>, mut gizmos: Gizmos) {
-  for line_of_sight in &query {
-    // TODO: stop using gizmos
-    gizmos.primitive_2d(&line_of_sight.polygon, Vec2::ZERO, 0., Color::WHITE);
+pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Selection)>, mut gizmos: Gizmos) {
+  for (line_of_sight, selection) in &query {
+    if selection.active {
+      gizmos.primitive_2d(
+        &line_of_sight.polygon,
+        Isometry2d::from_translation(Vec2::ZERO),
+        Color::WHITE,
+      );
+    }
   }
 }

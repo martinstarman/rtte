@@ -1,15 +1,15 @@
 mod animation;
-mod bounding_box;
 mod camera;
+mod console;
+mod debug;
 mod direction;
 mod enemy;
-mod gizmo;
 mod line_of_sight;
-mod movable;
+mod movement;
 mod navmesh;
-mod obstacle;
+mod object;
 mod player;
-mod tree;
+mod selection;
 mod ui;
 mod utils;
 mod ysort;
@@ -19,18 +19,19 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
-use bounding_box::{bounding_box_draw, bounding_box_translation};
+use bevy_minibuffer::prelude::*;
 use camera::{camera_pan, camera_setup};
-use enemy::{enemy_atlas_layout, enemy_setup, enemy_state};
-use gizmo::gizmo;
+use console::console_setup;
+use debug::{is_debug_enabled, toggle_debug, Debug};
+use enemy::{enemy_animation, enemy_atlas_layout, enemy_setup, enemy_state};
 use line_of_sight::{
   line_of_sight_draw, line_of_sight_looking_at, line_of_sight_looking_at_draw, line_of_sight_shift,
   line_of_sight_update,
 };
-use movable::{path_direction, path_draw, path_follow, path_reset};
-use navmesh::{navmesh_draw, navmesh_obstacle_draw, navmesh_setup};
+use movement::{path_direction, path_draw, path_follow, path_reset};
+use navmesh::navmesh_setup;
+use object::object_setup;
 use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};
-use tree::tree_setup;
 use ui::ui_setup;
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
@@ -53,23 +54,28 @@ fn main() -> AppExit {
         .set(ImagePlugin::default_nearest()),
       FpsOverlayPlugin {
         config: FpsOverlayConfig {
-          text_config: TextStyle {
+          text_config: TextFont {
             font_size: 20.,
             ..default()
           },
+          enabled: false,
+          ..default()
         },
       },
       VleueNavigatorPlugin,
       NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
+      MinibufferPlugins,
     ))
+    .insert_resource(Debug::default())
     .add_systems(
       Startup,
       (
         camera_setup,
         player_setup,
         enemy_setup,
-        tree_setup,
         navmesh_setup,
+        console_setup,
+        object_setup,
         ui_setup,
       ),
     )
@@ -81,13 +87,16 @@ fn main() -> AppExit {
         player_path,
         player_state,
         player_atlas_layout,
-        enemy_atlas_layout,
+        //
+        enemy_animation,
         enemy_state,
+        enemy_atlas_layout,
+        //
         line_of_sight_update,
         line_of_sight_shift,
         line_of_sight_looking_at,
         line_of_sight_draw,
-        bounding_box_translation,
+        //
         path_reset,
         path_follow,
         path_direction,
@@ -96,18 +105,11 @@ fn main() -> AppExit {
     .add_systems(
       Update,
       (
-        gizmo.run_if(debug),
-        line_of_sight_looking_at_draw.run_if(debug),
-        bounding_box_draw.run_if(debug),
-        path_draw.run_if(debug),
-        navmesh_draw.run_if(debug),
-        navmesh_obstacle_draw.run_if(debug),
+        line_of_sight_looking_at_draw.run_if(is_debug_enabled),
+        path_draw.run_if(is_debug_enabled),
       ),
     )
     .add_systems(PostUpdate, y_sort)
+    .add_acts((player_setup, toggle_debug, BasicActs::default()))
     .run()
-}
-
-fn debug() -> bool {
-  true
 }

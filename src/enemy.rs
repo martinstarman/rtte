@@ -1,12 +1,12 @@
-use bevy::{math::bounding::Aabb2d, prelude::*};
+use bevy::{math::CompassOctant, prelude::*};
 use std::collections::HashMap;
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
-  bounding_box::BoundingBox,
-  direction::{Direction, Directions},
+  direction::Direction,
   line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
-  movable::{Movable, PathItem, Speed::Slow},
+  movement::{Movement, PathItem, Speed::Slow},
+  selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
 };
@@ -33,17 +33,17 @@ pub fn enemy_setup(
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
   let mut atlas_config = HashMap::new();
-  let texture = asset_server.load("enemy/export.png");
+  let image = asset_server.load("enemy/export.png");
   let tile_size = UVec2::new(16, 32);
   let directions = vec![
-    Directions::East,
-    Directions::NorthEast,
-    Directions::North,
-    Directions::NorthWest,
-    Directions::West,
-    Directions::SouthWest,
-    Directions::South,
-    Directions::SouthEast,
+    CompassOctant::East,
+    CompassOctant::NorthEast,
+    CompassOctant::North,
+    CompassOctant::NorthWest,
+    CompassOctant::West,
+    CompassOctant::SouthWest,
+    CompassOctant::South,
+    CompassOctant::SouthEast,
   ];
 
   let mut layouts = HashMap::new();
@@ -103,7 +103,7 @@ pub fn enemy_setup(
     .get(&EnemyStates::Idle)
     .unwrap()
     .layouts
-    .get(&Directions::South)
+    .get(&CompassOctant::South)
     .unwrap()
     .clone();
 
@@ -127,42 +127,60 @@ pub fn enemy_setup(
     },
   ];
 
-  commands.spawn((
-    Enemy,
-    Movable {
-      path: path.clone(),
-      default_path: path.clone(),
-    },
-    EnemyState::default(),
-    Direction::default(),
-    SpriteBundle {
-      texture,
-      transform: Transform::from_xyz(0., 100., 0.),
-      ..default()
-    },
-    TextureAtlas::from(default_layout),
-    YSort { height: 32 },
-    BoundingBox {
-      value: Aabb2d::new(Vec2::new(0., 100.), Vec2::new(8., 16.)),
-    },
-    LineOfSight {
-      looking_at: Vec2::X.normalize(),
-      offset: 0,
-      shift: LineOfSightShift::Left,
-      polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
-    },
-  ));
+  commands
+    .spawn((
+      Enemy,
+      Movement {
+        path: path.clone(),
+        default_path: path.clone(),
+      },
+      EnemyState::default(),
+      Direction::default(),
+      Sprite {
+        image,
+        texture_atlas: Some(TextureAtlas::from(default_layout)),
+        ..default()
+      },
+      Transform::from_xyz(0., 100., 0.),
+      YSort { height: 32 },
+      LineOfSight {
+        looking_at: Vec2::X.normalize(),
+        offset: 0,
+        shift: LineOfSightShift::Left,
+        polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
+      },
+      Selection::default(),
+    ))
+    // .with_children(|parent| {
+    //   parent.spawn((
+    //     Transform::from_translation(Vec3::new(0., -12., 0.)),
+    //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
+    //   ));
+    // })
+    .observe(enemy_select::<Pointer<Up>>());
+}
+
+fn enemy_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection), With<Enemy>>) {
+  move |event, mut query| {
+    for (entity, mut selection) in &mut query {
+      if entity == event.entity() {
+        selection.active = !selection.active;
+      } else {
+        selection.active = false;
+      }
+    }
+  }
 }
 
 pub fn enemy_atlas_layout(
   mut query: Query<
-    (&EnemyState, &Direction, &mut TextureAtlas),
+    (&EnemyState, &Direction, &mut Sprite),
     (With<Enemy>, Or<(Changed<Direction>, Changed<EnemyState>)>),
   >,
   animation: Res<Animation<EnemyStates>>,
 ) {
-  for (enemy_state, direction, mut atlas) in &mut query {
-    atlas.layout = animation
+  for (enemy_state, direction, mut sprite) in &mut query {
+    sprite.texture_atlas.as_mut().unwrap().layout = animation
       .atlas_config
       .get(&enemy_state.value)
       .unwrap()
@@ -173,14 +191,32 @@ pub fn enemy_atlas_layout(
   }
 }
 
-pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movable), Changed<Movable>>) {
-  for (mut enemy_state, movable) in &mut query {
-    if movable.path.len() == 0 && enemy_state.value != EnemyStates::Idle {
+pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movement), Changed<Movement>>) {
+  for (mut enemy_state, movement) in &mut query {
+    if movement.path.len() == 0 && enemy_state.value != EnemyStates::Idle {
       enemy_state.value = EnemyStates::Idle;
     }
 
-    if movable.path.len() > 0 && enemy_state.value != EnemyStates::Walk {
+    if movement.path.len() > 0 && enemy_state.value != EnemyStates::Walk {
       enemy_state.value = EnemyStates::Walk;
+    }
+  }
+}
+
+pub fn enemy_animation(
+  mut query: Query<(&EnemyState, &mut Sprite), With<Enemy>>,
+  mut animation: ResMut<Animation<EnemyStates>>,
+  time: Res<Time>,
+) {
+  for (enemy_state, mut sprite) in &mut query {
+    animation.frame_timer.tick(time.delta());
+
+    if animation.frame_timer.just_finished() {
+      let atlas_config = animation.atlas_config.get(&enemy_state.value).unwrap();
+      sprite.texture_atlas.as_mut().unwrap().index = (sprite.texture_atlas.as_mut().unwrap().index
+        + 1)
+        % (atlas_config.frame_count as usize - 1);
+      animation.frame_timer = timer_from_fps(atlas_config.fps);
     }
   }
 }

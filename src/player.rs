@@ -1,13 +1,13 @@
-use bevy::{math::bounding::Aabb2d, prelude::*, window::PrimaryWindow};
+use bevy::{math::CompassOctant, prelude::*, window::PrimaryWindow};
 use std::collections::HashMap;
-use vleue_navigator::NavMesh;
+use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
-  bounding_box::BoundingBox,
   camera::MainCamera,
-  direction::{Direction, Directions},
-  movable::{Movable, PathItem, Speed},
+  direction::Direction,
+  movement::{Movement, PathItem, Speed},
+  selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
 };
@@ -34,17 +34,17 @@ pub fn player_setup(
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
   let mut atlas_config = HashMap::new();
-  let texture = asset_server.load("player/export.png");
+  let image = asset_server.load("player/export.png");
   let tile_size = UVec2::new(16, 32);
   let directions = vec![
-    Directions::East,
-    Directions::NorthEast,
-    Directions::North,
-    Directions::NorthWest,
-    Directions::West,
-    Directions::SouthWest,
-    Directions::South,
-    Directions::SouthEast,
+    CompassOctant::East,
+    CompassOctant::NorthEast,
+    CompassOctant::North,
+    CompassOctant::NorthWest,
+    CompassOctant::West,
+    CompassOctant::SouthWest,
+    CompassOctant::South,
+    CompassOctant::SouthEast,
   ];
 
   let mut layouts = HashMap::new();
@@ -57,7 +57,7 @@ pub fn player_setup(
   }
 
   let config = AnimationAtlasConfig {
-    fps: 10,
+    fps: 5,
     frame_count: 4,
     layouts,
   };
@@ -104,7 +104,7 @@ pub fn player_setup(
     .get(&PlayerStates::Idle)
     .unwrap()
     .layouts
-    .get(&Directions::South)
+    .get(&CompassOctant::South)
     .unwrap()
     .clone();
 
@@ -113,35 +113,51 @@ pub fn player_setup(
     atlas_config,
   });
 
-  commands.spawn((
-    Player,
-    Movable::default(),
-    PlayerState::default(),
-    Direction::default(),
-    SpriteBundle {
-      texture,
-      transform: Transform::from_translation(Vec3::new(-100., 100., 0.)),
-      ..default()
-    },
-    TextureAtlas::from(default_layout),
-    YSort { height: 32 },
-    BoundingBox {
-      value: Aabb2d::new(Vec2::new(-100., 100.), Vec2::new(8., 16.)),
-    },
-  ));
+  commands
+    .spawn((
+      Player,
+      Movement::default(),
+      PlayerState::default(),
+      Direction::default(),
+      Sprite {
+        image,
+        texture_atlas: Some(TextureAtlas::from(default_layout)),
+        ..default()
+      },
+      Transform::from_translation(Vec3::new(-100., 100., 0.)),
+      YSort { height: 32 },
+      Selection::default(),
+    ))
+    // .with_children(|parent| {
+    //   parent.spawn((
+    //     Transform::from_translation(Vec3::new(0., -12., 0.)),
+    //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
+    //   ));
+    // })
+    .observe(player_select::<Pointer<Up>>());
+}
+
+fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection), With<Player>>) {
+  move |event, mut query| {
+    for (entity, mut selection) in &mut query {
+      selection.active = entity == event.entity();
+    }
+  }
 }
 
 pub fn player_animation(
-  mut query: Query<(&PlayerState, &mut TextureAtlas), With<Player>>,
+  mut query: Query<(&PlayerState, &mut Sprite), With<Player>>,
   mut animation: ResMut<Animation<PlayerStates>>,
   time: Res<Time>,
 ) {
-  for (player_state, mut atlas) in &mut query {
+  for (player_state, mut sprite) in &mut query {
     animation.frame_timer.tick(time.delta());
 
     if animation.frame_timer.just_finished() {
       let atlas_config = animation.atlas_config.get(&player_state.value).unwrap();
-      atlas.index = (atlas.index + 1) % (atlas_config.frame_count as usize - 1);
+      sprite.texture_atlas.as_mut().unwrap().index = (sprite.texture_atlas.as_mut().unwrap().index
+        + 1)
+        % (atlas_config.frame_count as usize - 1);
       animation.frame_timer = timer_from_fps(atlas_config.fps);
     }
   }
@@ -149,13 +165,13 @@ pub fn player_animation(
 
 pub fn player_atlas_layout(
   mut query: Query<
-    (&PlayerState, &Direction, &mut TextureAtlas),
+    (&PlayerState, &Direction, &mut Sprite),
     (With<Player>, Or<(Changed<Direction>, Changed<PlayerState>)>),
   >,
   animation: Res<Animation<PlayerStates>>,
 ) {
-  for (player_state, direction, mut atlas) in &mut query {
-    atlas.layout = animation
+  for (player_state, direction, mut sprite) in &mut query {
+    sprite.texture_atlas.as_mut().unwrap().layout = animation
       .atlas_config
       .get(&player_state.value)
       .unwrap()
@@ -167,9 +183,9 @@ pub fn player_atlas_layout(
 }
 
 pub fn player_path(
-  mut query: Query<(&mut Movable, &Transform), With<Player>>,
+  mut query: Query<(&mut Movement, &Transform, &Selection), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
-  navmesh: Query<&Handle<NavMesh>>,
+  navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -181,8 +197,12 @@ pub fn player_path(
     if let Some(cursor_position) = window.cursor_position() {
       let (camera, global_transform) = camera_q.single();
 
-      if let Some(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for (mut movable, transform) in &mut query {
+      if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
+        for (mut movement, transform, selection) in &mut query {
+          if !selection.active {
+            continue;
+          }
+
           let Some(navmesh) = navmeshes.get(navmesh.single()) else {
             continue;
           };
@@ -194,7 +214,7 @@ pub fn player_path(
             break;
           };
 
-          movable.path = path
+          movement.path = path
             .path
             .iter()
             .map(|v| PathItem {
@@ -212,20 +232,20 @@ pub fn player_path(
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for (mut movable, _) in &mut query {
-      movable.path = vec![];
+    for (mut movement, _, _) in &mut query {
+      movement.path = vec![];
     }
   }
 }
 
-pub fn player_state(mut query: Query<(&mut PlayerState, &Movable), Changed<Movable>>) {
-  for (mut player_state, movable) in &mut query {
-    if movable.path.len() == 0 && player_state.value != PlayerStates::Idle {
+pub fn player_state(mut query: Query<(&mut PlayerState, &Movement), Changed<Movement>>) {
+  for (mut player_state, movement) in &mut query {
+    if movement.path.len() == 0 && player_state.value != PlayerStates::Idle {
       player_state.value = PlayerStates::Idle;
     }
 
-    if movable.path.len() > 0 {
-      player_state.value = if movable.path[0].speed == Speed::Slow {
+    if movement.path.len() > 0 {
+      player_state.value = if movement.path[0].speed == Speed::Slow {
         PlayerStates::Walk
       } else {
         PlayerStates::Run
