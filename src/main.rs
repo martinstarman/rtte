@@ -10,6 +10,7 @@ mod navmesh;
 mod object;
 mod player;
 mod selection;
+mod ui;
 mod utils;
 mod ysort;
 
@@ -31,6 +32,7 @@ use movement::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::navmesh_setup;
 use object::object_setup;
 use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};
+use ui::players::{ui_players_player_added, ui_players_selection, ui_players_setup};
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
@@ -74,6 +76,7 @@ fn main() -> AppExit {
         navmesh_setup,
         console_setup,
         object_setup,
+        ui_players_setup,
       ),
     )
     .add_systems(
@@ -105,6 +108,8 @@ fn main() -> AppExit {
       (
         line_of_sight_looking_at_draw.run_if(is_debug_enabled),
         path_draw.run_if(is_debug_enabled),
+        ui_players_player_added,
+        ui_players_selection,
       ),
     )
     .add_systems(PostUpdate, y_sort)
