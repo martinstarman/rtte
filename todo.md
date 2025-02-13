@@ -7,7 +7,7 @@
 - [x] replace `Directions` with Bevy CompasOctant
 - [ ] use polygons as `PrimitiveObstacle` (vleue_navigator does not supports polygons right now)
 - [ ] stop using gizmos for line of sight and debug (bevy does not suports polygons right now)
-- [ ] add player UI
+- [x] add player UI
 - [ ] serialization/deserialization
 - [ ] add possibility for player to kill enemies
 - [ ] menu
