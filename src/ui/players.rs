@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 use crate::{player::Player, selection::Selection};
 
+use super::UI_BG_COLOR;
+
 const UI_PLAYER_BG_COLOR_BASE: Color = Color::srgb(0., 0., 0.);
 const UI_PLAYER_BG_COLOR_SELECTED: Color = Color::srgb(1., 0., 0.);
 
@@ -17,12 +19,12 @@ pub fn ui_players_setup(mut commands: Commands) {
   commands.spawn((
     UiPlayers,
     Node {
-      width: Val::Percent(100.0),
-      height: Val::Px(75.0),
+      width: Val::Percent(100.),
+      height: Val::Px(75.),
       padding: UiRect::all(Val::Px(5.)),
       ..default()
     },
-    BackgroundColor(Color::srgba(0.65, 0.65, 0.65, 0.1)),
+    BackgroundColor(UI_BG_COLOR),
   ));
 }
 
@@ -61,7 +63,11 @@ fn ui_players_player_select<E>(
     for (entity, ui_player) in &ui_query {
       if entity == event.entity() {
         for (player_entity, mut selection) in &mut selection_query {
-          selection.active = ui_player.player_entity == player_entity;
+          if ui_player.player_entity == player_entity {
+            selection.active = !selection.active;
+          } else {
+            selection.active = false;
+          }
         }
       }
     }
