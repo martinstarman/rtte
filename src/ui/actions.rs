@@ -59,6 +59,12 @@ fn ui_actions_action_select<E>(
       if entity == event.entity() {
         for (mut action, selection) in &mut player_action_query {
           if selection.active {
+            if action.value.is_some() {
+              if action.value.unwrap() == ui_action.value {
+                action.value = None;
+                return;
+              }
+            }
             action.value = Some(ui_action.value);
           }
         }
