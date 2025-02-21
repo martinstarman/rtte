@@ -144,7 +144,12 @@ fn player_select<E>(
   move |event, mut query| {
     for (entity, mut selection, mut action) in &mut query {
       if entity == event.entity() {
-        selection.active = !selection.active;
+        let is_selection_active = !selection.active;
+        selection.active = is_selection_active;
+
+        if !is_selection_active {
+          action.value = None;
+        }
       } else {
         selection.active = false;
         action.value = None;

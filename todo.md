@@ -11,4 +11,3 @@
 - [ ] serialization/deserialization
 - [ ] add possibility for player to kill enemies
 - [ ] menu
-- [ ] cursor is not reset on player deselect

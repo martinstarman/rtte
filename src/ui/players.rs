@@ -66,7 +66,12 @@ fn ui_players_player_select<E>() -> impl Fn(
       if entity == event.entity() {
         for (player_entity, mut selection, mut action) in &mut selection_query {
           if ui_player.player_entity == player_entity {
-            selection.active = !selection.active;
+            let is_selection_active = !selection.active;
+            selection.active = is_selection_active;
+
+            if !is_selection_active {
+              action.value = None;
+            }
           } else {
             selection.active = false;
             action.value = None;
