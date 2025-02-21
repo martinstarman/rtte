@@ -2,6 +2,7 @@ mod action;
 mod animation;
 mod camera;
 mod console;
+mod cursor;
 mod debug;
 mod direction;
 mod enemy;
@@ -23,6 +24,7 @@ use bevy::{
 use bevy_minibuffer::prelude::*;
 use camera::{camera_pan, camera_setup};
 use console::console_setup;
+use cursor::cursor_change;
 use debug::{is_debug_enabled, toggle_debug, Debug};
 use enemy::{enemy_animation, enemy_atlas_layout, enemy_setup, enemy_state};
 use line_of_sight::{
@@ -116,6 +118,7 @@ fn main() -> AppExit {
         ui_players_player_added,
         ui_players_selection,
         ui_actions_visibility,
+        cursor_change,
       ),
     )
     .add_systems(PostUpdate, y_sort)

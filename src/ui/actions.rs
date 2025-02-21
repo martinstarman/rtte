@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+  prelude::*,
+  winit::cursor::{CursorIcon, CustomCursor},
+};
 
 use crate::{
   action::{Action, ActionType},
@@ -11,14 +14,15 @@ use super::UI_BG_COLOR;
 const UI_ACTION_BG_COLOR_BASE: Color = Color::srgb(0., 0., 0.);
 
 #[derive(Component)]
-struct UiAction {
-  value: ActionType,
+pub struct UiAction {
+  pub value: ActionType,
+  pub cursor: CursorIcon,
 }
 
 #[derive(Component)]
 pub struct UiActions;
 
-pub fn ui_actions_setup(mut commands: Commands) {
+pub fn ui_actions_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
   commands
     .spawn((
       UiActions,
@@ -39,6 +43,11 @@ pub fn ui_actions_setup(mut commands: Commands) {
         .spawn((
           UiAction {
             value: ActionType::KnifeMeleeAttack,
+            cursor: CustomCursor::Image {
+              handle: asset_server.load("cursor/knife.png"),
+              hotspot: (0, 0),
+            }
+            .into(),
           },
           Node {
             width: Val::Percent(100.),
