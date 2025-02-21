@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
+  action::Action,
   animation::{Animation, AnimationAtlasConfig},
   camera::MainCamera,
   direction::Direction,
@@ -127,6 +128,7 @@ pub fn player_setup(
       Transform::from_translation(Vec3::new(-100., 100., 0.)),
       YSort { height: 32 },
       Selection::default(),
+      Action::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -137,10 +139,21 @@ pub fn player_setup(
     .observe(player_select::<Pointer<Up>>());
 }
 
-fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection), With<Player>>) {
+fn player_select<E>(
+) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &mut Action), With<Player>>) {
   move |event, mut query| {
-    for (entity, mut selection) in &mut query {
-      selection.active = entity == event.entity();
+    for (entity, mut selection, mut action) in &mut query {
+      if entity == event.entity() {
+        let is_selection_active = !selection.active;
+        selection.active = is_selection_active;
+
+        if !is_selection_active {
+          action.value = None;
+        }
+      } else {
+        selection.active = false;
+        action.value = None;
+      }
     }
   }
 }

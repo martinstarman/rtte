@@ -1,6 +1,8 @@
+mod action;
 mod animation;
 mod camera;
 mod console;
+mod cursor;
 mod debug;
 mod direction;
 mod enemy;
@@ -22,6 +24,7 @@ use bevy::{
 use bevy_minibuffer::prelude::*;
 use camera::{camera_pan, camera_setup};
 use console::console_setup;
+use cursor::cursor_change;
 use debug::{is_debug_enabled, toggle_debug, Debug};
 use enemy::{enemy_animation, enemy_atlas_layout, enemy_setup, enemy_state};
 use line_of_sight::{
@@ -32,7 +35,10 @@ use movement::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::navmesh_setup;
 use object::object_setup;
 use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};
-use ui::players::{ui_players_player_added, ui_players_selection, ui_players_setup};
+use ui::{
+  actions::{ui_actions_setup, ui_actions_visibility},
+  players::{ui_players_player_added, ui_players_selection, ui_players_setup},
+};
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
@@ -77,6 +83,7 @@ fn main() -> AppExit {
         console_setup,
         object_setup,
         ui_players_setup,
+        ui_actions_setup,
       ),
     )
     .add_systems(
@@ -110,6 +117,8 @@ fn main() -> AppExit {
         path_draw.run_if(is_debug_enabled),
         ui_players_player_added,
         ui_players_selection,
+        ui_actions_visibility,
+        cursor_change,
       ),
     )
     .add_systems(PostUpdate, y_sort)
