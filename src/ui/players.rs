@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{player::Player, selection::Selection};
+use crate::{action::Action, player::Player, selection::Selection};
 
 use super::UI_BG_COLOR;
 
@@ -56,17 +56,20 @@ pub fn ui_players_player_added(
   }
 }
 
-fn ui_players_player_select<E>(
-) -> impl Fn(Trigger<E>, Query<(Entity, &UiPlayer)>, Query<(Entity, &mut Selection), With<Player>>)
-{
+fn ui_players_player_select<E>() -> impl Fn(
+  Trigger<E>,
+  Query<(Entity, &UiPlayer)>,
+  Query<(Entity, &mut Selection, &mut Action), With<Player>>,
+) {
   move |event, ui_query, mut selection_query| {
     for (entity, ui_player) in &ui_query {
       if entity == event.entity() {
-        for (player_entity, mut selection) in &mut selection_query {
+        for (player_entity, mut selection, mut action) in &mut selection_query {
           if ui_player.player_entity == player_entity {
             selection.active = !selection.active;
           } else {
             selection.active = false;
+            action.value = None;
           }
         }
       }

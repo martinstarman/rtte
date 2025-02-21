@@ -28,6 +28,7 @@ pub fn ui_actions_setup(mut commands: Commands) {
         padding: UiRect::all(Val::Px(5.)),
         position_type: PositionType::Absolute,
         right: Val::Px(0.),
+        top: Val::Px(75.),
         ..default()
       },
       BackgroundColor(UI_BG_COLOR),

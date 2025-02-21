@@ -139,13 +139,15 @@ pub fn player_setup(
     .observe(player_select::<Pointer<Up>>());
 }
 
-fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection), With<Player>>) {
+fn player_select<E>(
+) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &mut Action), With<Player>>) {
   move |event, mut query| {
-    for (entity, mut selection) in &mut query {
+    for (entity, mut selection, mut action) in &mut query {
       if entity == event.entity() {
         selection.active = !selection.active;
       } else {
         selection.active = false;
+        action.value = None;
       }
     }
   }
