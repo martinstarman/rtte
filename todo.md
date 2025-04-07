@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] fix player pathfinding on entity selection
+- [ ] fix player movement on different action - https://github.com/bevyengine/bevy/issues/3570
 - [x] fix sprite selection under another sprite (eg. select enemy under tree)
 - [ ] use Commands for entity spawning (see `object.rs`)
 - [ ] add possibility to wait in enemy path (should be in idle state)
@@ -9,8 +9,8 @@
 - [ ] stop using gizmos for line of sight and debug (bevy does not suports polygons right now)
 - [x] add player UI
 - [ ] serialization/deserialization
-- [ ] add possibility for player to kill enemies
+- [x] add possibility for player to kill enemies
 - [ ] menu
 - [ ] enemy dead state
 - [ ] action target
-- [ ] reset movement only for selected players
+- [x] reset movement only for selected players
