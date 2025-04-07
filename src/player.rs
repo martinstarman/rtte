@@ -1,4 +1,11 @@
-use bevy::{math::CompassOctant, prelude::*, window::PrimaryWindow};
+use bevy::{
+  math::{
+    bounding::{Aabb2d, IntersectsVolume},
+    CompassOctant,
+  },
+  prelude::*,
+  window::PrimaryWindow,
+};
 use std::collections::HashMap;
 use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
@@ -7,11 +14,14 @@ use crate::{
   animation::{Animation, AnimationAtlasConfig},
   camera::MainCamera,
   direction::Direction,
+  enemy::{Enemy, ENEMY_TILE_SIZE},
   movement::{Movement, PathItem, Speed},
   selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
 };
+
+pub const PLAYER_TILE_SIZE: Vec2 = Vec2::new(16., 32.);
 
 #[derive(Component, PartialEq, Eq, Hash)]
 pub struct Player;
@@ -263,6 +273,26 @@ pub fn player_state(mut query: Query<(&mut PlayerState, &Movement), Changed<Move
       } else {
         PlayerStates::Run
       };
+    }
+  }
+}
+
+pub fn player_knife_melee_attack(
+  mut commands: Commands,
+  players_query: Query<(&Action, &Transform), With<Player>>,
+  enemies_query: Query<(&Transform, Entity), With<Enemy>>,
+) {
+  for (action, transform) in &players_query {
+    if action.value.is_some() {
+      let player_aabb = Aabb2d::new(transform.translation.xy(), PLAYER_TILE_SIZE / 2.);
+
+      for (transform, entity) in &enemies_query {
+        let enemy_aabb = Aabb2d::new(transform.translation.xy(), ENEMY_TILE_SIZE / 2.);
+
+        if player_aabb.intersects(&enemy_aabb) {
+          commands.entity(entity).despawn();
+        }
+      }
     }
   }
 }

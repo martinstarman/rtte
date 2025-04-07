@@ -34,7 +34,10 @@ use line_of_sight::{
 use movement::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::navmesh_setup;
 use object::object_setup;
-use player::{player_animation, player_atlas_layout, player_path, player_setup, player_state};
+use player::{
+  player_animation, player_atlas_layout, player_knife_melee_attack, player_path, player_setup,
+  player_state,
+};
 use ui::{
   actions::{ui_actions_setup, ui_actions_visibility},
   players::{ui_players_player_added, ui_players_selection, ui_players_setup},
@@ -95,6 +98,7 @@ fn main() -> AppExit {
         player_path,
         player_state,
         player_atlas_layout,
+        player_knife_melee_attack,
         //
         enemy_animation,
         enemy_state,
@@ -114,10 +118,13 @@ fn main() -> AppExit {
       Update,
       (
         line_of_sight_looking_at_draw.run_if(is_debug_enabled),
+        //
         path_draw.run_if(is_debug_enabled),
+        //
         ui_players_player_added,
         ui_players_selection,
         ui_actions_visibility,
+        //
         cursor_change,
       ),
     )
