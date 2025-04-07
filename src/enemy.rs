@@ -11,6 +11,8 @@ use crate::{
   ysort::YSort,
 };
 
+pub const ENEMY_TILE_SIZE: Vec2 = Vec2::new(16., 32.);
+
 #[derive(Component)]
 pub struct Enemy;
 

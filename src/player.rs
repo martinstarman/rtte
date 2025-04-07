@@ -1,16 +1,27 @@
-use bevy::{math::CompassOctant, prelude::*, window::PrimaryWindow};
+use bevy::{
+  math::{
+    bounding::{Aabb2d, IntersectsVolume},
+    CompassOctant,
+  },
+  prelude::*,
+  window::PrimaryWindow,
+};
 use std::collections::HashMap;
 use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
+  action::Action,
   animation::{Animation, AnimationAtlasConfig},
   camera::MainCamera,
   direction::Direction,
+  enemy::{Enemy, ENEMY_TILE_SIZE},
   movement::{Movement, PathItem, Speed},
   selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
 };
+
+pub const PLAYER_TILE_SIZE: Vec2 = Vec2::new(16., 32.);
 
 #[derive(Component, PartialEq, Eq, Hash)]
 pub struct Player;
@@ -127,6 +138,7 @@ pub fn player_setup(
       Transform::from_translation(Vec3::new(-100., 100., 0.)),
       YSort { height: 32 },
       Selection::default(),
+      Action::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -137,10 +149,21 @@ pub fn player_setup(
     .observe(player_select::<Pointer<Up>>());
 }
 
-fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection), With<Player>>) {
+fn player_select<E>(
+) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &mut Action), With<Player>>) {
   move |event, mut query| {
-    for (entity, mut selection) in &mut query {
-      selection.active = entity == event.entity();
+    for (entity, mut selection, mut action) in &mut query {
+      if entity == event.entity() {
+        let is_selection_active = !selection.active;
+        selection.active = is_selection_active;
+
+        if !is_selection_active {
+          action.value = None;
+        }
+      } else {
+        selection.active = false;
+        action.value = None;
+      }
     }
   }
 }
@@ -250,6 +273,26 @@ pub fn player_state(mut query: Query<(&mut PlayerState, &Movement), Changed<Move
       } else {
         PlayerStates::Run
       };
+    }
+  }
+}
+
+pub fn player_knife_melee_attack(
+  mut commands: Commands,
+  players_query: Query<(&Action, &Transform), With<Player>>,
+  enemies_query: Query<(&Transform, Entity), With<Enemy>>,
+) {
+  for (action, transform) in &players_query {
+    if action.value.is_some() {
+      let player_aabb = Aabb2d::new(transform.translation.xy(), PLAYER_TILE_SIZE / 2.);
+
+      for (transform, entity) in &enemies_query {
+        let enemy_aabb = Aabb2d::new(transform.translation.xy(), ENEMY_TILE_SIZE / 2.);
+
+        if player_aabb.intersects(&enemy_aabb) {
+          commands.entity(entity).despawn();
+        }
+      }
     }
   }
 }

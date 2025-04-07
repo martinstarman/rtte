@@ -11,3 +11,6 @@
 - [ ] serialization/deserialization
 - [ ] add possibility for player to kill enemies
 - [ ] menu
+- [ ] enemy dead state
+- [ ] action target
+- [ ] reset movement only for selected players

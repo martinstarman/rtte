@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{player::Player, selection::Selection};
+use crate::{action::Action, player::Player, selection::Selection};
+
+use super::UI_BG_COLOR;
 
 const UI_PLAYER_BG_COLOR_BASE: Color = Color::srgb(0., 0., 0.);
 const UI_PLAYER_BG_COLOR_SELECTED: Color = Color::srgb(1., 0., 0.);
@@ -17,12 +19,12 @@ pub fn ui_players_setup(mut commands: Commands) {
   commands.spawn((
     UiPlayers,
     Node {
-      width: Val::Percent(100.0),
-      height: Val::Px(75.0),
+      width: Val::Percent(100.),
+      height: Val::Px(75.),
       padding: UiRect::all(Val::Px(5.)),
       ..default()
     },
-    BackgroundColor(Color::srgba(0.65, 0.65, 0.65, 0.1)),
+    BackgroundColor(UI_BG_COLOR),
   ));
 }
 
@@ -54,14 +56,26 @@ pub fn ui_players_player_added(
   }
 }
 
-fn ui_players_player_select<E>(
-) -> impl Fn(Trigger<E>, Query<(Entity, &UiPlayer)>, Query<(Entity, &mut Selection), With<Player>>)
-{
+fn ui_players_player_select<E>() -> impl Fn(
+  Trigger<E>,
+  Query<(Entity, &UiPlayer)>,
+  Query<(Entity, &mut Selection, &mut Action), With<Player>>,
+) {
   move |event, ui_query, mut selection_query| {
     for (entity, ui_player) in &ui_query {
       if entity == event.entity() {
-        for (player_entity, mut selection) in &mut selection_query {
-          selection.active = ui_player.player_entity == player_entity;
+        for (player_entity, mut selection, mut action) in &mut selection_query {
+          if ui_player.player_entity == player_entity {
+            let is_selection_active = !selection.active;
+            selection.active = is_selection_active;
+
+            if !is_selection_active {
+              action.value = None;
+            }
+          } else {
+            selection.active = false;
+            action.value = None;
+          }
         }
       }
     }
