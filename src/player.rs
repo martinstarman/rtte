@@ -255,8 +255,10 @@ pub fn player_path(
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for (mut movement, _, _) in &mut query {
-      movement.path = vec![];
+    for (mut movement, _, selection) in &mut query {
+      if selection.active {
+        movement.path = vec![];
+      }
     }
   }
 }
