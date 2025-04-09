@@ -14,7 +14,7 @@ use crate::{
   animation::{Animation, AnimationAtlasConfig},
   camera::MainCamera,
   direction::Direction,
-  enemy::{Enemy, ENEMY_TILE_SIZE},
+  enemy::{Enemy, EnemyState, EnemyStates, ENEMY_TILE_SIZE},
   movement::{Movement, PathItem, Speed},
   selection::Selection,
   utils::timer_from_fps,
@@ -280,19 +280,24 @@ pub fn player_state(mut query: Query<(&mut PlayerState, &Movement), Changed<Move
 }
 
 pub fn player_knife_melee_attack(
-  mut commands: Commands,
   players_query: Query<(&Action, &Transform), With<Player>>,
-  enemies_query: Query<(&Transform, Entity), With<Enemy>>,
+  mut enemies_query: Query<
+    (&Transform, &mut EnemyState, &mut Movement, &mut Selection),
+    With<Enemy>,
+  >,
 ) {
   for (action, transform) in &players_query {
     if action.value.is_some() {
       let player_aabb = Aabb2d::new(transform.translation.xy(), PLAYER_TILE_SIZE / 2.);
 
-      for (transform, entity) in &enemies_query {
+      for (transform, mut enemy_state, mut movement, mut selection) in &mut enemies_query {
         let enemy_aabb = Aabb2d::new(transform.translation.xy(), ENEMY_TILE_SIZE / 2.);
 
         if player_aabb.intersects(&enemy_aabb) {
-          commands.entity(entity).despawn();
+          enemy_state.value = EnemyStates::Dead;
+          movement.path = vec![];
+          movement.default_path = vec![];
+          selection.active = false;
         }
       }
     }

@@ -14,3 +14,5 @@
 - [ ] enemy dead state
 - [ ] action target
 - [x] reset movement only for selected players
+- [ ] fix sometimes wrong first frame for dead enemy
+- [ ] visualize selected action in ui

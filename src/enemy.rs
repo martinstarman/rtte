@@ -27,6 +27,7 @@ pub enum EnemyStates {
   Idle = 1,
   Walk = 2,
   Run = 3,
+  Dead = 4,
 }
 
 pub fn enemy_setup(
@@ -48,6 +49,7 @@ pub fn enemy_setup(
     CompassOctant::SouthEast,
   ];
 
+  // idle
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
@@ -65,6 +67,7 @@ pub fn enemy_setup(
 
   atlas_config.insert(EnemyStates::Idle, config);
 
+  // walk
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
@@ -82,6 +85,7 @@ pub fn enemy_setup(
 
   atlas_config.insert(EnemyStates::Walk, config);
 
+  // run
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
@@ -98,6 +102,24 @@ pub fn enemy_setup(
   };
 
   atlas_config.insert(EnemyStates::Run, config);
+
+  // dead
+  let mut layouts = HashMap::new();
+
+  for (i, direction) in directions.iter().enumerate() {
+    let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 768));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 1, 1, None, offset);
+    let handle = atlases.add(atlas);
+    layouts.insert(direction.clone(), handle);
+  }
+
+  let config = AnimationAtlasConfig {
+    fps: 1,
+    frame_count: 1,
+    layouts,
+  };
+
+  atlas_config.insert(EnemyStates::Dead, config);
 
   let default_fps = atlas_config.get(&EnemyStates::Idle).unwrap().fps;
   let default_layout = atlas_config
@@ -162,9 +184,14 @@ pub fn enemy_setup(
     .observe(enemy_select::<Pointer<Up>>());
 }
 
-fn enemy_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection), With<Enemy>>) {
+fn enemy_select<E>(
+) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &EnemyState), With<Enemy>>) {
   move |event, mut query| {
-    for (entity, mut selection) in &mut query {
+    for (entity, mut selection, enemy_state) in &mut query {
+      if enemy_state.value == EnemyStates::Dead {
+        return;
+      }
+
       if entity == event.entity() {
         selection.active = !selection.active;
       } else {
@@ -195,6 +222,10 @@ pub fn enemy_atlas_layout(
 
 pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movement), Changed<Movement>>) {
   for (mut enemy_state, movement) in &mut query {
+    if enemy_state.value == EnemyStates::Dead {
+      return;
+    }
+
     if movement.path.len() == 0 && enemy_state.value != EnemyStates::Idle {
       enemy_state.value = EnemyStates::Idle;
     }
@@ -215,9 +246,14 @@ pub fn enemy_animation(
 
     if animation.frame_timer.just_finished() {
       let atlas_config = animation.atlas_config.get(&enemy_state.value).unwrap();
-      sprite.texture_atlas.as_mut().unwrap().index = (sprite.texture_atlas.as_mut().unwrap().index
-        + 1)
-        % (atlas_config.frame_count as usize - 1);
+      let frame_count: usize = if atlas_config.frame_count == 1 {
+        1
+      } else {
+        atlas_config.frame_count as usize - 1
+      };
+
+      sprite.texture_atlas.as_mut().unwrap().index =
+        (sprite.texture_atlas.as_mut().unwrap().index + 1) % frame_count;
       animation.frame_timer = timer_from_fps(atlas_config.fps);
     }
   }
