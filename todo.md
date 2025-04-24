@@ -11,8 +11,9 @@
 - [ ] serialization/deserialization
 - [x] add possibility for player to kill enemies
 - [ ] menu
-- [ ] enemy dead state
+- [x] enemy dead state
 - [ ] action target
 - [x] reset movement only for selected players
 - [ ] fix sometimes wrong first frame for dead enemy
-- [ ] visualize selected action in ui
+- [x] visualize selected action in ui
+- [ ] see trough blocks

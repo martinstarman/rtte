@@ -9,9 +9,7 @@ use crate::{
   selection::Selection,
 };
 
-use super::UI_BG_COLOR;
-
-const UI_ACTION_BG_COLOR_BASE: Color = Color::srgb(0., 0., 0.);
+use super::{UI_BG_COLOR, UI_ITEM_BG_COLOR_BASE, UI_ITEM_BG_COLOR_SELECTED};
 
 #[derive(Component)]
 pub struct UiAction {
@@ -55,7 +53,7 @@ pub fn ui_actions_setup(mut commands: Commands, asset_server: Res<AssetServer>) 
             margin: UiRect::bottom(Val::Px(5.)),
             ..default()
           },
-          BackgroundColor(UI_ACTION_BG_COLOR_BASE),
+          BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
         .observe(ui_actions_action_select::<Pointer<Up>>());
     });
@@ -92,6 +90,21 @@ pub fn ui_actions_visibility(
       *visibility = Visibility::Inherited;
     } else {
       *visibility = Visibility::Hidden;
+    }
+  }
+}
+
+pub fn ui_actions_selection(
+  mut ui_query: Query<(&UiAction, &mut BackgroundColor)>,
+  action_query: Query<&Action>,
+) {
+  for (ui_action, mut background_color) in &mut ui_query {
+    for action in &action_query {
+      background_color.0 = if action.value.is_some() && ui_action.value == action.value.unwrap() {
+        UI_ITEM_BG_COLOR_SELECTED
+      } else {
+        UI_ITEM_BG_COLOR_BASE
+      }
     }
   }
 }

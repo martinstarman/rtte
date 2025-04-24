@@ -2,10 +2,7 @@ use bevy::prelude::*;
 
 use crate::{action::Action, player::Player, selection::Selection};
 
-use super::UI_BG_COLOR;
-
-const UI_PLAYER_BG_COLOR_BASE: Color = Color::srgb(0., 0., 0.);
-const UI_PLAYER_BG_COLOR_SELECTED: Color = Color::srgb(1., 0., 0.);
+use super::{UI_BG_COLOR, UI_ITEM_BG_COLOR_BASE, UI_ITEM_BG_COLOR_SELECTED};
 
 #[derive(Component)]
 pub struct UiPlayers;
@@ -46,7 +43,7 @@ pub fn ui_players_player_added(
             margin: UiRect::right(Val::Px(5.)),
             ..default()
           },
-          BackgroundColor(UI_PLAYER_BG_COLOR_BASE),
+          BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
         .observe(ui_players_player_select::<Pointer<Up>>())
         .id();
@@ -90,9 +87,9 @@ pub fn ui_players_selection(
     for (player_entity, selection) in &players_query {
       if ui_player.player_entity == player_entity {
         background_color.0 = if selection.active {
-          UI_PLAYER_BG_COLOR_SELECTED
+          UI_ITEM_BG_COLOR_SELECTED
         } else {
-          UI_PLAYER_BG_COLOR_BASE
+          UI_ITEM_BG_COLOR_BASE
         }
       }
     }

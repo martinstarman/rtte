@@ -39,7 +39,7 @@ use player::{
   player_state,
 };
 use ui::{
-  actions::{ui_actions_setup, ui_actions_visibility},
+  actions::{ui_actions_selection, ui_actions_setup, ui_actions_visibility},
   players::{ui_players_player_added, ui_players_selection, ui_players_setup},
 };
 use vleue_navigator::{
@@ -124,6 +124,7 @@ fn main() -> AppExit {
         ui_players_player_added,
         ui_players_selection,
         ui_actions_visibility,
+        ui_actions_selection,
         //
         cursor_change,
       ),
