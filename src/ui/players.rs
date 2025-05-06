@@ -32,7 +32,7 @@ pub fn ui_players_player_added(
 ) {
   for (player_entity, player) in &players_query {
     if player.is_added() {
-      let entity = ui_query.single();
+      let entity = ui_query.single().unwrap();
 
       let child = commands
         .spawn((
@@ -45,7 +45,7 @@ pub fn ui_players_player_added(
           },
           BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
-        .observe(ui_players_player_select::<Pointer<Up>>())
+        .observe(ui_players_player_select::<Pointer<Released>>())
         .id();
 
       commands.entity(entity).add_child(child);
@@ -60,7 +60,7 @@ fn ui_players_player_select<E>() -> impl Fn(
 ) {
   move |event, ui_query, mut selection_query| {
     for (entity, ui_player) in &ui_query {
-      if entity == event.entity() {
+      if entity == event.target() {
         for (player_entity, mut selection, mut action) in &mut selection_query {
           if ui_player.player_entity == player_entity {
             let is_selection_active = !selection.active;

@@ -17,7 +17,7 @@ pub fn cursor_change(
         .find(|ui_action| ui_action.value == action.value.unwrap());
 
       commands
-        .entity(window_query.single())
+        .entity(window_query.single().unwrap())
         .insert(ui_action.unwrap().cursor.clone());
 
       has_custom_cursor = true;
@@ -25,7 +25,7 @@ pub fn cursor_change(
 
     if !has_custom_cursor {
       commands
-        .entity(window_query.single())
+        .entity(window_query.single().unwrap())
         .insert(CursorIcon::from(SystemCursorIcon::Default));
     }
   }
