@@ -174,6 +174,7 @@ pub fn enemy_setup(
         polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
       },
       Selection::default(),
+      Pickable::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((

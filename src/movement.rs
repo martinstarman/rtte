@@ -35,11 +35,11 @@ pub fn path_draw(query: Query<(&Transform, &Movement)>, mut gizmos: Gizmos) {
       path.extend(movement.path.clone());
 
       for i in 0..path.len() - 1 {
-        let (line, center) = Segment2d::from_points(path[i].position, path[i + 1].position);
+        let segment = Segment2d::new(path[i].position, path[i + 1].position);
 
         gizmos.primitive_2d(
-          &line,
-          Isometry2d::from_translation(center),
+          &segment,
+          Isometry2d::from_translation(segment.center()),
           Color::linear_rgba(
             1.,
             1.,

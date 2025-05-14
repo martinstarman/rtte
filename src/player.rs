@@ -139,6 +139,7 @@ pub fn player_setup(
       YSort { height: 32 },
       Selection::default(),
       Action::default(),
+      Pickable::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -208,7 +209,7 @@ pub fn player_atlas_layout(
 pub fn player_path(
   mut query: Query<(&mut Movement, &Transform, &Selection), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
-  navmesh: Query<&ManagedNavMesh>,
+  navmesh: Single<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -226,7 +227,7 @@ pub fn player_path(
             continue;
           }
 
-          let Some(navmesh) = navmeshes.get(navmesh.single()) else {
+          let Some(navmesh) = navmeshes.get(*navmesh) else {
             continue;
           };
 
