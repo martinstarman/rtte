@@ -209,7 +209,7 @@ pub fn player_atlas_layout(
 pub fn player_path(
   mut query: Query<(&mut Movement, &Transform, &Selection), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
-  navmesh: Single<&ManagedNavMesh>,
+  navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
   windows: Query<&Window, With<PrimaryWindow>>,
   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -227,7 +227,7 @@ pub fn player_path(
             continue;
           }
 
-          let Some(navmesh) = navmeshes.get(*navmesh) else {
+          let Some(navmesh) = navmeshes.get(navmesh.single().unwrap()) else {
             continue;
           };
 
