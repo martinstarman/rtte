@@ -17,3 +17,4 @@
 - [ ] fix sometimes wrong first frame for dead enemy
 - [x] visualize selected action in ui
 - [ ] see trough blocks
+- [ ] fix path_draw() system

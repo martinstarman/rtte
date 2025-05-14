@@ -139,6 +139,7 @@ pub fn player_setup(
       YSort { height: 32 },
       Selection::default(),
       Action::default(),
+      Pickable::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -146,14 +147,14 @@ pub fn player_setup(
     //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
     //   ));
     // })
-    .observe(player_select::<Pointer<Up>>());
+    .observe(player_select::<Pointer<Released>>());
 }
 
 fn player_select<E>(
 ) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &mut Action), With<Player>>) {
   move |event, mut query| {
     for (entity, mut selection, mut action) in &mut query {
-      if entity == event.entity() {
+      if entity == event.target() {
         let is_selection_active = !selection.active;
         selection.active = is_selection_active;
 
@@ -215,10 +216,10 @@ pub fn player_path(
   keys: Res<ButtonInput<KeyCode>>,
 ) {
   if buttons.just_pressed(MouseButton::Left) {
-    let window = windows.single();
+    let window = windows.single().unwrap();
 
     if let Some(cursor_position) = window.cursor_position() {
-      let (camera, global_transform) = camera_q.single();
+      let (camera, global_transform) = camera_q.single().unwrap();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
         for (mut movement, transform, selection) in &mut query {
@@ -226,7 +227,7 @@ pub fn player_path(
             continue;
           }
 
-          let Some(navmesh) = navmeshes.get(navmesh.single()) else {
+          let Some(navmesh) = navmeshes.get(navmesh.single().unwrap()) else {
             continue;
           };
 

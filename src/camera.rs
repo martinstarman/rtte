@@ -14,7 +14,7 @@ pub fn camera_pan(
   mut transform: Query<&mut Transform, With<MainCamera>>,
   keys: Res<ButtonInput<KeyCode>>,
 ) {
-  let mut transform = transform.single_mut();
+  let mut transform = transform.single_mut().unwrap();
 
   if keys.pressed(KeyCode::ArrowLeft) {
     transform.translation.x -= PAN_SPEED;

@@ -174,6 +174,7 @@ pub fn enemy_setup(
         polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
       },
       Selection::default(),
+      Pickable::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -181,7 +182,7 @@ pub fn enemy_setup(
     //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
     //   ));
     // })
-    .observe(enemy_select::<Pointer<Up>>());
+    .observe(enemy_select::<Pointer<Released>>());
 }
 
 fn enemy_select<E>(
@@ -192,7 +193,7 @@ fn enemy_select<E>(
         return;
       }
 
-      if entity == event.entity() {
+      if entity == event.target() {
         selection.active = !selection.active;
       } else {
         selection.active = false;

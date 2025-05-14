@@ -1,6 +1,6 @@
 use bevy::{
   prelude::*,
-  winit::cursor::{CursorIcon, CustomCursor},
+  winit::cursor::{CursorIcon, CustomCursor, CustomCursorImage},
 };
 
 use crate::{
@@ -41,10 +41,11 @@ pub fn ui_actions_setup(mut commands: Commands, asset_server: Res<AssetServer>) 
         .spawn((
           UiAction {
             value: ActionType::KnifeMeleeAttack,
-            cursor: CustomCursor::Image {
+            cursor: CustomCursor::Image(CustomCursorImage {
               handle: asset_server.load("cursor/knife.png"),
               hotspot: (0, 0),
-            }
+              ..default()
+            })
             .into(),
           },
           Node {
@@ -55,7 +56,7 @@ pub fn ui_actions_setup(mut commands: Commands, asset_server: Res<AssetServer>) 
           },
           BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
-        .observe(ui_actions_action_select::<Pointer<Up>>());
+        .observe(ui_actions_action_select::<Pointer<Released>>());
     });
 }
 
@@ -64,7 +65,7 @@ fn ui_actions_action_select<E>(
 {
   move |event, ui_query, mut player_action_query| {
     for (entity, ui_action) in &ui_query {
-      if entity == event.entity() {
+      if entity == event.target() {
         for (mut action, selection) in &mut player_action_query {
           if selection.active {
             if action.value.is_some() {
