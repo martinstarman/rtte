@@ -23,8 +23,8 @@ use crate::{
 
 pub const PLAYER_TILE_SIZE: Vec2 = Vec2::new(16., 32.);
 
-#[reflect(Component)]
 #[derive(Component, PartialEq, Eq, Hash, Reflect, Default)]
+#[reflect(Component)]
 pub struct Player;
 
 #[derive(Component, Default)]
