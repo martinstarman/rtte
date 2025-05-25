@@ -1,19 +1,30 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{
+  math::{
+    bounding::{Aabb2d, IntersectsVolume},
+    CompassOctant,
+  },
+  prelude::*,
+  window::PrimaryWindow,
+};
 use std::collections::HashMap;
 use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
+  action::Action,
   animation::{Animation, AnimationAtlasConfig},
   camera::MainCamera,
-  direction::{Direction, Directions},
-  movable::{Movable, PathItem, Speed},
-  selectable::Selectable,
+  direction::Direction,
+  enemy::{Enemy, EnemyState, EnemyStates, ENEMY_TILE_SIZE},
+  movement::{Movement, PathItem, Speed},
+  selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
 };
 
-#[derive(Component, PartialEq, Eq, Hash, Reflect, Default)]
+pub const PLAYER_TILE_SIZE: Vec2 = Vec2::new(16., 32.);
+
 #[reflect(Component)]
+#[derive(Component, PartialEq, Eq, Hash, Reflect, Default)]
 pub struct Player;
 
 #[derive(Component, Default)]
@@ -38,14 +49,14 @@ pub fn player_setup(
   let image = asset_server.load("player/export.png");
   let tile_size = UVec2::new(16, 32);
   let directions = vec![
-    Directions::East,
-    Directions::NorthEast,
-    Directions::North,
-    Directions::NorthWest,
-    Directions::West,
-    Directions::SouthWest,
-    Directions::South,
-    Directions::SouthEast,
+    CompassOctant::East,
+    CompassOctant::NorthEast,
+    CompassOctant::North,
+    CompassOctant::NorthWest,
+    CompassOctant::West,
+    CompassOctant::SouthWest,
+    CompassOctant::South,
+    CompassOctant::SouthEast,
   ];
 
   let mut layouts = HashMap::new();
@@ -105,7 +116,7 @@ pub fn player_setup(
     .get(&PlayerStates::Idle)
     .unwrap()
     .layouts
-    .get(&Directions::South)
+    .get(&CompassOctant::South)
     .unwrap()
     .clone();
 
@@ -117,7 +128,7 @@ pub fn player_setup(
   commands
     .spawn((
       Player,
-      Movable::default(),
+      Movement::default(),
       PlayerState::default(),
       Direction::default(),
       Sprite {
@@ -127,7 +138,9 @@ pub fn player_setup(
       },
       Transform::from_translation(Vec3::new(-100., 100., 0.)),
       YSort { height: 32 },
-      Selectable::default(),
+      Selection::default(),
+      Action::default(),
+      Pickable::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -135,13 +148,24 @@ pub fn player_setup(
     //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
     //   ));
     // })
-    .observe(player_select::<Pointer<Up>>());
+    .observe(player_select::<Pointer<Released>>());
 }
 
-fn player_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable), With<Player>>) {
+fn player_select<E>(
+) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &mut Action), With<Player>>) {
   move |event, mut query| {
-    for (entity, mut selectable) in &mut query {
-      selectable.selected = entity == event.entity();
+    for (entity, mut selection, mut action) in &mut query {
+      if entity == event.target() {
+        let is_selection_active = !selection.active;
+        selection.active = is_selection_active;
+
+        if !is_selection_active {
+          action.value = None;
+        }
+      } else {
+        selection.active = false;
+        action.value = None;
+      }
     }
   }
 }
@@ -184,7 +208,7 @@ pub fn player_atlas_layout(
 }
 
 pub fn player_path(
-  mut query: Query<(&mut Movable, &Transform, &Selectable), With<Player>>,
+  mut query: Query<(&mut Movement, &Transform, &Selection), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
   navmesh: Query<&ManagedNavMesh>,
   buttons: Res<ButtonInput<MouseButton>>,
@@ -193,20 +217,18 @@ pub fn player_path(
   keys: Res<ButtonInput<KeyCode>>,
 ) {
   if buttons.just_pressed(MouseButton::Left) {
-    let window = windows.single();
+    let window = windows.single().unwrap();
 
     if let Some(cursor_position) = window.cursor_position() {
-      let (camera, global_transform) = camera_q.single();
+      let (camera, global_transform) = camera_q.single().unwrap();
 
       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        // TODO: stop pathfinding on entity selection
-
-        for (mut movable, transform, selectable) in &mut query {
-          if !selectable.selected {
+        for (mut movement, transform, selection) in &mut query {
+          if !selection.active {
             continue;
           }
 
-          let Some(navmesh) = navmeshes.get(navmesh.single()) else {
+          let Some(navmesh) = navmeshes.get(navmesh.single().unwrap()) else {
             continue;
           };
 
@@ -217,7 +239,7 @@ pub fn player_path(
             break;
           };
 
-          movable.path = path
+          movement.path = path
             .path
             .iter()
             .map(|v| PathItem {
@@ -235,24 +257,51 @@ pub fn player_path(
   }
 
   if buttons.just_pressed(MouseButton::Right) {
-    for (mut movable, _, _) in &mut query {
-      movable.path = vec![];
+    for (mut movement, _, selection) in &mut query {
+      if selection.active {
+        movement.path = vec![];
+      }
     }
   }
 }
 
-pub fn player_state(mut query: Query<(&mut PlayerState, &Movable), Changed<Movable>>) {
-  for (mut player_state, movable) in &mut query {
-    if movable.path.len() == 0 && player_state.value != PlayerStates::Idle {
+pub fn player_state(mut query: Query<(&mut PlayerState, &Movement), Changed<Movement>>) {
+  for (mut player_state, movement) in &mut query {
+    if movement.path.len() == 0 && player_state.value != PlayerStates::Idle {
       player_state.value = PlayerStates::Idle;
     }
 
-    if movable.path.len() > 0 {
-      player_state.value = if movable.path[0].speed == Speed::Slow {
+    if movement.path.len() > 0 {
+      player_state.value = if movement.path[0].speed == Speed::Slow {
         PlayerStates::Walk
       } else {
         PlayerStates::Run
       };
+    }
+  }
+}
+
+pub fn player_knife_melee_attack(
+  players_query: Query<(&Action, &Transform), With<Player>>,
+  mut enemies_query: Query<
+    (&Transform, &mut EnemyState, &mut Movement, &mut Selection),
+    With<Enemy>,
+  >,
+) {
+  for (action, transform) in &players_query {
+    if action.value.is_some() {
+      let player_aabb = Aabb2d::new(transform.translation.xy(), PLAYER_TILE_SIZE / 2.);
+
+      for (transform, mut enemy_state, mut movement, mut selection) in &mut enemies_query {
+        let enemy_aabb = Aabb2d::new(transform.translation.xy(), ENEMY_TILE_SIZE / 2.);
+
+        if player_aabb.intersects(&enemy_aabb) {
+          enemy_state.value = EnemyStates::Dead;
+          movement.path = vec![];
+          movement.default_path = vec![];
+          selection.active = false;
+        }
+      }
     }
   }
 }

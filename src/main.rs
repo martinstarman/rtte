@@ -1,16 +1,19 @@
+mod action;
 mod animation;
 mod camera;
 mod console;
+mod cursor;
 mod debug;
 mod direction;
 mod enemy;
 mod line_of_sight;
-mod movable;
+mod movement;
 mod navmesh;
 mod object;
 mod player;
-mod selectable;
+mod selection;
 mod serde;
+mod ui;
 mod utils;
 mod ysort;
 
@@ -22,19 +25,25 @@ use bevy::{
 use bevy_minibuffer::prelude::*;
 use camera::{camera_pan, camera_setup};
 use console::console_setup;
+use cursor::cursor_change;
 use debug::{is_debug_enabled, toggle_debug, Debug};
-use enemy::{enemy_atlas_layout, enemy_setup, enemy_state};
+use enemy::{enemy_animation, enemy_atlas_layout, enemy_setup, enemy_state};
 use line_of_sight::{
   line_of_sight_draw, line_of_sight_looking_at, line_of_sight_looking_at_draw, line_of_sight_shift,
   line_of_sight_update,
 };
-use movable::{path_direction, path_draw, path_follow, path_reset};
+use movement::{path_direction, path_draw, path_follow, path_reset};
 use navmesh::navmesh_setup;
 use object::{object_setup, Object};
 use player::{
-  player_animation, player_atlas_layout, player_path, player_setup, player_state, Player,
+  player_animation, player_atlas_layout, player_knife_melee_attack, player_path, player_setup,
+  player_state, Player,
 };
 use serde::{deserialize, serialize};
+use ui::{
+  actions::{ui_actions_selection, ui_actions_setup, ui_actions_visibility},
+  players::{ui_players_player_added, ui_players_selection, ui_players_setup},
+};
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
@@ -86,6 +95,8 @@ fn main() -> AppExit {
         navmesh_setup,
         console_setup,
         object_setup,
+        ui_players_setup,
+        ui_actions_setup,
       ),
     )
     .add_systems(
@@ -97,9 +108,11 @@ fn main() -> AppExit {
         player_path,
         player_state,
         player_atlas_layout,
+        player_knife_melee_attack,
         //
-        enemy_atlas_layout,
+        enemy_animation,
         enemy_state,
+        enemy_atlas_layout,
         //
         line_of_sight_update,
         line_of_sight_shift,
@@ -115,7 +128,15 @@ fn main() -> AppExit {
       Update,
       (
         line_of_sight_looking_at_draw.run_if(is_debug_enabled),
+        //
         path_draw.run_if(is_debug_enabled),
+        //
+        ui_players_player_added,
+        ui_players_selection,
+        ui_actions_visibility,
+        ui_actions_selection,
+        //
+        cursor_change,
       ),
     )
     .add_systems(PostUpdate, y_sort)

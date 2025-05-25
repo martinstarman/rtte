@@ -1,15 +1,17 @@
-use bevy::prelude::*;
+use bevy::{math::CompassOctant, prelude::*};
 use std::collections::HashMap;
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
-  direction::{Direction, Directions},
+  direction::Direction,
   line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
-  movable::{Movable, PathItem, Speed::Slow},
-  selectable::Selectable,
+  movement::{Movement, PathItem, Speed::Slow},
+  selection::Selection,
   utils::timer_from_fps,
   ysort::YSort,
 };
+
+pub const ENEMY_TILE_SIZE: Vec2 = Vec2::new(16., 32.);
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
@@ -26,6 +28,7 @@ pub enum EnemyStates {
   Idle = 1,
   Walk = 2,
   Run = 3,
+  Dead = 4,
 }
 
 pub fn enemy_setup(
@@ -37,16 +40,17 @@ pub fn enemy_setup(
   let image = asset_server.load("enemy/export.png");
   let tile_size = UVec2::new(16, 32);
   let directions = vec![
-    Directions::East,
-    Directions::NorthEast,
-    Directions::North,
-    Directions::NorthWest,
-    Directions::West,
-    Directions::SouthWest,
-    Directions::South,
-    Directions::SouthEast,
+    CompassOctant::East,
+    CompassOctant::NorthEast,
+    CompassOctant::North,
+    CompassOctant::NorthWest,
+    CompassOctant::West,
+    CompassOctant::SouthWest,
+    CompassOctant::South,
+    CompassOctant::SouthEast,
   ];
 
+  // idle
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
@@ -64,6 +68,7 @@ pub fn enemy_setup(
 
   atlas_config.insert(EnemyStates::Idle, config);
 
+  // walk
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
@@ -81,6 +86,7 @@ pub fn enemy_setup(
 
   atlas_config.insert(EnemyStates::Walk, config);
 
+  // run
   let mut layouts = HashMap::new();
 
   for (i, direction) in directions.iter().enumerate() {
@@ -98,13 +104,31 @@ pub fn enemy_setup(
 
   atlas_config.insert(EnemyStates::Run, config);
 
+  // dead
+  let mut layouts = HashMap::new();
+
+  for (i, direction) in directions.iter().enumerate() {
+    let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 768));
+    let atlas = TextureAtlasLayout::from_grid(tile_size, 1, 1, None, offset);
+    let handle = atlases.add(atlas);
+    layouts.insert(direction.clone(), handle);
+  }
+
+  let config = AnimationAtlasConfig {
+    fps: 1,
+    frame_count: 1,
+    layouts,
+  };
+
+  atlas_config.insert(EnemyStates::Dead, config);
+
   let default_fps = atlas_config.get(&EnemyStates::Idle).unwrap().fps;
   let default_layout = atlas_config
     .clone()
     .get(&EnemyStates::Idle)
     .unwrap()
     .layouts
-    .get(&Directions::South)
+    .get(&CompassOctant::South)
     .unwrap()
     .clone();
 
@@ -131,7 +155,7 @@ pub fn enemy_setup(
   commands
     .spawn((
       Enemy,
-      Movable {
+      Movement {
         path: path.clone(),
         default_path: path.clone(),
       },
@@ -150,7 +174,8 @@ pub fn enemy_setup(
         shift: LineOfSightShift::Left,
         polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
       },
-      Selectable::default(),
+      Selection::default(),
+      Pickable::default(),
     ))
     // .with_children(|parent| {
     //   parent.spawn((
@@ -158,16 +183,21 @@ pub fn enemy_setup(
     //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
     //   ));
     // })
-    .observe(enemy_select::<Pointer<Up>>());
+    .observe(enemy_select::<Pointer<Released>>());
 }
 
-fn enemy_select<E>() -> impl Fn(Trigger<E>, Query<(Entity, &mut Selectable), With<Enemy>>) {
+fn enemy_select<E>(
+) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &EnemyState), With<Enemy>>) {
   move |event, mut query| {
-    for (entity, mut selectable) in &mut query {
-      if entity == event.entity() {
-        selectable.selected = !selectable.selected;
+    for (entity, mut selection, enemy_state) in &mut query {
+      if enemy_state.value == EnemyStates::Dead {
+        return;
+      }
+
+      if entity == event.target() {
+        selection.active = !selection.active;
       } else {
-        selectable.selected = false;
+        selection.active = false;
       }
     }
   }
@@ -192,14 +222,41 @@ pub fn enemy_atlas_layout(
   }
 }
 
-pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movable), Changed<Movable>>) {
-  for (mut enemy_state, movable) in &mut query {
-    if movable.path.len() == 0 && enemy_state.value != EnemyStates::Idle {
+pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movement), Changed<Movement>>) {
+  for (mut enemy_state, movement) in &mut query {
+    if enemy_state.value == EnemyStates::Dead {
+      return;
+    }
+
+    if movement.path.len() == 0 && enemy_state.value != EnemyStates::Idle {
       enemy_state.value = EnemyStates::Idle;
     }
 
-    if movable.path.len() > 0 && enemy_state.value != EnemyStates::Walk {
+    if movement.path.len() > 0 && enemy_state.value != EnemyStates::Walk {
       enemy_state.value = EnemyStates::Walk;
+    }
+  }
+}
+
+pub fn enemy_animation(
+  mut query: Query<(&EnemyState, &mut Sprite), With<Enemy>>,
+  mut animation: ResMut<Animation<EnemyStates>>,
+  time: Res<Time>,
+) {
+  for (enemy_state, mut sprite) in &mut query {
+    animation.frame_timer.tick(time.delta());
+
+    if animation.frame_timer.just_finished() {
+      let atlas_config = animation.atlas_config.get(&enemy_state.value).unwrap();
+      let frame_count: usize = if atlas_config.frame_count == 1 {
+        1
+      } else {
+        atlas_config.frame_count as usize - 1
+      };
+
+      sprite.texture_atlas.as_mut().unwrap().index =
+        (sprite.texture_atlas.as_mut().unwrap().index + 1) % frame_count;
+      animation.frame_timer = timer_from_fps(atlas_config.fps);
     }
   }
 }

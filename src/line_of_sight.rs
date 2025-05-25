@@ -2,7 +2,11 @@ use bevy::{math::bounding::*, prelude::*};
 use core::f32;
 use vleue_navigator::prelude::PrimitiveObstacle;
 
-use crate::{movable::Movable, selectable::Selectable};
+use crate::{
+  enemy::{EnemyState, EnemyStates},
+  movement::Movement,
+  selection::Selection,
+};
 
 const LINE_OF_SIGHT_DISTANCE: i32 = 150;
 const LINE_OF_SIGHT_INNER_ANGLE: i32 = 60;
@@ -39,10 +43,14 @@ pub enum LineOfSightShift {
 }
 
 pub fn line_of_sight_update(
-  mut query: Query<(&mut LineOfSight, &Transform)>,
+  mut query: Query<(&mut LineOfSight, &Transform, &EnemyState)>,
   obstacles: Query<(&PrimitiveObstacle, &GlobalTransform), With<LineOfSightObstacle>>,
 ) {
-  for (mut line_of_sight, transform) in &mut query {
+  for (mut line_of_sight, transform, enemy_state) in &mut query {
+    if enemy_state.value == EnemyStates::Dead {
+      return;
+    }
+
     let position = transform.translation.xy();
     let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
     let mut points = [Vec2::ZERO; LINE_OF_SIGHT_VERTICES];
@@ -91,7 +99,7 @@ pub fn line_of_sight_update(
               }
             }
           }
-          _ => panic!("Use rectangle"), // TODO: use polygon
+          _ => panic!("Use rectangle"),
         }
       }
     }
@@ -100,8 +108,12 @@ pub fn line_of_sight_update(
   }
 }
 
-pub fn line_of_sight_shift(mut query: Query<&mut LineOfSight>) {
-  for mut line_of_sight in &mut query {
+pub fn line_of_sight_shift(mut query: Query<(&mut LineOfSight, &EnemyState)>) {
+  for (mut line_of_sight, enemy_state) in &mut query {
+    if enemy_state.value == EnemyStates::Dead {
+      return;
+    }
+
     line_of_sight.offset += if line_of_sight.shift == LineOfSightShift::Left {
       1
     } else {
@@ -119,27 +131,26 @@ pub fn line_of_sight_shift(mut query: Query<&mut LineOfSight>) {
 }
 
 pub fn line_of_sight_looking_at(
-  mut query: Query<(&mut LineOfSight, &Movable, &Transform), Changed<Movable>>,
+  mut query: Query<(&mut LineOfSight, &Movement, &Transform), Changed<Movement>>,
 ) {
-  for (mut line_of_sight, movable, transform) in &mut query {
-    if movable.path.len() > 0 {
+  for (mut line_of_sight, movement, transform) in &mut query {
+    if movement.path.len() > 0 {
       line_of_sight.looking_at =
-        (movable.path[0].position - transform.translation.xy()).normalize();
+        (movement.path[0].position - transform.translation.xy()).normalize();
     }
   }
 }
 
 pub fn line_of_sight_looking_at_draw(
-  query: Query<(&LineOfSight, &Transform, &Selectable)>,
+  query: Query<(&LineOfSight, &Transform, &Selection)>,
   mut gizmos: Gizmos,
 ) {
-  for (line_of_sight, transform, selectable) in &query {
-    if selectable.selected {
+  for (line_of_sight, transform, selection) in &query {
+    if selection.active {
       let rect = Rectangle::new(10., 10.);
       let position = transform.translation.xy();
       let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
 
-      // TODO: stop using gizmos
       gizmos.primitive_2d(
         &rect,
         Isometry2d::from_translation(looking_at),
@@ -149,10 +160,9 @@ pub fn line_of_sight_looking_at_draw(
   }
 }
 
-pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Selectable)>, mut gizmos: Gizmos) {
-  for (line_of_sight, selectable) in &query {
-    if selectable.selected {
-      // TODO: stop using gizmos
+pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Selection)>, mut gizmos: Gizmos) {
+  for (line_of_sight, selection) in &query {
+    if selection.active {
       gizmos.primitive_2d(
         &line_of_sight.polygon,
         Isometry2d::from_translation(Vec2::ZERO),
