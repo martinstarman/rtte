@@ -13,7 +13,8 @@ use crate::{
 
 pub const ENEMY_TILE_SIZE: Vec2 = Vec2::new(16., 32.);
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Enemy;
 
 #[derive(Component, Default)]
