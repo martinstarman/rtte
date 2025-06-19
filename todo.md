@@ -6,6 +6,5 @@
 - [ ] stop using gizmos for line of sight and debug (bevy does not suports polygons right now)
 - [ ] serialization/deserialization
 - [ ] menu
-- [ ] fix sometimes wrong first frame for dead enemy
+- [ ] fix wrong first frame for dead enemy
 - [ ] see trough blocks
-- [ ] fix path_draw() system

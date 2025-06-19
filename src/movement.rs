@@ -39,7 +39,7 @@ pub fn path_draw(query: Query<(&Transform, &Movement)>, mut gizmos: Gizmos) {
 
         gizmos.primitive_2d(
           &segment,
-          Isometry2d::from_translation(segment.center()),
+          Isometry2d::IDENTITY,
           Color::linear_rgba(
             1.,
             1.,
