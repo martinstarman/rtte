@@ -56,14 +56,19 @@ pub fn ui_actions_setup(mut commands: Commands, asset_server: Res<AssetServer>) 
           },
           BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
-        .observe(ui_actions_action_select::<Pointer<Released>>());
+        .observe(ui_actions_action_select::<Pointer<Pressed>>());
     });
 }
 
-fn ui_actions_action_select<E>(
-) -> impl Fn(Trigger<E>, Query<(Entity, &UiAction)>, Query<(&mut Action, &Selection), With<Player>>)
-{
-  move |event, ui_query, mut player_action_query| {
+fn ui_actions_action_select<E>() -> impl Fn(
+  Trigger<E>,
+  Query<(Entity, &UiAction)>,
+  Query<(&mut Action, &Selection), With<Player>>,
+  ResMut<ButtonInput<MouseButton>>,
+) {
+  move |event, ui_query, mut player_action_query, mut mouse| {
+    mouse.clear_just_pressed(MouseButton::Left);
+
     for (entity, ui_action) in &ui_query {
       if entity == event.target() {
         for (mut action, selection) in &mut player_action_query {

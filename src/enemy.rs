@@ -182,12 +182,17 @@ pub fn enemy_setup(
     //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
     //   ));
     // })
-    .observe(enemy_select::<Pointer<Released>>());
+    .observe(enemy_select::<Pointer<Pressed>>());
 }
 
-fn enemy_select<E>(
-) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &EnemyState), With<Enemy>>) {
-  move |event, mut query| {
+fn enemy_select<E>() -> impl Fn(
+  Trigger<E>,
+  Query<(Entity, &mut Selection, &EnemyState), With<Enemy>>,
+  ResMut<ButtonInput<MouseButton>>,
+) {
+  move |event, mut query, mut mouse| {
+    mouse.clear_just_pressed(MouseButton::Left);
+
     for (entity, mut selection, enemy_state) in &mut query {
       if enemy_state.value == EnemyStates::Dead {
         return;

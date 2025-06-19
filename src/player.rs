@@ -147,12 +147,17 @@ pub fn player_setup(
     //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
     //   ));
     // })
-    .observe(player_select::<Pointer<Released>>());
+    .observe(player_select::<Pointer<Pressed>>());
 }
 
-fn player_select<E>(
-) -> impl Fn(Trigger<E>, Query<(Entity, &mut Selection, &mut Action), With<Player>>) {
-  move |event, mut query| {
+fn player_select<E>() -> impl Fn(
+  Trigger<E>,
+  Query<(Entity, &mut Selection, &mut Action), With<Player>>,
+  ResMut<ButtonInput<MouseButton>>,
+) {
+  move |event, mut query, mut mouse| {
+    mouse.clear_just_pressed(MouseButton::Left);
+
     for (entity, mut selection, mut action) in &mut query {
       if entity == event.target() {
         let is_selection_active = !selection.active;
