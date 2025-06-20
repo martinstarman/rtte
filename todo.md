@@ -7,4 +7,4 @@
 - [ ] serialization/deserialization
 - [ ] menu
 - [ ] fix wrong first frame for dead enemy
-- [ ] see trough blocks
+- [ ] add xcf file for all assets
