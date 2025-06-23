@@ -264,3 +264,21 @@ pub fn enemy_animation(
     }
   }
 }
+
+pub fn enemy_reset_animation_on_state_change(
+  mut query: Query<(&EnemyState, &mut Sprite), (With<Enemy>, Changed<EnemyState>)>,
+  mut animation: ResMut<Animation<EnemyStates>>,
+) {
+  for (enemy_state, mut sprite) in &mut query {
+    let atlas_config = animation.atlas_config.get(&enemy_state.value).unwrap();
+    let frame_count: usize = if atlas_config.frame_count == 1 {
+      1
+    } else {
+      atlas_config.frame_count as usize - 1
+    };
+
+    sprite.texture_atlas.as_mut().unwrap().index =
+      (sprite.texture_atlas.as_mut().unwrap().index + 1) % frame_count;
+    animation.frame_timer = timer_from_fps(atlas_config.fps);
+  }
+}

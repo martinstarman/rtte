@@ -6,5 +6,5 @@
 - [ ] stop using gizmos for line of sight and debug (bevy does not suports polygons right now)
 - [ ] serialization/deserialization
 - [ ] menu
-- [ ] fix wrong first frame for dead enemy
 - [ ] add xcf file for all assets
+- [ ] consider `enemy_reset_animation_on_state_change` for player

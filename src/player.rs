@@ -297,6 +297,10 @@ pub fn player_knife_melee_attack(
       let player_aabb = Aabb2d::new(transform.translation.xy(), PLAYER_TILE_SIZE / 2.);
 
       for (transform, mut enemy_state, mut movement, mut selection) in &mut enemies_query {
+        if enemy_state.value == EnemyStates::Dead {
+          continue;
+        }
+
         let enemy_aabb = Aabb2d::new(transform.translation.xy(), ENEMY_TILE_SIZE / 2.);
 
         if player_aabb.intersects(&enemy_aabb) {
