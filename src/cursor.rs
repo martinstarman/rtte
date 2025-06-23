@@ -2,7 +2,7 @@ use bevy::{prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon};
 
 use crate::{action::Action, player::Player, ui::actions::UiAction};
 
-pub fn cursor_change(
+pub fn change_cursor_on_action_select(
   mut commands: Commands,
   window_query: Query<Entity, With<Window>>,
   ui_action_query: Query<&UiAction>,

@@ -22,34 +22,38 @@ use bevy::{
   window::WindowResolution,
 };
 use bevy_minibuffer::prelude::*;
-use camera::{camera_pan, camera_setup};
-use console::console_setup;
-use cursor::cursor_change;
+use camera::{camera_init, pan_camera};
+use console::console_init;
+use cursor::change_cursor_on_action_select;
 use debug::{is_debug_enabled, toggle_debug, Debug};
 use enemy::{
-  enemy_animation, enemy_atlas_layout, enemy_reset_animation_on_state_change, enemy_setup,
-  enemy_state,
+  enemy_animation_tick, enemy_init, enemy_reset_animation_on_state_change,
+  enemy_update_atlas_layout_on_direction_or_state_change, enemy_update_state_on_movement_change,
 };
 use line_of_sight::{
-  line_of_sight_draw, line_of_sight_looking_at, line_of_sight_looking_at_draw, line_of_sight_shift,
-  line_of_sight_update,
+  line_of_sight_draw_looking_at_position, line_of_sight_draw_polygon,
+  line_of_sight_update_looking_at_position, line_of_sight_update_polygon_points,
+  line_of_sight_update_shift,
 };
-use movement::{path_direction, path_draw, path_follow, path_reset};
-use navmesh::navmesh_setup;
-use object::object_setup;
+use movement::{
+  movement_draw_path, movement_entity_follow_path, movement_reset_path_on_empty,
+  movement_update_entity_direction_on_change,
+};
+use navmesh::navmesh_init;
+use object::object_init;
 use player::{
-  player_animation, player_atlas_layout, player_knife_melee_attack, player_path, player_setup,
-  player_state,
+  player_animation_tick, player_init, player_knife_melee_attack, player_set_or_reset_path_on_click,
+  player_update_atlas_layout_on_direction_or_state_change, player_update_state_on_movement_change,
 };
 use ui::{
-  actions::{ui_actions_selection, ui_actions_setup, ui_actions_visibility},
-  players::{ui_players_player_added, ui_players_selection, ui_players_setup},
+  actions::{ui_actions_init, ui_draw_actions, ui_toggle_actions_visibility},
+  players::{ui_draw_players, ui_players_init, ui_update_players_on_player_added},
 };
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
 };
-use ysort::y_sort;
+use ysort::sort_by_y_index;
 
 fn main() -> AppExit {
   App::new()
@@ -82,58 +86,55 @@ fn main() -> AppExit {
     .add_systems(
       Startup,
       (
-        camera_setup,
-        player_setup,
-        enemy_setup,
-        navmesh_setup,
-        console_setup,
-        object_setup,
-        ui_players_setup,
-        ui_actions_setup,
+        camera_init,
+        player_init,
+        enemy_init,
+        navmesh_init,
+        console_init,
+        object_init,
+        ui_players_init,
+        ui_actions_init,
       ),
     )
     .add_systems(
       Update,
       (
-        camera_pan,
-        //
-        player_animation,
-        player_path,
-        player_state,
-        player_atlas_layout,
+        player_animation_tick,
+        player_set_or_reset_path_on_click,
+        player_update_state_on_movement_change,
+        player_update_atlas_layout_on_direction_or_state_change,
         player_knife_melee_attack,
         //
-        enemy_animation,
-        enemy_state,
-        enemy_atlas_layout,
+        enemy_animation_tick,
+        enemy_update_state_on_movement_change,
+        enemy_update_atlas_layout_on_direction_or_state_change,
         enemy_reset_animation_on_state_change,
         //
-        line_of_sight_update,
-        line_of_sight_shift,
-        line_of_sight_looking_at,
-        line_of_sight_draw,
+        line_of_sight_update_polygon_points,
+        line_of_sight_update_shift,
+        line_of_sight_update_looking_at_position,
+        line_of_sight_draw_polygon,
+        line_of_sight_draw_looking_at_position.run_if(is_debug_enabled),
         //
-        path_reset,
-        path_follow,
-        path_direction,
+        movement_reset_path_on_empty,
+        movement_entity_follow_path,
+        movement_update_entity_direction_on_change,
+        movement_draw_path.run_if(is_debug_enabled),
       ),
     )
     .add_systems(
       Update,
       (
-        line_of_sight_looking_at_draw.run_if(is_debug_enabled),
+        ui_update_players_on_player_added,
+        ui_draw_players,
+        ui_toggle_actions_visibility,
+        ui_draw_actions,
         //
-        path_draw.run_if(is_debug_enabled),
-        //
-        ui_players_player_added,
-        ui_players_selection,
-        ui_actions_visibility,
-        ui_actions_selection,
-        //
-        cursor_change,
+        change_cursor_on_action_select,
+        pan_camera,
       ),
     )
-    .add_systems(PostUpdate, y_sort)
-    .add_acts((player_setup, toggle_debug, BasicActs::default()))
+    .add_systems(PostUpdate, sort_by_y_index)
+    .add_acts((player_init, toggle_debug, BasicActs::default()))
     .run()
 }

@@ -49,7 +49,7 @@ impl Command for ObjectSpawn {
   }
 }
 
-pub fn object_setup(mut commands: Commands) {
+pub fn object_init(mut commands: Commands) {
   commands.queue(ObjectSpawn {
     position: Vec2::new(100., 100.),
     height: 256,

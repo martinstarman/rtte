@@ -23,7 +23,7 @@ pub struct Movement {
   pub default_path: Vec<PathItem>,
 }
 
-pub fn path_draw(query: Query<(&Transform, &Movement)>, mut gizmos: Gizmos) {
+pub fn movement_draw_path(query: Query<(&Transform, &Movement)>, mut gizmos: Gizmos) {
   for (transform, movement) in &query {
     if movement.path.len() > 0 {
       let start = PathItem {
@@ -56,7 +56,7 @@ pub fn path_draw(query: Query<(&Transform, &Movement)>, mut gizmos: Gizmos) {
   }
 }
 
-pub fn path_reset(mut query: Query<&mut Movement, Changed<Movement>>) {
+pub fn movement_reset_path_on_empty(mut query: Query<&mut Movement, Changed<Movement>>) {
   for mut movement in &mut query {
     if movement.path.len() == 0 && movement.default_path.len() > 0 {
       movement.path = movement.default_path.clone();
@@ -64,7 +64,7 @@ pub fn path_reset(mut query: Query<&mut Movement, Changed<Movement>>) {
   }
 }
 
-pub fn path_follow(mut query: Query<(&mut Movement, &mut Transform)>) {
+pub fn movement_entity_follow_path(mut query: Query<(&mut Movement, &mut Transform)>) {
   for (mut movement, mut transform) in &mut query {
     if movement.path.len() > 0 {
       let next = movement.path[0].position.extend(transform.translation.z);
@@ -85,7 +85,7 @@ pub fn path_follow(mut query: Query<(&mut Movement, &mut Transform)>) {
   }
 }
 
-pub fn path_direction(
+pub fn movement_update_entity_direction_on_change(
   mut query: Query<(&Movement, &mut Direction, &Transform), Changed<Movement>>,
 ) {
   for (movement, mut direction, transform) in &mut query {

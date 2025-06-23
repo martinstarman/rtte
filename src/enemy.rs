@@ -30,7 +30,7 @@ pub enum EnemyStates {
   Dead = 4,
 }
 
-pub fn enemy_setup(
+pub fn enemy_init(
   mut commands: Commands,
   asset_server: Res<AssetServer>,
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
@@ -182,10 +182,10 @@ pub fn enemy_setup(
     //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
     //   ));
     // })
-    .observe(enemy_select::<Pointer<Pressed>>());
+    .observe(select_enemy::<Pointer<Pressed>>());
 }
 
-fn enemy_select<E>() -> impl Fn(
+fn select_enemy<E>() -> impl Fn(
   Trigger<E>,
   Query<(Entity, &mut Selection, &EnemyState), With<Enemy>>,
   ResMut<ButtonInput<MouseButton>>,
@@ -207,7 +207,7 @@ fn enemy_select<E>() -> impl Fn(
   }
 }
 
-pub fn enemy_atlas_layout(
+pub fn enemy_update_atlas_layout_on_direction_or_state_change(
   mut query: Query<
     (&EnemyState, &Direction, &mut Sprite),
     (With<Enemy>, Or<(Changed<Direction>, Changed<EnemyState>)>),
@@ -226,7 +226,9 @@ pub fn enemy_atlas_layout(
   }
 }
 
-pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movement), Changed<Movement>>) {
+pub fn enemy_update_state_on_movement_change(
+  mut query: Query<(&mut EnemyState, &Movement), Changed<Movement>>,
+) {
   for (mut enemy_state, movement) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
       return;
@@ -242,7 +244,7 @@ pub fn enemy_state(mut query: Query<(&mut EnemyState, &Movement), Changed<Moveme
   }
 }
 
-pub fn enemy_animation(
+pub fn enemy_animation_tick(
   mut query: Query<(&EnemyState, &mut Sprite), With<Enemy>>,
   mut animation: ResMut<Animation<EnemyStates>>,
   time: Res<Time>,

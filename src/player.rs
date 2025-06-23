@@ -39,7 +39,7 @@ pub enum PlayerStates {
   Run = 3,
 }
 
-pub fn player_setup(
+pub fn player_init(
   mut commands: Commands,
   asset_server: Res<AssetServer>,
   mut atlases: ResMut<Assets<TextureAtlasLayout>>,
@@ -147,10 +147,10 @@ pub fn player_setup(
     //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
     //   ));
     // })
-    .observe(player_select::<Pointer<Pressed>>());
+    .observe(select_player::<Pointer<Pressed>>());
 }
 
-fn player_select<E>() -> impl Fn(
+fn select_player<E>() -> impl Fn(
   Trigger<E>,
   Query<(Entity, &mut Selection, &mut Action), With<Player>>,
   ResMut<ButtonInput<MouseButton>>,
@@ -174,7 +174,7 @@ fn player_select<E>() -> impl Fn(
   }
 }
 
-pub fn player_animation(
+pub fn player_animation_tick(
   mut query: Query<(&PlayerState, &mut Sprite), With<Player>>,
   mut animation: ResMut<Animation<PlayerStates>>,
   time: Res<Time>,
@@ -192,7 +192,7 @@ pub fn player_animation(
   }
 }
 
-pub fn player_atlas_layout(
+pub fn player_update_atlas_layout_on_direction_or_state_change(
   mut query: Query<
     (&PlayerState, &Direction, &mut Sprite),
     (With<Player>, Or<(Changed<Direction>, Changed<PlayerState>)>),
@@ -211,7 +211,7 @@ pub fn player_atlas_layout(
   }
 }
 
-pub fn player_path(
+pub fn player_set_or_reset_path_on_click(
   mut query: Query<(&mut Movement, &Transform, &Selection), With<Player>>,
   navmeshes: Res<Assets<NavMesh>>,
   navmesh: Query<&ManagedNavMesh>,
@@ -269,7 +269,9 @@ pub fn player_path(
   }
 }
 
-pub fn player_state(mut query: Query<(&mut PlayerState, &Movement), Changed<Movement>>) {
+pub fn player_update_state_on_movement_change(
+  mut query: Query<(&mut PlayerState, &Movement), Changed<Movement>>,
+) {
   for (mut player_state, movement) in &mut query {
     if movement.path.len() == 0 && player_state.value != PlayerStates::Idle {
       player_state.value = PlayerStates::Idle;

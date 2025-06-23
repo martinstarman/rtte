@@ -42,7 +42,7 @@ pub enum LineOfSightShift {
   Right = 1,
 }
 
-pub fn line_of_sight_update(
+pub fn line_of_sight_update_polygon_points(
   mut query: Query<(&mut LineOfSight, &Transform, &EnemyState)>,
   obstacles: Query<(&PrimitiveObstacle, &GlobalTransform), With<LineOfSightObstacle>>,
 ) {
@@ -108,7 +108,7 @@ pub fn line_of_sight_update(
   }
 }
 
-pub fn line_of_sight_shift(mut query: Query<(&mut LineOfSight, &EnemyState)>) {
+pub fn line_of_sight_update_shift(mut query: Query<(&mut LineOfSight, &EnemyState)>) {
   for (mut line_of_sight, enemy_state) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
       return;
@@ -130,7 +130,7 @@ pub fn line_of_sight_shift(mut query: Query<(&mut LineOfSight, &EnemyState)>) {
   }
 }
 
-pub fn line_of_sight_looking_at(
+pub fn line_of_sight_update_looking_at_position(
   mut query: Query<(&mut LineOfSight, &Movement, &Transform), Changed<Movement>>,
 ) {
   for (mut line_of_sight, movement, transform) in &mut query {
@@ -141,7 +141,7 @@ pub fn line_of_sight_looking_at(
   }
 }
 
-pub fn line_of_sight_looking_at_draw(
+pub fn line_of_sight_draw_looking_at_position(
   query: Query<(&LineOfSight, &Transform, &Selection)>,
   mut gizmos: Gizmos,
 ) {
@@ -160,7 +160,7 @@ pub fn line_of_sight_looking_at_draw(
   }
 }
 
-pub fn line_of_sight_draw(query: Query<(&LineOfSight, &Selection)>, mut gizmos: Gizmos) {
+pub fn line_of_sight_draw_polygon(query: Query<(&LineOfSight, &Selection)>, mut gizmos: Gizmos) {
   for (line_of_sight, selection) in &query {
     if selection.active {
       gizmos.primitive_2d(

@@ -5,12 +5,12 @@ const PAN_SPEED: f32 = 5.;
 #[derive(Component)]
 pub struct MainCamera;
 
-pub fn camera_setup(mut commands: Commands) {
+pub fn camera_init(mut commands: Commands) {
   let camera2d = Camera2d::default();
   commands.spawn((camera2d, MainCamera));
 }
 
-pub fn camera_pan(
+pub fn pan_camera(
   mut transform: Query<&mut Transform, With<MainCamera>>,
   keys: Res<ButtonInput<KeyCode>>,
 ) {

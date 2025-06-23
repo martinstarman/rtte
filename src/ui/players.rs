@@ -12,7 +12,7 @@ pub struct UiPlayer {
   player_entity: Entity,
 }
 
-pub fn ui_players_setup(mut commands: Commands) {
+pub fn ui_players_init(mut commands: Commands) {
   commands.spawn((
     UiPlayers,
     Node {
@@ -25,7 +25,7 @@ pub fn ui_players_setup(mut commands: Commands) {
   ));
 }
 
-pub fn ui_players_player_added(
+pub fn ui_update_players_on_player_added(
   mut commands: Commands,
   ui_query: Query<Entity, With<UiPlayers>>,
   players_query: Query<(Entity, Ref<Player>)>,
@@ -45,7 +45,7 @@ pub fn ui_players_player_added(
           },
           BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
-        .observe(ui_players_player_select::<Pointer<Pressed>>())
+        .observe(ui_select_player::<Pointer<Pressed>>())
         .id();
 
       commands.entity(entity).add_child(child);
@@ -53,7 +53,7 @@ pub fn ui_players_player_added(
   }
 }
 
-fn ui_players_player_select<E>() -> impl Fn(
+fn ui_select_player<E>() -> impl Fn(
   Trigger<E>,
   Query<(Entity, &UiPlayer)>,
   Query<(Entity, &mut Selection, &mut Action), With<Player>>,
@@ -82,7 +82,7 @@ fn ui_players_player_select<E>() -> impl Fn(
   }
 }
 
-pub fn ui_players_selection(
+pub fn ui_draw_players(
   mut ui_query: Query<(&UiPlayer, &mut BackgroundColor)>,
   players_query: Query<(Entity, &Selection), (With<Player>, Changed<Selection>)>,
 ) {

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use vleue_navigator::prelude::*;
 
-pub fn navmesh_setup(mut commands: Commands) {
+pub fn navmesh_init(mut commands: Commands) {
   commands.spawn((
     NavMeshSettings {
       fixed: Triangulation::from_outer_edges(&[

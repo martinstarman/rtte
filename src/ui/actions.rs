@@ -20,7 +20,7 @@ pub struct UiAction {
 #[derive(Component)]
 pub struct UiActions;
 
-pub fn ui_actions_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn ui_actions_init(mut commands: Commands, asset_server: Res<AssetServer>) {
   commands
     .spawn((
       UiActions,
@@ -56,11 +56,11 @@ pub fn ui_actions_setup(mut commands: Commands, asset_server: Res<AssetServer>) 
           },
           BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
-        .observe(ui_actions_action_select::<Pointer<Pressed>>());
+        .observe(select_action::<Pointer<Pressed>>());
     });
 }
 
-fn ui_actions_action_select<E>() -> impl Fn(
+fn select_action<E>() -> impl Fn(
   Trigger<E>,
   Query<(Entity, &UiAction)>,
   Query<(&mut Action, &Selection), With<Player>>,
@@ -87,7 +87,7 @@ fn ui_actions_action_select<E>() -> impl Fn(
   }
 }
 
-pub fn ui_actions_visibility(
+pub fn ui_toggle_actions_visibility(
   mut visibility_query: Query<&mut Visibility, With<UiActions>>,
   selection_query: Query<&Selection, With<Player>>,
 ) {
@@ -100,7 +100,7 @@ pub fn ui_actions_visibility(
   }
 }
 
-pub fn ui_actions_selection(
+pub fn ui_draw_actions(
   mut ui_query: Query<(&UiAction, &mut BackgroundColor)>,
   action_query: Query<&Action>,
 ) {
