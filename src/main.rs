@@ -135,6 +135,6 @@ fn main() -> AppExit {
       ),
     )
     .add_systems(PostUpdate, sort_by_y_index)
-    .add_acts((player_init, toggle_debug, BasicActs::default()))
+    .add_acts((toggle_debug, BasicActs::default()))
     .run()
 }

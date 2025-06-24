@@ -12,3 +12,9 @@ impl Default for Direction {
     }
   }
 }
+
+impl From<CompassOctant> for Direction {
+  fn from(value: CompassOctant) -> Self {
+    Direction { value }
+  }
+}

@@ -23,6 +23,12 @@ use crate::{
 
 pub const PLAYER_TILE_SIZE: Vec2 = Vec2::new(16., 32.);
 
+pub struct PlayerSpawn {
+  position: Vec2,
+  asset_path: String,
+  direction: CompassOctant,
+}
+
 #[derive(Component, PartialEq, Eq, Hash)]
 pub struct Player;
 
@@ -39,115 +45,132 @@ pub enum PlayerStates {
   Run = 3,
 }
 
-pub fn player_init(
-  mut commands: Commands,
-  asset_server: Res<AssetServer>,
-  mut atlases: ResMut<Assets<TextureAtlasLayout>>,
-) {
-  let mut atlas_config = HashMap::new();
-  let image = asset_server.load("player/export.png");
-  let tile_size = UVec2::new(16, 32);
-  let directions = vec![
-    CompassOctant::East,
-    CompassOctant::NorthEast,
-    CompassOctant::North,
-    CompassOctant::NorthWest,
-    CompassOctant::West,
-    CompassOctant::SouthWest,
-    CompassOctant::South,
-    CompassOctant::SouthEast,
-  ];
+impl Command for PlayerSpawn {
+  fn apply(self, world: &mut World) {
+    let mut atlas_config = HashMap::new();
+    let image = world.load_asset(self.asset_path);
+    let tile_size = UVec2::new(16, 32);
+    let directions = vec![
+      CompassOctant::East,
+      CompassOctant::NorthEast,
+      CompassOctant::North,
+      CompassOctant::NorthWest,
+      CompassOctant::West,
+      CompassOctant::SouthWest,
+      CompassOctant::South,
+      CompassOctant::SouthEast,
+    ];
 
-  let mut layouts = HashMap::new();
+    let mut layouts = HashMap::new();
 
-  for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(0, i as u32 * tile_size.y));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
-    let handle = atlases.add(atlas);
-    layouts.insert(direction.clone(), handle);
+    for (i, direction) in directions.iter().enumerate() {
+      let offset = Some(UVec2::new(0, i as u32 * tile_size.y));
+      let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
+      let handle = world
+        .resource_mut::<Assets<TextureAtlasLayout>>()
+        .add(atlas);
+      layouts.insert(direction.clone(), handle);
+    }
+
+    let config = AnimationAtlasConfig {
+      fps: 5,
+      frame_count: 4,
+      layouts,
+    };
+
+    atlas_config.insert(PlayerStates::Idle, config);
+
+    let mut layouts = HashMap::new();
+
+    for (i, direction) in directions.iter().enumerate() {
+      let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 256));
+      let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
+      let handle = world
+        .resource_mut::<Assets<TextureAtlasLayout>>()
+        .add(atlas);
+      layouts.insert(direction.clone(), handle);
+    }
+
+    let config = AnimationAtlasConfig {
+      fps: 10,
+      frame_count: 4,
+      layouts,
+    };
+
+    atlas_config.insert(PlayerStates::Walk, config);
+
+    let mut layouts = HashMap::new();
+
+    for (i, direction) in directions.iter().enumerate() {
+      let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 512));
+      let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
+      let handle = world
+        .resource_mut::<Assets<TextureAtlasLayout>>()
+        .add(atlas);
+      layouts.insert(direction.clone(), handle);
+    }
+
+    let config = AnimationAtlasConfig {
+      fps: 10,
+      frame_count: 4,
+      layouts,
+    };
+
+    atlas_config.insert(PlayerStates::Run, config);
+
+    let default_fps = atlas_config.get(&PlayerStates::Idle).unwrap().fps;
+    let default_layout = atlas_config
+      .clone()
+      .get(&PlayerStates::Idle)
+      .unwrap()
+      .layouts
+      .get(&CompassOctant::South)
+      .unwrap()
+      .clone();
+
+    world.insert_resource(Animation {
+      frame_timer: timer_from_fps(default_fps),
+      atlas_config,
+    });
+
+    world
+      .spawn((
+        Player,
+        Movement::default(),
+        PlayerState::default(),
+        Direction::from(self.direction),
+        Sprite {
+          image,
+          texture_atlas: Some(TextureAtlas::from(default_layout)),
+          ..default()
+        },
+        Transform::from_translation(self.position.extend(0.)),
+        YSort { height: 32 },
+        Selection::default(),
+        Action::default(),
+        Pickable::default(),
+      ))
+      // .with_children(|parent| {
+      //   parent.spawn((
+      //     Transform::from_translation(Vec3::new(0., -12., 0.)),
+      //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
+      //   ));
+      // })
+      .observe(select_player::<Pointer<Pressed>>());
   }
+}
 
-  let config = AnimationAtlasConfig {
-    fps: 5,
-    frame_count: 4,
-    layouts,
-  };
-
-  atlas_config.insert(PlayerStates::Idle, config);
-
-  let mut layouts = HashMap::new();
-
-  for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 256));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
-    let handle = atlases.add(atlas);
-    layouts.insert(direction.clone(), handle);
-  }
-
-  let config = AnimationAtlasConfig {
-    fps: 10,
-    frame_count: 4,
-    layouts,
-  };
-
-  atlas_config.insert(PlayerStates::Walk, config);
-
-  let mut layouts = HashMap::new();
-
-  for (i, direction) in directions.iter().enumerate() {
-    let offset = Some(UVec2::new(0, (i as u32 * tile_size.y) + 512));
-    let atlas = TextureAtlasLayout::from_grid(tile_size, 4, 1, None, offset);
-    let handle = atlases.add(atlas);
-    layouts.insert(direction.clone(), handle);
-  }
-
-  let config = AnimationAtlasConfig {
-    fps: 10,
-    frame_count: 4,
-    layouts,
-  };
-
-  atlas_config.insert(PlayerStates::Run, config);
-
-  let default_fps = atlas_config.get(&PlayerStates::Idle).unwrap().fps;
-  let default_layout = atlas_config
-    .clone()
-    .get(&PlayerStates::Idle)
-    .unwrap()
-    .layouts
-    .get(&CompassOctant::South)
-    .unwrap()
-    .clone();
-
-  commands.insert_resource(Animation {
-    frame_timer: timer_from_fps(default_fps),
-    atlas_config,
+pub fn player_init(mut commands: Commands) {
+  commands.queue(PlayerSpawn {
+    position: Vec2::new(-100., 100.),
+    asset_path: String::from("player/export.png"),
+    direction: CompassOctant::South,
   });
-
-  commands
-    .spawn((
-      Player,
-      Movement::default(),
-      PlayerState::default(),
-      Direction::default(),
-      Sprite {
-        image,
-        texture_atlas: Some(TextureAtlas::from(default_layout)),
-        ..default()
-      },
-      Transform::from_translation(Vec3::new(-100., 100., 0.)),
-      YSort { height: 32 },
-      Selection::default(),
-      Action::default(),
-      Pickable::default(),
-    ))
-    // .with_children(|parent| {
-    //   parent.spawn((
-    //     Transform::from_translation(Vec3::new(0., -12., 0.)),
-    //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
-    //   ));
-    // })
-    .observe(select_player::<Pointer<Pressed>>());
+  commands.queue(PlayerSpawn {
+    position: Vec2::new(-200., 200.),
+    asset_path: String::from("player/export.png"),
+    direction: CompassOctant::West,
+  });
 }
 
 fn select_player<E>() -> impl Fn(
