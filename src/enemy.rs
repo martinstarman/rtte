@@ -221,7 +221,7 @@ fn select_enemy<E>() -> impl Fn(
 
     for (entity, mut selection, enemy_state) in &mut query {
       if enemy_state.value == EnemyStates::Dead {
-        return;
+        continue;
       }
 
       if entity == event.target() {
@@ -257,7 +257,7 @@ pub fn enemy_update_state_on_movement_change(
 ) {
   for (mut enemy_state, movement) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
-      return;
+      continue;
     }
 
     if movement.path.len() == 0 && enemy_state.value != EnemyStates::Idle {

@@ -48,7 +48,7 @@ pub fn line_of_sight_update_polygon_points(
 ) {
   for (mut line_of_sight, transform, enemy_state) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
-      return;
+      continue;
     }
 
     let position = transform.translation.xy();
@@ -111,7 +111,7 @@ pub fn line_of_sight_update_polygon_points(
 pub fn line_of_sight_update_shift(mut query: Query<(&mut LineOfSight, &EnemyState)>) {
   for (mut line_of_sight, enemy_state) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
-      return;
+      continue;
     }
 
     line_of_sight.offset += if line_of_sight.shift == LineOfSightShift::Left {
