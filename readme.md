@@ -5,4 +5,3 @@ RTTE is attempt to create 2D isometric real time tactics game engine for games l
 You can use commands via `Alt-x` shortcut. Available commands:
 
 - `toggle_debug` - toggle debug (fps, navmesh, paths, ...)
-- `player_setup` - spawn player
