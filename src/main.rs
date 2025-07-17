@@ -7,6 +7,7 @@ mod debug;
 mod direction;
 mod enemy;
 mod line_of_sight;
+mod map;
 mod movement;
 mod navmesh;
 mod object;
@@ -16,6 +17,7 @@ mod ui;
 mod utils;
 mod ysort;
 
+use crate::map::Map;
 use bevy::{
   dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
   prelude::*,
@@ -83,6 +85,10 @@ fn main() -> AppExit {
       MinibufferPlugins,
     ))
     .insert_resource(Debug::default())
+    .insert_resource(Map {
+      width: 1200.0,
+      height: 800.0,
+    })
     .add_systems(
       Startup,
       (
