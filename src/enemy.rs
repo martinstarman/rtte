@@ -179,7 +179,7 @@ impl Command for EnemySpawn {
       //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
       //   ));
       // })
-      .observe(select_enemy::<Pointer<Pressed>>());
+      .observe(select_enemy::<Pointer<Press>>());
   }
 }
 
@@ -211,8 +211,8 @@ pub fn enemy_init(mut commands: Commands) {
   });
 }
 
-fn select_enemy<E>() -> impl Fn(
-  Trigger<E>,
+fn select_enemy<E: Event>() -> impl Fn(
+  On<E>,
   Query<(Entity, &mut Selection, &EnemyState), With<Enemy>>,
   ResMut<ButtonInput<MouseButton>>,
 ) {

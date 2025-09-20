@@ -23,7 +23,6 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
-use bevy_minibuffer::prelude::*;
 use camera::{camera_init, pan_camera};
 use console::console_init;
 use cursor::change_cursor_on_action_select;
@@ -82,7 +81,6 @@ fn main() -> AppExit {
       },
       VleueNavigatorPlugin,
       NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
-      MinibufferPlugins,
     ))
     .insert_resource(Debug::default())
     .insert_resource(Map {
@@ -141,6 +139,6 @@ fn main() -> AppExit {
       ),
     )
     .add_systems(PostUpdate, sort_by_y_index)
-    .add_acts((toggle_debug, BasicActs::default()))
+    // TODO: .add_acts((toggle_debug, BasicActs::default()))
     .run()
 }

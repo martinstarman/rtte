@@ -45,7 +45,7 @@ pub fn ui_update_players_on_player_added(
           },
           BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
-        .observe(ui_select_player::<Pointer<Pressed>>())
+        .observe(ui_select_player::<Pointer<Press>>())
         .id();
 
       commands.entity(entity).add_child(child);
@@ -53,8 +53,8 @@ pub fn ui_update_players_on_player_added(
   }
 }
 
-fn ui_select_player<E>() -> impl Fn(
-  Trigger<E>,
+fn ui_select_player<E: Event>() -> impl Fn(
+  On<E>,
   Query<(Entity, &UiPlayer)>,
   Query<(Entity, &mut Selection, &mut Action), With<Player>>,
   ResMut<ButtonInput<MouseButton>>,

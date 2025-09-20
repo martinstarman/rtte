@@ -1,4 +1,7 @@
-use bevy::{prelude::*, window::SystemCursorIcon, winit::cursor::CursorIcon};
+use bevy::{
+  prelude::*,
+  window::{CursorIcon, SystemCursorIcon},
+};
 
 use crate::{action::Action, player::Player, ui::actions::UiAction};
 
