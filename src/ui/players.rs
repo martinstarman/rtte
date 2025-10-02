@@ -53,7 +53,7 @@ pub fn ui_update_players_on_player_added(
   }
 }
 
-fn ui_select_player<E: Event>() -> impl Fn(
+fn ui_select_player<E: EntityEvent>() -> impl Fn(
   On<E>,
   Query<(Entity, &UiPlayer)>,
   Query<(Entity, &mut Selection, &mut Action), With<Player>>,
@@ -63,7 +63,7 @@ fn ui_select_player<E: Event>() -> impl Fn(
     mouse.clear_just_pressed(MouseButton::Left);
 
     for (entity, ui_player) in &ui_query {
-      if entity == event.target() {
+      if entity == event.event_target() {
         for (player_entity, mut selection, mut action) in &mut selection_query {
           if ui_player.player_entity == player_entity {
             let is_selection_active = !selection.active;

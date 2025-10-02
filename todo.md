@@ -8,3 +8,4 @@
 - [ ] add xcf file for all assets
 - [ ] consider `enemy_reset_animation_on_state_change` for player
 - [ ] weird moving animations
+- [ ] toggle debug

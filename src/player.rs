@@ -7,7 +7,7 @@ use bevy::{
   window::PrimaryWindow,
 };
 use std::collections::HashMap;
-use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
+// use vleue_navigator::{prelude::ManagedNavMesh, NavMesh};
 
 use crate::{
   action::Action,
@@ -173,7 +173,7 @@ pub fn player_init(mut commands: Commands) {
   });
 }
 
-fn select_player<E: Event>() -> impl Fn(
+fn select_player<E: EntityEvent>() -> impl Fn(
   On<E>,
   Query<(Entity, &mut Selection, &mut Action), With<Player>>,
   ResMut<ButtonInput<MouseButton>>,
@@ -182,7 +182,7 @@ fn select_player<E: Event>() -> impl Fn(
     mouse.clear_just_pressed(MouseButton::Left);
 
     for (entity, mut selection, mut action) in &mut query {
-      if entity == event.target() {
+      if entity == event.event_target() {
         let is_selection_active = !selection.active;
         selection.active = is_selection_active;
 
@@ -234,63 +234,63 @@ pub fn player_update_atlas_layout_on_direction_or_state_change(
   }
 }
 
-pub fn player_set_or_reset_path_on_click(
-  mut query: Query<(&mut Movement, &Transform, &Selection), With<Player>>,
-  navmeshes: Res<Assets<NavMesh>>,
-  navmesh: Query<&ManagedNavMesh>,
-  buttons: Res<ButtonInput<MouseButton>>,
-  windows: Query<&Window, With<PrimaryWindow>>,
-  camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-  keys: Res<ButtonInput<KeyCode>>,
-) {
-  if buttons.just_pressed(MouseButton::Left) {
-    let window = windows.single().unwrap();
+// pub fn player_set_or_reset_path_on_click(
+//   mut query: Query<(&mut Movement, &Transform, &Selection), With<Player>>,
+//   navmeshes: Res<Assets<NavMesh>>,
+//   navmesh: Query<&ManagedNavMesh>,
+//   buttons: Res<ButtonInput<MouseButton>>,
+//   windows: Query<&Window, With<PrimaryWindow>>,
+//   camera_q: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+//   keys: Res<ButtonInput<KeyCode>>,
+// ) {
+//   if buttons.just_pressed(MouseButton::Left) {
+//     let window = windows.single().unwrap();
 
-    if let Some(cursor_position) = window.cursor_position() {
-      let (camera, global_transform) = camera_q.single().unwrap();
+//     if let Some(cursor_position) = window.cursor_position() {
+//       let (camera, global_transform) = camera_q.single().unwrap();
 
-      if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
-        for (mut movement, transform, selection) in &mut query {
-          if !selection.active {
-            continue;
-          }
+//       if let Ok(position) = camera.viewport_to_world_2d(global_transform, cursor_position) {
+//         for (mut movement, transform, selection) in &mut query {
+//           if !selection.active {
+//             continue;
+//           }
 
-          let Some(navmesh) = navmeshes.get(navmesh.single().unwrap()) else {
-            continue;
-          };
+//           let Some(navmesh) = navmeshes.get(navmesh.single().unwrap()) else {
+//             continue;
+//           };
 
-          let Some(path) = navmesh.transformed_path(
-            transform.translation.xyz(),
-            navmesh.transform().transform_point(position.extend(0.)),
-          ) else {
-            break;
-          };
+//           let Some(path) = navmesh.transformed_path(
+//             transform.translation.xyz(),
+//             navmesh.transform().transform_point(position.extend(0.)),
+//           ) else {
+//             break;
+//           };
 
-          movement.path = path
-            .path
-            .iter()
-            .map(|v| PathItem {
-              position: v.xy(),
-              speed: if keys.pressed(KeyCode::ShiftLeft) {
-                Speed::Fast
-              } else {
-                Speed::Slow
-              },
-            })
-            .collect();
-        }
-      }
-    }
-  }
+//           movement.path = path
+//             .path
+//             .iter()
+//             .map(|v| PathItem {
+//               position: v.xy(),
+//               speed: if keys.pressed(KeyCode::ShiftLeft) {
+//                 Speed::Fast
+//               } else {
+//                 Speed::Slow
+//               },
+//             })
+//             .collect();
+//         }
+//       }
+//     }
+//   }
 
-  if buttons.just_pressed(MouseButton::Right) {
-    for (mut movement, _, selection) in &mut query {
-      if selection.active {
-        movement.path = vec![];
-      }
-    }
-  }
-}
+//   if buttons.just_pressed(MouseButton::Right) {
+//     for (mut movement, _, selection) in &mut query {
+//       if selection.active {
+//         movement.path = vec![];
+//       }
+//     }
+//   }
+// }
 
 pub fn player_update_state_on_movement_change(
   mut query: Query<(&mut PlayerState, &Movement), Changed<Movement>>,

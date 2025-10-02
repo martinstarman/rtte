@@ -211,7 +211,7 @@ pub fn enemy_init(mut commands: Commands) {
   });
 }
 
-fn select_enemy<E: Event>() -> impl Fn(
+fn select_enemy<E: EntityEvent>() -> impl Fn(
   On<E>,
   Query<(Entity, &mut Selection, &EnemyState), With<Enemy>>,
   ResMut<ButtonInput<MouseButton>>,
@@ -224,7 +224,7 @@ fn select_enemy<E: Event>() -> impl Fn(
         continue;
       }
 
-      if entity == event.target() {
+      if entity == event.event_target() {
         selection.active = !selection.active;
       } else {
         selection.active = false;

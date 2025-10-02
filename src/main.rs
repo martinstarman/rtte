@@ -1,7 +1,6 @@
 mod action;
 mod animation;
 mod camera;
-mod console;
 mod cursor;
 mod debug;
 mod direction;
@@ -9,7 +8,7 @@ mod enemy;
 mod line_of_sight;
 mod map;
 mod movement;
-mod navmesh;
+// mod navmesh;
 mod object;
 mod player;
 mod selection;
@@ -19,12 +18,14 @@ mod ysort;
 
 use crate::map::Map;
 use bevy::{
-  dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
+  dev_tools::{
+    fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
+    picking_debug::{DebugPickingMode, DebugPickingPlugin},
+  },
   prelude::*,
   window::WindowResolution,
 };
 use camera::{camera_init, pan_camera};
-use console::console_init;
 use cursor::change_cursor_on_action_select;
 use debug::{is_debug_enabled, toggle_debug, Debug};
 use enemy::{
@@ -32,28 +33,32 @@ use enemy::{
   enemy_update_atlas_layout_on_direction_or_state_change, enemy_update_state_on_movement_change,
 };
 use line_of_sight::{
-  line_of_sight_draw_looking_at_position, line_of_sight_draw_polygon,
-  line_of_sight_update_looking_at_position, line_of_sight_update_polygon_points,
+  line_of_sight_draw_looking_at_position,
+  line_of_sight_draw_polygon,
+  line_of_sight_update_looking_at_position, //line_of_sight_update_polygon_points,
   line_of_sight_update_shift,
 };
 use movement::{
   movement_draw_path, movement_entity_follow_path, movement_reset_path_on_empty,
   movement_update_entity_direction_on_change,
 };
-use navmesh::navmesh_init;
+// use navmesh::navmesh_init;
 use object::object_init;
 use player::{
-  player_animation_tick, player_init, player_knife_melee_attack, player_set_or_reset_path_on_click,
-  player_update_atlas_layout_on_direction_or_state_change, player_update_state_on_movement_change,
+  player_animation_tick,
+  player_init,
+  player_knife_melee_attack, //player_set_or_reset_path_on_click,
+  player_update_atlas_layout_on_direction_or_state_change,
+  player_update_state_on_movement_change,
 };
 use ui::{
   actions::{ui_actions_init, ui_draw_actions, ui_toggle_actions_visibility},
   players::{ui_draw_players, ui_players_init, ui_update_players_on_player_added},
 };
-use vleue_navigator::{
-  prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
-  VleueNavigatorPlugin,
-};
+// use vleue_navigator::{
+//   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
+//   VleueNavigatorPlugin,
+// };
 use ysort::sort_by_y_index;
 
 fn main() -> AppExit {
@@ -63,7 +68,7 @@ fn main() -> AppExit {
         .set(WindowPlugin {
           primary_window: Some(Window {
             title: "RTTE".into(),
-            resolution: WindowResolution::new(800., 600.),
+            resolution: WindowResolution::new(800, 600),
             ..Default::default()
           }),
           ..Default::default()
@@ -76,12 +81,18 @@ fn main() -> AppExit {
             ..default()
           },
           enabled: false,
+          frame_time_graph_config: FrameTimeGraphConfig {
+            enabled: false,
+            ..default()
+          },
           ..default()
         },
       },
-      VleueNavigatorPlugin,
-      NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
+      DebugPickingPlugin,
+      // VleueNavigatorPlugin,
+      // NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
     ))
+    .insert_resource(DebugPickingMode::Disabled)
     .insert_resource(Debug::default())
     .insert_resource(Map {
       width: 1200.0,
@@ -93,8 +104,7 @@ fn main() -> AppExit {
         camera_init,
         player_init,
         enemy_init,
-        navmesh_init,
-        console_init,
+        // navmesh_init,
         object_init,
         ui_players_init,
         ui_actions_init,
@@ -104,7 +114,7 @@ fn main() -> AppExit {
       Update,
       (
         player_animation_tick,
-        player_set_or_reset_path_on_click,
+        // player_set_or_reset_path_on_click,
         player_update_state_on_movement_change,
         player_update_atlas_layout_on_direction_or_state_change,
         player_knife_melee_attack,
@@ -114,7 +124,7 @@ fn main() -> AppExit {
         enemy_update_atlas_layout_on_direction_or_state_change,
         enemy_reset_animation_on_state_change,
         //
-        line_of_sight_update_polygon_points,
+        // line_of_sight_update_polygon_points,
         line_of_sight_update_shift,
         line_of_sight_update_looking_at_position,
         line_of_sight_draw_polygon,
@@ -136,9 +146,12 @@ fn main() -> AppExit {
         //
         change_cursor_on_action_select,
         pan_camera,
+        //
+        toggle_debug.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
+          KeyCode::F3,
+        )),
       ),
     )
     .add_systems(PostUpdate, sort_by_y_index)
-    // TODO: .add_acts((toggle_debug, BasicActs::default()))
     .run()
 }
