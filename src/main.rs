@@ -1,7 +1,6 @@
 mod action;
 mod animation;
 mod camera;
-mod console;
 mod cursor;
 mod debug;
 mod direction;
@@ -19,13 +18,14 @@ mod ysort;
 
 use crate::map::Map;
 use bevy::{
-  dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
+  dev_tools::{
+    fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
+    picking_debug::{DebugPickingMode, DebugPickingPlugin},
+  },
   prelude::*,
   window::WindowResolution,
 };
-use bevy_minibuffer::prelude::*;
 use camera::{camera_init, pan_camera};
-use console::console_init;
 use cursor::change_cursor_on_action_select;
 use debug::{is_debug_enabled, toggle_debug, Debug};
 use enemy::{
@@ -64,7 +64,7 @@ fn main() -> AppExit {
         .set(WindowPlugin {
           primary_window: Some(Window {
             title: "RTTE".into(),
-            resolution: WindowResolution::new(800., 600.),
+            resolution: WindowResolution::new(800, 600),
             ..Default::default()
           }),
           ..Default::default()
@@ -77,13 +77,18 @@ fn main() -> AppExit {
             ..default()
           },
           enabled: false,
+          frame_time_graph_config: FrameTimeGraphConfig {
+            enabled: false,
+            ..default()
+          },
           ..default()
         },
       },
+      DebugPickingPlugin,
       VleueNavigatorPlugin,
       NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
-      MinibufferPlugins,
     ))
+    .insert_resource(DebugPickingMode::Disabled)
     .insert_resource(Debug::default())
     .insert_resource(Map {
       width: 1200.0,
@@ -96,7 +101,6 @@ fn main() -> AppExit {
         player_init,
         enemy_init,
         navmesh_init,
-        console_init,
         object_init,
         ui_players_init,
         ui_actions_init,
@@ -138,9 +142,12 @@ fn main() -> AppExit {
         //
         change_cursor_on_action_select,
         pan_camera,
+        //
+        toggle_debug.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
+          KeyCode::F3,
+        )),
       ),
     )
     .add_systems(PostUpdate, sort_by_y_index)
-    .add_acts((toggle_debug, BasicActs::default()))
     .run()
 }

@@ -1,6 +1,6 @@
 use bevy::{
   prelude::*,
-  winit::cursor::{CursorIcon, CustomCursor, CustomCursorImage},
+  window::{CursorIcon, CustomCursor, CustomCursorImage},
 };
 
 use crate::{
@@ -56,12 +56,12 @@ pub fn ui_actions_init(mut commands: Commands, asset_server: Res<AssetServer>) {
           },
           BackgroundColor(UI_ITEM_BG_COLOR_BASE),
         ))
-        .observe(select_action::<Pointer<Pressed>>());
+        .observe(select_action::<Pointer<Press>>());
     });
 }
 
-fn select_action<E>() -> impl Fn(
-  Trigger<E>,
+fn select_action<E: EntityEvent>() -> impl Fn(
+  On<E>,
   Query<(Entity, &UiAction)>,
   Query<(&mut Action, &Selection), With<Player>>,
   ResMut<ButtonInput<MouseButton>>,
@@ -70,7 +70,7 @@ fn select_action<E>() -> impl Fn(
     mouse.clear_just_pressed(MouseButton::Left);
 
     for (entity, ui_action) in &ui_query {
-      if entity == event.target() {
+      if entity == event.event_target() {
         for (mut action, selection) in &mut player_action_query {
           if selection.active {
             if action.value.is_some() {

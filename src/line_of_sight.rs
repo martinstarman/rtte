@@ -33,7 +33,7 @@ pub struct LineOfSight {
   pub shift: LineOfSightShift,
 
   /// current line of sight polygon
-  pub polygon: Polygon<LINE_OF_SIGHT_VERTICES>,
+  pub polygon: Polygon,
 }
 
 #[derive(Component, PartialEq, Eq)]

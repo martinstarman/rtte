@@ -156,7 +156,7 @@ impl Command for PlayerSpawn {
       //     PrimitiveObstacle::Rectangle(Rectangle::new(16., 8.)),
       //   ));
       // })
-      .observe(select_player::<Pointer<Pressed>>());
+      .observe(select_player::<Pointer<Press>>());
   }
 }
 
@@ -173,8 +173,8 @@ pub fn player_init(mut commands: Commands) {
   });
 }
 
-fn select_player<E>() -> impl Fn(
-  Trigger<E>,
+fn select_player<E: EntityEvent>() -> impl Fn(
+  On<E>,
   Query<(Entity, &mut Selection, &mut Action), With<Player>>,
   ResMut<ButtonInput<MouseButton>>,
 ) {
@@ -182,7 +182,7 @@ fn select_player<E>() -> impl Fn(
     mouse.clear_just_pressed(MouseButton::Left);
 
     for (entity, mut selection, mut action) in &mut query {
-      if entity == event.target() {
+      if entity == event.event_target() {
         let is_selection_active = !selection.active;
         selection.active = is_selection_active;
 
