@@ -8,4 +8,5 @@
 - [ ] add xcf file for all assets
 - [ ] consider `enemy_reset_animation_on_state_change` for player
 - [ ] weird moving animations
-- [ ] toggle debug
+- [ ] rename line of sight to cone of view
+- [ ] minimap? (https://bevy.org/news/bevy-0-17/#viewportnode)
