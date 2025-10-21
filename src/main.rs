@@ -8,7 +8,7 @@ mod enemy;
 mod line_of_sight;
 mod map;
 mod movement;
-// mod navmesh;
+mod navmesh;
 mod object;
 mod player;
 mod selection;
@@ -33,32 +33,28 @@ use enemy::{
   enemy_update_atlas_layout_on_direction_or_state_change, enemy_update_state_on_movement_change,
 };
 use line_of_sight::{
-  line_of_sight_draw_looking_at_position,
-  line_of_sight_draw_polygon,
-  line_of_sight_update_looking_at_position, //line_of_sight_update_polygon_points,
+  line_of_sight_draw_looking_at_position, line_of_sight_draw_polygon,
+  line_of_sight_update_looking_at_position, line_of_sight_update_polygon_points,
   line_of_sight_update_shift,
 };
 use movement::{
   movement_draw_path, movement_entity_follow_path, movement_reset_path_on_empty,
   movement_update_entity_direction_on_change,
 };
-// use navmesh::navmesh_init;
+use navmesh::navmesh_init;
 use object::object_init;
 use player::{
-  player_animation_tick,
-  player_init,
-  player_knife_melee_attack, //player_set_or_reset_path_on_click,
-  player_update_atlas_layout_on_direction_or_state_change,
-  player_update_state_on_movement_change,
+  player_animation_tick, player_init, player_knife_melee_attack, player_set_or_reset_path_on_click,
+  player_update_atlas_layout_on_direction_or_state_change, player_update_state_on_movement_change,
 };
 use ui::{
   actions::{ui_actions_init, ui_draw_actions, ui_toggle_actions_visibility},
   players::{ui_draw_players, ui_players_init, ui_update_players_on_player_added},
 };
-// use vleue_navigator::{
-//   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
-//   VleueNavigatorPlugin,
-// };
+use vleue_navigator::{
+  prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
+  VleueNavigatorPlugin,
+};
 use ysort::sort_by_y_index;
 
 fn main() -> AppExit {
@@ -89,8 +85,8 @@ fn main() -> AppExit {
         },
       },
       DebugPickingPlugin,
-      // VleueNavigatorPlugin,
-      // NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
+      VleueNavigatorPlugin,
+      NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
     ))
     .insert_resource(DebugPickingMode::Disabled)
     .insert_resource(Debug::default())
@@ -104,7 +100,7 @@ fn main() -> AppExit {
         camera_init,
         player_init,
         enemy_init,
-        // navmesh_init,
+        navmesh_init,
         object_init,
         ui_players_init,
         ui_actions_init,
@@ -114,7 +110,7 @@ fn main() -> AppExit {
       Update,
       (
         player_animation_tick,
-        // player_set_or_reset_path_on_click,
+        player_set_or_reset_path_on_click,
         player_update_state_on_movement_change,
         player_update_atlas_layout_on_direction_or_state_change,
         player_knife_melee_attack,
@@ -124,7 +120,7 @@ fn main() -> AppExit {
         enemy_update_atlas_layout_on_direction_or_state_change,
         enemy_reset_animation_on_state_change,
         //
-        // line_of_sight_update_polygon_points,
+        line_of_sight_update_polygon_points,
         line_of_sight_update_shift,
         line_of_sight_update_looking_at_position,
         line_of_sight_draw_polygon,

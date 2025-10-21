@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-// use vleue_navigator::prelude::*;
+use vleue_navigator::prelude::*;
 
 use crate::{line_of_sight::LineOfSightObstacle, ysort::YSort};
 
@@ -38,12 +38,12 @@ impl Command for ObjectSpawn {
       world.spawn(component).with_child((
         LineOfSightObstacle,
         Transform::from_translation(self.obstacle_position.extend(0.)),
-        // PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)),
+        PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)),
       ));
     } else {
       world.spawn(component).with_child((
         Transform::from_translation(self.obstacle_position.extend(0.)),
-        // PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)),
+        PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)),
       ));
     }
   }
