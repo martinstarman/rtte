@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 use crate::{
   animation::{Animation, AnimationAtlasConfig},
+  cone_of_view::{ConeOfView, ConeOfViewShift, CONE_OF_VIEW_VERTICES},
   direction::Direction,
-  line_of_sight::{LineOfSight, LineOfSightShift, LINE_OF_SIGHT_VERTICES},
   movement::{Movement, PathItem, Speed::Slow},
   selection::Selection,
   utils::timer_from_fps,
@@ -164,11 +164,11 @@ impl Command for EnemySpawn {
         },
         Transform::from_translation(self.position.extend(0.)),
         YSort { height: 32 },
-        LineOfSight {
+        ConeOfView {
           looking_at: Dir2::from(self.direction).normalize(),
           offset: 0,
-          shift: LineOfSightShift::Left,
-          polygon: Polygon::new([Vec2::ZERO; LINE_OF_SIGHT_VERTICES]),
+          shift: ConeOfViewShift::Left,
+          polygon: Polygon::new([Vec2::ZERO; CONE_OF_VIEW_VERTICES]),
         },
         Selection::default(),
         Pickable::default(),

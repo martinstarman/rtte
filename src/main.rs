@@ -1,11 +1,11 @@
 mod action;
 mod animation;
 mod camera;
+mod cone_of_view;
 mod cursor;
 mod debug;
 mod direction;
 mod enemy;
-mod line_of_sight;
 mod map;
 mod movement;
 mod navmesh;
@@ -26,16 +26,16 @@ use bevy::{
   window::WindowResolution,
 };
 use camera::{camera_init, pan_camera};
+use cone_of_view::{
+  cone_of_view_draw_looking_at_position, cone_of_view_draw_polygon,
+  cone_of_view_update_looking_at_position, cone_of_view_update_polygon_points,
+  cone_of_view_update_shift,
+};
 use cursor::change_cursor_on_action_select;
 use debug::{is_debug_enabled, toggle_debug, Debug};
 use enemy::{
   enemy_animation_tick, enemy_init, enemy_reset_animation_on_state_change,
   enemy_update_atlas_layout_on_direction_or_state_change, enemy_update_state_on_movement_change,
-};
-use line_of_sight::{
-  line_of_sight_draw_looking_at_position, line_of_sight_draw_polygon,
-  line_of_sight_update_looking_at_position, line_of_sight_update_polygon_points,
-  line_of_sight_update_shift,
 };
 use movement::{
   movement_draw_path, movement_entity_follow_path, movement_reset_path_on_empty,
@@ -120,11 +120,11 @@ fn main() -> AppExit {
         enemy_update_atlas_layout_on_direction_or_state_change,
         enemy_reset_animation_on_state_change,
         //
-        line_of_sight_update_polygon_points,
-        line_of_sight_update_shift,
-        line_of_sight_update_looking_at_position,
-        line_of_sight_draw_polygon,
-        line_of_sight_draw_looking_at_position.run_if(is_debug_enabled),
+        cone_of_view_update_polygon_points,
+        cone_of_view_update_shift,
+        cone_of_view_update_looking_at_position,
+        cone_of_view_draw_polygon,
+        cone_of_view_draw_looking_at_position.run_if(is_debug_enabled),
         //
         movement_reset_path_on_empty,
         movement_entity_follow_path,

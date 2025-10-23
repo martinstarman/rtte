@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use vleue_navigator::prelude::*;
 
-use crate::{line_of_sight::LineOfSightObstacle, ysort::YSort};
+use crate::{cone_of_view::ConeOfViewObstacle, ysort::YSort};
 
 #[derive(Component)]
 pub struct Object;
@@ -36,7 +36,7 @@ impl Command for ObjectSpawn {
 
     if self.object_type == ObjectType::Block {
       world.spawn(component).with_child((
-        LineOfSightObstacle,
+        ConeOfViewObstacle,
         Transform::from_translation(self.obstacle_position.extend(0.)),
         PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)),
       ));

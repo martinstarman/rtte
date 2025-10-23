@@ -8,16 +8,16 @@ use crate::{
   selection::Selection,
 };
 
-const LINE_OF_SIGHT_DISTANCE: i32 = 150;
-const LINE_OF_SIGHT_INNER_ANGLE: i32 = 60;
-pub const LINE_OF_SIGHT_VERTICES: usize = LINE_OF_SIGHT_INNER_ANGLE as usize + 1;
+const CONE_OF_VIEW_DISTANCE: i32 = 150;
+const CONE_OF_VIEW_INNER_ANGLE: i32 = 60;
+pub const CONE_OF_VIEW_VERTICES: usize = CONE_OF_VIEW_INNER_ANGLE as usize + 1;
 
 #[derive(Component)]
-pub struct LineOfSightObstacle;
+pub struct ConeOfViewObstacle;
 
 #[derive(Component)]
-pub struct LineOfSight {
-  /// where is line of sight looking (center point)
+pub struct ConeOfView {
+  /// where is cone of view looking (center point)
   ///
   /// ---o---
   ///  \   /
@@ -29,31 +29,31 @@ pub struct LineOfSight {
   /// offset from center point in degrees (in range <-INNER_ANGLE/2;+INNER_ANGLE/2>)
   pub offset: i32,
 
-  /// current line of sight shift
-  pub shift: LineOfSightShift,
+  /// current cone of view shift
+  pub shift: ConeOfViewShift,
 
-  /// current line of sight polygon
+  /// current cone of view polygon
   pub polygon: Polygon,
 }
 
 #[derive(Component, PartialEq, Eq)]
-pub enum LineOfSightShift {
+pub enum ConeOfViewShift {
   Left = 0,
   Right = 1,
 }
 
-pub fn line_of_sight_update_polygon_points(
-  mut query: Query<(&mut LineOfSight, &Transform, &EnemyState)>,
-  obstacles: Query<(&PrimitiveObstacle, &GlobalTransform), With<LineOfSightObstacle>>,
+pub fn cone_of_view_update_polygon_points(
+  mut query: Query<(&mut ConeOfView, &Transform, &EnemyState)>,
+  obstacles: Query<(&PrimitiveObstacle, &GlobalTransform), With<ConeOfViewObstacle>>,
 ) {
-  for (mut line_of_sight, transform, enemy_state) in &mut query {
+  for (mut cone_of_view, transform, enemy_state) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
       continue;
     }
 
     let position = transform.translation.xy();
-    let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
-    let mut points = [Vec2::ZERO; LINE_OF_SIGHT_VERTICES];
+    let looking_at = position + cone_of_view.looking_at * CONE_OF_VIEW_DISTANCE as f32;
+    let mut points = [Vec2::ZERO; CONE_OF_VIEW_VERTICES];
     points[0] = position;
 
     let mut point_transform = Transform::from_translation(looking_at.extend(0.));
@@ -69,11 +69,11 @@ pub fn line_of_sight_update_polygon_points(
       transform.translation,
       Quat::from_axis_angle(
         Vec3::Z,
-        ((line_of_sight.offset - LINE_OF_SIGHT_INNER_ANGLE / 2) as f32).to_radians(),
+        ((cone_of_view.offset - CONE_OF_VIEW_INNER_ANGLE / 2) as f32).to_radians(),
       ),
     );
 
-    for i in 0..LINE_OF_SIGHT_INNER_ANGLE {
+    for i in 0..CONE_OF_VIEW_INNER_ANGLE {
       // get next point by rotating by 1 degree
       point_transform.rotate_around(
         transform.translation,
@@ -82,7 +82,7 @@ pub fn line_of_sight_update_polygon_points(
 
       let point = point_transform.translation.xy();
       let ray = Ray2d::new(position, Dir2::new(point - position).unwrap());
-      let ray_cast = RayCast2d::from_ray(ray, LINE_OF_SIGHT_DISTANCE as f32);
+      let ray_cast = RayCast2d::from_ray(ray, CONE_OF_VIEW_DISTANCE as f32);
 
       points[i as usize + 1] = point;
 
@@ -104,52 +104,52 @@ pub fn line_of_sight_update_polygon_points(
       }
     }
 
-    line_of_sight.polygon = Polygon::new(points);
+    cone_of_view.polygon = Polygon::new(points);
   }
 }
 
-pub fn line_of_sight_update_shift(mut query: Query<(&mut LineOfSight, &EnemyState)>) {
-  for (mut line_of_sight, enemy_state) in &mut query {
+pub fn cone_of_view_update_shift(mut query: Query<(&mut ConeOfView, &EnemyState)>) {
+  for (mut cone_of_view, enemy_state) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
       continue;
     }
 
-    line_of_sight.offset += if line_of_sight.shift == LineOfSightShift::Left {
+    cone_of_view.offset += if cone_of_view.shift == ConeOfViewShift::Left {
       1
     } else {
       -1
     };
 
-    if line_of_sight.offset >= LINE_OF_SIGHT_INNER_ANGLE / 2 {
-      line_of_sight.shift = LineOfSightShift::Right;
+    if cone_of_view.offset >= CONE_OF_VIEW_INNER_ANGLE / 2 {
+      cone_of_view.shift = ConeOfViewShift::Right;
     }
 
-    if line_of_sight.offset <= -LINE_OF_SIGHT_INNER_ANGLE / 2 {
-      line_of_sight.shift = LineOfSightShift::Left;
+    if cone_of_view.offset <= -CONE_OF_VIEW_INNER_ANGLE / 2 {
+      cone_of_view.shift = ConeOfViewShift::Left;
     }
   }
 }
 
-pub fn line_of_sight_update_looking_at_position(
-  mut query: Query<(&mut LineOfSight, &Movement, &Transform), Changed<Movement>>,
+pub fn cone_of_view_update_looking_at_position(
+  mut query: Query<(&mut ConeOfView, &Movement, &Transform), Changed<Movement>>,
 ) {
-  for (mut line_of_sight, movement, transform) in &mut query {
+  for (mut cone_of_view, movement, transform) in &mut query {
     if movement.path.len() > 0 {
-      line_of_sight.looking_at =
+      cone_of_view.looking_at =
         (movement.path[0].position - transform.translation.xy()).normalize();
     }
   }
 }
 
-pub fn line_of_sight_draw_looking_at_position(
-  query: Query<(&LineOfSight, &Transform, &Selection)>,
+pub fn cone_of_view_draw_looking_at_position(
+  query: Query<(&ConeOfView, &Transform, &Selection)>,
   mut gizmos: Gizmos,
 ) {
-  for (line_of_sight, transform, selection) in &query {
+  for (cone_of_view, transform, selection) in &query {
     if selection.active {
       let rect = Rectangle::new(10., 10.);
       let position = transform.translation.xy();
-      let looking_at = position + line_of_sight.looking_at * LINE_OF_SIGHT_DISTANCE as f32;
+      let looking_at = position + cone_of_view.looking_at * CONE_OF_VIEW_DISTANCE as f32;
 
       gizmos.primitive_2d(
         &rect,
@@ -160,11 +160,11 @@ pub fn line_of_sight_draw_looking_at_position(
   }
 }
 
-pub fn line_of_sight_draw_polygon(query: Query<(&LineOfSight, &Selection)>, mut gizmos: Gizmos) {
-  for (line_of_sight, selection) in &query {
+pub fn cone_of_view_draw_polygon(query: Query<(&ConeOfView, &Selection)>, mut gizmos: Gizmos) {
+  for (cone_of_view, selection) in &query {
     if selection.active {
       gizmos.primitive_2d(
-        &line_of_sight.polygon,
+        &cone_of_view.polygon,
         Isometry2d::from_translation(Vec2::ZERO),
         Color::WHITE,
       );
