@@ -10,6 +10,5 @@
 - [ ] weird moving animations
 - [ ] rename line of sight to cone of view
 - [ ] minimap? (https://bevy.org/news/bevy-0-17/#viewportnode)
-- [ ] navmesh - simplify mesh with merge steps
 - [ ] use 2d mesh for cone of view? (https://www.youtube.com/watch?v=0syaVnpM)
 - [ ] use camera pan (https://github.com/bevyengine/bevy/blob/16a6a96a80aab50dcc14c8bb73ef09520f77c09d/release-content/release-notes/camera_controllers.md?plain=1#L4)

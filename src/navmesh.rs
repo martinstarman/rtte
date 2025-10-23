@@ -18,6 +18,7 @@ pub fn navmesh_init(mut commands: Commands, map: Res<Map>) {
       simplify: 0.05,
       agent_radius: 8.0,
       agent_radius_on_outer_edge: true,
+      merge_steps: 5,
       ..default()
     },
     NavMeshUpdateMode::Direct,
