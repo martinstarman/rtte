@@ -16,6 +16,8 @@ pub fn navmesh_init(mut commands: Commands, map: Res<Map>) {
         Vec2::new(-half_width, half_height),
       ]),
       simplify: 0.05,
+      agent_radius: 8.0,
+      agent_radius_on_outer_edge: true,
       ..default()
     },
     NavMeshUpdateMode::Direct,
