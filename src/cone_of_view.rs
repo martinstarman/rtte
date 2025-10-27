@@ -34,6 +34,8 @@ pub struct ConeOfView {
 
   /// current cone of view polygon
   pub polygon: Polygon,
+
+  pub handle: Handle<Mesh>,
 }
 
 #[derive(Component, PartialEq, Eq)]
@@ -45,6 +47,7 @@ pub enum ConeOfViewShift {
 pub fn cone_of_view_update_polygon_points(
   mut query: Query<(&mut ConeOfView, &Transform, &EnemyState)>,
   obstacles: Query<(&PrimitiveObstacle, &GlobalTransform), With<ConeOfViewObstacle>>,
+  mut meshes: ResMut<Assets<Mesh>>,
 ) {
   for (mut cone_of_view, transform, enemy_state) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
@@ -104,6 +107,8 @@ pub fn cone_of_view_update_polygon_points(
       }
     }
 
+    let _mesh = meshes.get_mut(&cone_of_view.handle).unwrap(); // TODO: update mesh
+
     cone_of_view.polygon = Polygon::new(points);
   }
 }
@@ -160,14 +165,19 @@ pub fn cone_of_view_draw_looking_at_position(
   }
 }
 
-pub fn cone_of_view_draw_polygon(query: Query<(&ConeOfView, &Selection)>, mut gizmos: Gizmos) {
-  for (cone_of_view, selection) in &query {
-    if selection.active {
-      gizmos.primitive_2d(
-        &cone_of_view.polygon,
-        Isometry2d::from_translation(Vec2::ZERO),
-        Color::WHITE,
-      );
+pub fn cone_of_view_draw_polygon(
+  mut query: Query<(&Selection, &Children), Changed<Selection>>,
+  mut visibility: Query<&mut Visibility>,
+) {
+  for (selection, children) in &mut query {
+    for child in children.iter() {
+      if let Ok(mut cone_of_view_visibility) = visibility.get_mut(child) {
+        if selection.active {
+          *cone_of_view_visibility = Visibility::Visible;
+        } else {
+          *cone_of_view_visibility = Visibility::Hidden;
+        }
+      }
     }
   }
 }

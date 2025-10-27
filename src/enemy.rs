@@ -148,6 +148,17 @@ impl Command for EnemySpawn {
       atlas_config,
     });
 
+    // let mesh = Mesh::new(PrimitiveTopology::PointList, RenderAssetUsages::default())
+    //           .with_inserted_attribute(MeshVertexAttribute { name: (), id: (), format: () }, vec![]);
+
+    let mut meshes = world.resource_mut::<Assets<Mesh>>();
+    let mesh_handle = meshes.add(Circle::new(59.0));
+    let mut materials = world.resource_mut::<Assets<ColorMaterial>>();
+    let material_handle = materials.add(ColorMaterial {
+      color: Color::srgba(1.0, 0.0, 1.0, 0.5),
+      ..default()
+    });
+
     world
       .spawn((
         Enemy,
@@ -169,10 +180,18 @@ impl Command for EnemySpawn {
           offset: 0,
           shift: ConeOfViewShift::Left,
           polygon: Polygon::new([Vec2::ZERO; CONE_OF_VIEW_VERTICES]),
+          handle: mesh_handle.clone(),
         },
         Selection::default(),
         Pickable::default(),
       ))
+      .with_children(|parent| {
+        parent.spawn((
+          Mesh2d(mesh_handle),
+          Visibility::Hidden,
+          MeshMaterial2d(material_handle),
+        ));
+      })
       // .with_children(|parent| {
       //   parent.spawn((
       //     Transform::from_translation(Vec3::new(0., -12., 0.)),
