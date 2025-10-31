@@ -27,9 +27,8 @@ use bevy::{
 };
 use camera::{camera_init, pan_camera};
 use cone_of_view::{
-  cone_of_view_draw_looking_at_position, cone_of_view_draw_polygon,
-  cone_of_view_update_looking_at_position, cone_of_view_update_polygon_points,
-  cone_of_view_update_shift,
+  cone_of_view_draw_looking_at_position, cone_of_view_toggle_shift, cone_of_view_toggle_visibility,
+  cone_of_view_update_looking_at_position, cone_of_view_update_mesh,
 };
 use cursor::change_cursor_on_action_select;
 use debug::{is_debug_enabled, toggle_debug, Debug};
@@ -120,10 +119,10 @@ fn main() -> AppExit {
         enemy_update_atlas_layout_on_direction_or_state_change,
         enemy_reset_animation_on_state_change,
         //
-        cone_of_view_update_polygon_points,
-        cone_of_view_update_shift,
+        cone_of_view_update_mesh,
+        cone_of_view_toggle_shift,
         cone_of_view_update_looking_at_position,
-        cone_of_view_draw_polygon,
+        cone_of_view_toggle_visibility,
         cone_of_view_draw_looking_at_position.run_if(is_debug_enabled),
         //
         movement_reset_path_on_empty,
