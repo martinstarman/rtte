@@ -88,15 +88,15 @@ pub fn cone_of_view_update_mesh(
       for (primitive_obstacle, global_transform) in &obstacles {
         match primitive_obstacle {
           PrimitiveObstacle::ConvexPolygon(primitive) => {
-            // if let Some(toi) = ray_cast.aabb_intersection_at(&primitive.aabb_2d(
-            //   Isometry2d::from_translation(global_transform.translation().xy()),
-            // )) {
-            //   let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
+            if let Some(toi) = ray_cast.aabb_intersection_at(&primitive.aabb_2d(
+              Isometry2d::from_translation(global_transform.translation().xy()),
+            )) {
+              let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
 
-            //   if position.distance(intersection) < position.distance(points[i as usize]) {
-            //     points[i as usize] = intersection;
-            //   }
-            // }
+              if position.distance(intersection) < position.distance(points[i as usize]) {
+                points[i as usize] = intersection;
+              }
+            }
           }
           _ => panic!("Convex polygon expected"),
         }

@@ -74,3 +74,28 @@ pub fn object_init(mut commands: Commands) {
     ],
   });
 }
+
+pub fn object_draw_shape(
+  query: Query<(&Transform, &Children), With<Object>>,
+  obstacles: Query<&PrimitiveObstacle>,
+  mut gizmos: Gizmos,
+) {
+  for (transform, children) in &query {
+    for child in children.iter() {
+      if let Ok(obstacle) = obstacles.get(child) {
+        match obstacle {
+          PrimitiveObstacle::ConvexPolygon(primitive) => {
+            let polygon = Polygon::from(primitive.clone());
+
+            gizmos.primitive_2d(
+              &polygon,
+              Isometry2d::from_translation(transform.translation.xy()),
+              Color::WHITE,
+            );
+          }
+          _ => panic!("Convex polygon expected"),
+        }
+      }
+    }
+  }
+}
