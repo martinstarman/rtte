@@ -16,7 +16,7 @@ mod ui;
 mod utils;
 mod ysort;
 
-use crate::map::Map;
+use crate::{map::Map, object::object_draw_shape};
 use bevy::{
   dev_tools::{
     fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
@@ -129,6 +129,8 @@ fn main() -> AppExit {
         movement_entity_follow_path,
         movement_update_entity_direction_on_change,
         movement_draw_path.run_if(is_debug_enabled),
+        //
+        object_draw_shape.run_if(is_debug_enabled),
       ),
     )
     .add_systems(

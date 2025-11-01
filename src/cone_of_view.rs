@@ -87,7 +87,7 @@ pub fn cone_of_view_update_mesh(
 
       for (primitive_obstacle, global_transform) in &obstacles {
         match primitive_obstacle {
-          PrimitiveObstacle::Rectangle(primitive) => {
+          PrimitiveObstacle::ConvexPolygon(primitive) => {
             if let Some(toi) = ray_cast.aabb_intersection_at(&primitive.aabb_2d(
               Isometry2d::from_translation(global_transform.translation().xy()),
             )) {
@@ -98,7 +98,7 @@ pub fn cone_of_view_update_mesh(
               }
             }
           }
-          _ => panic!("Use rectangle"),
+          _ => panic!("Convex polygon expected"),
         }
       }
     }
