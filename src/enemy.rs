@@ -1,4 +1,4 @@
-use bevy::{math::CompassOctant, prelude::*};
+use bevy::{asset::RenderAssetUsages, math::CompassOctant, mesh::PrimitiveTopology, prelude::*};
 use std::collections::HashMap;
 
 use crate::{
@@ -148,6 +148,22 @@ impl Command for EnemySpawn {
       atlas_config,
     });
 
+    let mesh = Mesh::new(
+      PrimitiveTopology::TriangleList,
+      RenderAssetUsages::default(),
+    )
+    .with_inserted_attribute(
+      Mesh::ATTRIBUTE_POSITION,
+      [Vec3::ZERO; CONE_OF_VIEW_VERTICES].to_vec(),
+    );
+    let mut meshes = world.resource_mut::<Assets<Mesh>>();
+    let mesh_handle = meshes.add(mesh);
+    let mut materials = world.resource_mut::<Assets<ColorMaterial>>();
+    let material_handle = materials.add(ColorMaterial {
+      color: Color::srgba(0.0, 1.0, 0.0, 0.1),
+      ..default()
+    });
+
     world
       .spawn((
         Enemy,
@@ -168,11 +184,18 @@ impl Command for EnemySpawn {
           looking_at: Dir2::from(self.direction).normalize(),
           offset: 0,
           shift: ConeOfViewShift::Left,
-          polygon: Polygon::new([Vec2::ZERO; CONE_OF_VIEW_VERTICES]),
+          mesh_handle: mesh_handle.clone(),
         },
         Selection::default(),
         Pickable::default(),
       ))
+      .with_children(|parent| {
+        parent.spawn((
+          Mesh2d(mesh_handle),
+          MeshMaterial2d(material_handle),
+          Visibility::Visible,
+        ));
+      })
       // .with_children(|parent| {
       //   parent.spawn((
       //     Transform::from_translation(Vec3::new(0., -12., 0.)),

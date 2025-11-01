@@ -10,7 +10,7 @@ use crate::{
 
 const CONE_OF_VIEW_DISTANCE: i32 = 150;
 const CONE_OF_VIEW_INNER_ANGLE: i32 = 60;
-pub const CONE_OF_VIEW_VERTICES: usize = CONE_OF_VIEW_INNER_ANGLE as usize + 1;
+pub const CONE_OF_VIEW_VERTICES: usize = CONE_OF_VIEW_INNER_ANGLE as usize * 3;
 
 #[derive(Component)]
 pub struct ConeOfViewObstacle;
@@ -32,8 +32,8 @@ pub struct ConeOfView {
   /// current cone of view shift
   pub shift: ConeOfViewShift,
 
-  /// current cone of view polygon
-  pub polygon: Polygon,
+  /// mesh handle
+  pub mesh_handle: Handle<Mesh>,
 }
 
 #[derive(Component, PartialEq, Eq)]
@@ -42,20 +42,19 @@ pub enum ConeOfViewShift {
   Right = 1,
 }
 
-pub fn cone_of_view_update_polygon_points(
-  mut query: Query<(&mut ConeOfView, &Transform, &EnemyState)>,
+pub fn cone_of_view_update_mesh(
+  query: Query<(&ConeOfView, &Transform, &EnemyState)>,
   obstacles: Query<(&PrimitiveObstacle, &GlobalTransform), With<ConeOfViewObstacle>>,
+  mut meshes: ResMut<Assets<Mesh>>,
 ) {
-  for (mut cone_of_view, transform, enemy_state) in &mut query {
+  for (cone_of_view, transform, enemy_state) in &query {
     if enemy_state.value == EnemyStates::Dead {
       continue;
     }
 
     let position = transform.translation.xy();
     let looking_at = position + cone_of_view.looking_at * CONE_OF_VIEW_DISTANCE as f32;
-    let mut points = [Vec2::ZERO; CONE_OF_VIEW_VERTICES];
-    points[0] = position;
-
+    let mut points = [Vec2::ZERO; CONE_OF_VIEW_INNER_ANGLE as usize];
     let mut point_transform = Transform::from_translation(looking_at.extend(0.));
 
     // get the first point on "left" side
@@ -77,14 +76,14 @@ pub fn cone_of_view_update_polygon_points(
       // get next point by rotating by 1 degree
       point_transform.rotate_around(
         transform.translation,
-        Quat::from_axis_angle(Vec3::Z, (1 as f32).to_radians()),
+        Quat::from_axis_angle(Vec3::Z, 1.0_f32.to_radians()),
       );
 
       let point = point_transform.translation.xy();
       let ray = Ray2d::new(position, Dir2::new(point - position).unwrap());
       let ray_cast = RayCast2d::from_ray(ray, CONE_OF_VIEW_DISTANCE as f32);
 
-      points[i as usize + 1] = point;
+      points[i as usize] = point;
 
       for (primitive_obstacle, global_transform) in &obstacles {
         match primitive_obstacle {
@@ -94,8 +93,8 @@ pub fn cone_of_view_update_polygon_points(
             )) {
               let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
 
-              if position.distance(intersection) < position.distance(points[i as usize + 1]) {
-                points[i as usize + 1] = intersection;
+              if position.distance(intersection) < position.distance(points[i as usize]) {
+                points[i as usize] = intersection;
               }
             }
           }
@@ -104,11 +103,21 @@ pub fn cone_of_view_update_polygon_points(
       }
     }
 
-    cone_of_view.polygon = Polygon::new(points);
+    let mesh = meshes.get_mut(&cone_of_view.mesh_handle).unwrap();
+    let mesh_positions = mesh.attribute_mut(Mesh::ATTRIBUTE_POSITION).unwrap();
+    let mut triangles = vec![];
+
+    for j in 0..CONE_OF_VIEW_INNER_ANGLE - 1 {
+      triangles.push(position.extend(0.0) - transform.translation);
+      triangles.push(points[j as usize].extend(0.0) - transform.translation);
+      triangles.push(points[j as usize + 1].extend(0.0) - transform.translation);
+    }
+
+    *mesh_positions = triangles.to_vec().into();
   }
 }
 
-pub fn cone_of_view_update_shift(mut query: Query<(&mut ConeOfView, &EnemyState)>) {
+pub fn cone_of_view_toggle_shift(mut query: Query<(&mut ConeOfView, &EnemyState)>) {
   for (mut cone_of_view, enemy_state) in &mut query {
     if enemy_state.value == EnemyStates::Dead {
       continue;
@@ -160,14 +169,19 @@ pub fn cone_of_view_draw_looking_at_position(
   }
 }
 
-pub fn cone_of_view_draw_polygon(query: Query<(&ConeOfView, &Selection)>, mut gizmos: Gizmos) {
-  for (cone_of_view, selection) in &query {
-    if selection.active {
-      gizmos.primitive_2d(
-        &cone_of_view.polygon,
-        Isometry2d::from_translation(Vec2::ZERO),
-        Color::WHITE,
-      );
+pub fn cone_of_view_toggle_visibility(
+  mut query: Query<(&Selection, &Children), Changed<Selection>>,
+  mut visibility: Query<&mut Visibility>,
+) {
+  for (selection, children) in &mut query {
+    for child in children.iter() {
+      if let Ok(mut cone_of_view_visibility) = visibility.get_mut(child) {
+        *cone_of_view_visibility = if selection.active {
+          Visibility::Visible
+        } else {
+          Visibility::Hidden
+        }
+      };
     }
   }
 }
