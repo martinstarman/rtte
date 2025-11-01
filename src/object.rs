@@ -16,9 +16,8 @@ pub struct ObjectSpawn {
   position: Vec2,
   height: u32,
   asset_path: String,
-  obstacle_position: Vec2,
-  obstacle_size: Vec2,
   object_type: ObjectType,
+  obstacle_points: Vec<Vec2>,
 }
 
 impl Command for ObjectSpawn {
@@ -37,13 +36,13 @@ impl Command for ObjectSpawn {
     if self.object_type == ObjectType::Block {
       world.spawn(component).with_child((
         ConeOfViewObstacle,
-        Transform::from_translation(self.obstacle_position.extend(0.)),
-        PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)),
+        Transform::from_translation(Vec3::ZERO),
+        PrimitiveObstacle::ConvexPolygon(ConvexPolygon::new(self.obstacle_points).unwrap()),
       ));
     } else {
       world.spawn(component).with_child((
-        Transform::from_translation(self.obstacle_position.extend(0.)),
-        PrimitiveObstacle::Rectangle(Rectangle::new(self.obstacle_size.x, self.obstacle_size.y)),
+        Transform::from_translation(Vec3::ZERO),
+        PrimitiveObstacle::ConvexPolygon(ConvexPolygon::new(self.obstacle_points).unwrap()),
       ));
     }
   }
@@ -54,16 +53,24 @@ pub fn object_init(mut commands: Commands) {
     position: Vec2::new(100., 100.),
     height: 256,
     asset_path: String::from("objects/tree_001.png"),
-    obstacle_position: Vec2::new(-5., -115.),
-    obstacle_size: Vec2::new(16., 16.),
     object_type: ObjectType::Block,
+    obstacle_points: vec![
+      Vec2::new(-5., -115.),
+      Vec2::new(3., -115.),
+      Vec2::new(3., -107.),
+      Vec2::new(-5., -107.),
+    ],
   });
   commands.queue(ObjectSpawn {
     position: Vec2::new(60., -70.),
     height: 81,
     asset_path: String::from("objects/fence_001.png"),
-    obstacle_position: Vec2::new(-8., -20.),
-    obstacle_size: Vec2::new(75., 30.),
     object_type: ObjectType::SeeTrough,
+    obstacle_points: vec![
+      Vec2::new(-40., 0.),
+      Vec2::new(20., -30.),
+      Vec2::new(20., -28.),
+      Vec2::new(-40., 2.),
+    ],
   });
 }

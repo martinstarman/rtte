@@ -4793,8 +4793,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vleue_navigator"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa94a11d3f8f5dfe570934de134933fa4b585b1b45f997f8e1ac691c883b21bc"
+source = "git+https://github.com/vleue/vleue_navigator?branch=main#208641b3da135ed2f5287e9b6aea277e07de160c"
 dependencies = [
  "bevy",
  "itertools 0.14.0",
