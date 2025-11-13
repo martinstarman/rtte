@@ -3068,6 +3068,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "maths-rs"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "294eeb9091a188eb266fcb3dcb2d3adccf4499fdf05b5d9c42b91866b5384a82"
+
+[[package]]
 name = "memchr"
 version = "2.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4070,6 +4076,7 @@ name = "rtte"
 version = "0.12.0"
 dependencies = [
  "bevy",
+ "maths-rs",
  "vleue_navigator",
 ]
 

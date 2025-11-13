@@ -1,5 +1,4 @@
 # TODO
-- [ ] replace cone of view aabb raycast (needs bevy support)
 - [ ] add possibility to wait in enemy path (should be in idle state)
 - [ ] serialization/deserialization (https://github.com/bevyengine/bevy/pull/20158)
 - [ ] menu

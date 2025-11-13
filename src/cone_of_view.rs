@@ -1,4 +1,4 @@
-use bevy::{math::bounding::*, prelude::*};
+use bevy::prelude::*;
 use core::f32;
 use vleue_navigator::prelude::PrimitiveObstacle;
 
@@ -80,21 +80,29 @@ pub fn cone_of_view_update_mesh(
       );
 
       let point = point_transform.translation.xy();
-      let ray = Ray2d::new(position, Dir2::new(point - position).unwrap());
-      let ray_cast = RayCast2d::from_ray(ray, CONE_OF_VIEW_DISTANCE as f32);
-
       points[i as usize] = point;
 
       for (primitive_obstacle, global_transform) in &obstacles {
         match primitive_obstacle {
-          PrimitiveObstacle::ConvexPolygon(primitive) => {
-            if let Some(toi) = ray_cast.aabb_intersection_at(&primitive.aabb_2d(
-              Isometry2d::from_translation(global_transform.translation().xy()),
-            )) {
-              let intersection = ray_cast.ray.origin + *ray_cast.ray.direction * toi;
+          PrimitiveObstacle::ConvexPolygon(polygon) => {
+            for j in 0..polygon.vertices().len() {
+              let p = polygon.vertices()[j] + global_transform.translation().xy();
+              let q = polygon.vertices()[if j + 1 >= polygon.vertices().len() {
+                0
+              } else {
+                j + 1
+              }] + global_transform.translation().xy();
 
-              if position.distance(intersection) < position.distance(points[i as usize]) {
-                points[i as usize] = intersection;
+              if let Some(intersection) = maths_rs::line_segment_vs_line_segment(
+                maths_rs::vec::Vec3::new(position.x, position.y, 0.),
+                maths_rs::vec::Vec3::new(point.x, point.y, 0.),
+                maths_rs::vec::Vec3::new(p.x, p.y, 0.),
+                maths_rs::vec::Vec3::new(q.x, q.y, 0.),
+              ) {
+                let vec = Vec2::new(intersection.x, intersection.y);
+                if position.distance(vec) < position.distance(points[i as usize]) {
+                  points[i as usize] = vec;
+                }
               }
             }
           }
