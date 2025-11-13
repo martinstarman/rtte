@@ -1,8 +1,4 @@
-use bevy::{
-  prelude::*,
-  render::camera::{CameraMainTextureUsages, CameraRenderGraph},
-  tasks::IoTaskPool,
-};
+use bevy::{prelude::*, render::camera::CameraRenderGraph, tasks::IoTaskPool};
 use std::{fs::File, io::Write};
 use vleue_navigator::NavMesh;
 
@@ -19,7 +15,6 @@ pub fn serialize(world: &mut World) {
     .deny_resource::<Assets<TextureAtlasLayout>>()
     .deny_resource::<Assets<NavMesh>>()
     .deny_resource::<Assets<Image>>()
-    .deny_component::<CameraMainTextureUsages>()
     .deny_component::<CameraRenderGraph>()
     .deny_component::<Sprite>()
     // .allow_component::<Object>()

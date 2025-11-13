@@ -1,12 +1,12 @@
 mod action;
 mod animation;
 mod camera;
-mod console;
+mod cone_of_view;
 mod cursor;
 mod debug;
 mod direction;
 mod enemy;
-mod line_of_sight;
+mod map;
 mod movement;
 mod navmesh;
 mod object;
@@ -17,38 +17,51 @@ mod ui;
 mod utils;
 mod ysort;
 
+use crate::{
+  map::Map,
+  object::{object_draw_shape, Object},
+  player::Player,
+  ysort::YSort,
+};
 use bevy::{
-  dev_tools::fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin},
+  dev_tools::{
+    fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
+    picking_debug::{DebugPickingMode, DebugPickingPlugin},
+  },
   prelude::*,
   window::WindowResolution,
 };
-use bevy_minibuffer::prelude::*;
-use camera::{camera_pan, camera_setup};
-use console::console_setup;
-use cursor::cursor_change;
-use debug::{is_debug_enabled, toggle_debug, Debug};
-use enemy::{enemy_animation, enemy_atlas_layout, enemy_setup, enemy_state};
-use line_of_sight::{
-  line_of_sight_draw, line_of_sight_looking_at, line_of_sight_looking_at_draw, line_of_sight_shift,
-  line_of_sight_update,
+use camera::{camera_init, pan_camera};
+use cone_of_view::{
+  cone_of_view_draw_looking_at_position, cone_of_view_toggle_shift, cone_of_view_toggle_visibility,
+  cone_of_view_update_looking_at_position, cone_of_view_update_mesh,
 };
-use movement::{path_direction, path_draw, path_follow, path_reset};
-use navmesh::navmesh_setup;
-use object::{object_setup, Object};
+use cursor::change_cursor_on_action_select;
+use debug::{is_debug_enabled, toggle_debug, Debug};
+use enemy::{
+  enemy_animation_tick, enemy_init, enemy_reset_animation_on_state_change,
+  enemy_update_atlas_layout_on_direction_or_state_change, enemy_update_state_on_movement_change,
+};
+use movement::{
+  movement_draw_path, movement_entity_follow_path, movement_reset_path_on_empty,
+  movement_update_entity_direction_on_change,
+};
+use navmesh::navmesh_init;
+use object::object_init;
 use player::{
-  player_animation, player_atlas_layout, player_knife_melee_attack, player_path, player_setup,
-  player_state, Player,
+  player_animation_tick, player_init, player_knife_melee_attack, player_set_or_reset_path_on_click,
+  player_update_atlas_layout_on_direction_or_state_change, player_update_state_on_movement_change,
 };
 use serde::{deserialize, serialize};
 use ui::{
-  actions::{ui_actions_selection, ui_actions_setup, ui_actions_visibility},
-  players::{ui_players_player_added, ui_players_selection, ui_players_setup},
+  actions::{ui_actions_init, ui_draw_actions, ui_toggle_actions_visibility},
+  players::{ui_draw_players, ui_players_init, ui_update_players_on_player_added},
 };
 use vleue_navigator::{
   prelude::{NavmeshUpdaterPlugin, PrimitiveObstacle},
   VleueNavigatorPlugin,
 };
-use ysort::{y_sort, YSort};
+use ysort::sort_by_y_index;
 
 fn main() -> AppExit {
   App::new()
@@ -57,7 +70,7 @@ fn main() -> AppExit {
         .set(WindowPlugin {
           primary_window: Some(Window {
             title: "RTTE".into(),
-            resolution: WindowResolution::new(800., 600.),
+            resolution: WindowResolution::new(800, 600),
             ..Default::default()
           }),
           ..Default::default()
@@ -70,12 +83,16 @@ fn main() -> AppExit {
             ..default()
           },
           enabled: false,
+          frame_time_graph_config: FrameTimeGraphConfig {
+            enabled: false,
+            ..default()
+          },
           ..default()
         },
       },
+      DebugPickingPlugin,
       VleueNavigatorPlugin,
       NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
-      MinibufferPlugins,
     ))
     .register_type::<Object>()
     .register_type::<Player>()
@@ -85,67 +102,74 @@ fn main() -> AppExit {
     .register_type::<Sprite>()
     .register_type::<Transform>()
     .register_type::<YSort>()
+    .insert_resource(DebugPickingMode::Disabled)
     .insert_resource(Debug::default())
+    .insert_resource(Map {
+      width: 1200.0,
+      height: 800.0,
+    })
     .add_systems(
       Startup,
       (
-        camera_setup,
-        player_setup,
-        enemy_setup,
-        navmesh_setup,
-        console_setup,
-        object_setup,
-        ui_players_setup,
-        ui_actions_setup,
+        camera_init,
+        player_init,
+        enemy_init,
+        navmesh_init,
+        object_init,
+        ui_players_init,
+        ui_actions_init,
       ),
     )
     .add_systems(
       Update,
       (
-        camera_pan,
-        //
-        player_animation,
-        player_path,
-        player_state,
-        player_atlas_layout,
+        player_animation_tick,
+        player_set_or_reset_path_on_click,
+        player_update_state_on_movement_change,
+        player_update_atlas_layout_on_direction_or_state_change,
         player_knife_melee_attack,
         //
-        enemy_animation,
-        enemy_state,
-        enemy_atlas_layout,
+        enemy_animation_tick,
+        enemy_update_state_on_movement_change,
+        enemy_update_atlas_layout_on_direction_or_state_change,
+        enemy_reset_animation_on_state_change,
         //
-        line_of_sight_update,
-        line_of_sight_shift,
-        line_of_sight_looking_at,
-        line_of_sight_draw,
+        cone_of_view_update_mesh,
+        cone_of_view_toggle_shift,
+        cone_of_view_update_looking_at_position,
+        cone_of_view_toggle_visibility,
+        cone_of_view_draw_looking_at_position.run_if(is_debug_enabled),
         //
-        path_reset,
-        path_follow,
-        path_direction,
+        movement_reset_path_on_empty,
+        movement_entity_follow_path,
+        movement_update_entity_direction_on_change,
+        movement_draw_path.run_if(is_debug_enabled),
+        //
+        object_draw_shape.run_if(is_debug_enabled),
       ),
     )
     .add_systems(
       Update,
       (
-        line_of_sight_looking_at_draw.run_if(is_debug_enabled),
+        ui_update_players_on_player_added,
+        ui_draw_players,
+        ui_toggle_actions_visibility,
+        ui_draw_actions,
         //
-        path_draw.run_if(is_debug_enabled),
+        change_cursor_on_action_select,
+        pan_camera,
         //
-        ui_players_player_added,
-        ui_players_selection,
-        ui_actions_visibility,
-        ui_actions_selection,
-        //
-        cursor_change,
+        toggle_debug.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
+          KeyCode::F3,
+        )),
+        serialize.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
+          KeyCode::F5,
+        )),
+        deserialize.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
+          KeyCode::F6,
+        )),
       ),
     )
-    .add_systems(PostUpdate, y_sort)
-    .add_acts((
-      player_setup,
-      toggle_debug,
-      serialize,
-      deserialize,
-      BasicActs::default(),
-    ))
+    .add_systems(PostUpdate, sort_by_y_index)
     .run()
 }
