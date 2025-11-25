@@ -3,7 +3,8 @@ use vleue_navigator::prelude::*;
 
 use crate::{cone_of_view::ConeOfViewObstacle, ysort::YSort};
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Object;
 
 #[derive(PartialEq, Eq)]

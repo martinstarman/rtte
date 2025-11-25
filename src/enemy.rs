@@ -20,7 +20,8 @@ pub struct EnemySpawn {
   direction: CompassOctant,
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Enemy;
 
 #[derive(Component, Default)]

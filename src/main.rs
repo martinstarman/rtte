@@ -12,11 +12,17 @@ mod navmesh;
 mod object;
 mod player;
 mod selection;
+mod serde;
 mod ui;
 mod utils;
 mod ysort;
 
-use crate::{map::Map, object::object_draw_shape};
+use crate::{
+  map::Map,
+  object::{object_draw_shape, Object},
+  player::Player,
+  ysort::YSort,
+};
 use bevy::{
   dev_tools::{
     fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
@@ -46,6 +52,7 @@ use player::{
   player_animation_tick, player_init, player_knife_melee_attack, player_set_or_reset_path_on_click,
   player_update_atlas_layout_on_direction_or_state_change, player_update_state_on_movement_change,
 };
+use serde::{deserialize, serialize};
 use ui::{
   actions::{ui_actions_init, ui_draw_actions, ui_toggle_actions_visibility},
   players::{ui_draw_players, ui_players_init, ui_update_players_on_player_added},
@@ -87,6 +94,14 @@ fn main() -> AppExit {
       VleueNavigatorPlugin,
       NavmeshUpdaterPlugin::<PrimitiveObstacle>::default(),
     ))
+    .register_type::<Object>()
+    .register_type::<Player>()
+    .register_type::<String>()
+    .register_type::<Vec2>()
+    .register_type::<u32>()
+    .register_type::<Sprite>()
+    .register_type::<Transform>()
+    .register_type::<YSort>()
     .insert_resource(DebugPickingMode::Disabled)
     .insert_resource(Debug::default())
     .insert_resource(Map {
@@ -146,6 +161,12 @@ fn main() -> AppExit {
         //
         toggle_debug.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
           KeyCode::F3,
+        )),
+        serialize.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
+          KeyCode::F5,
+        )),
+        deserialize.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
+          KeyCode::F6,
         )),
       ),
     )

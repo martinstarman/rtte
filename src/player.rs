@@ -29,7 +29,8 @@ pub struct PlayerSpawn {
   direction: CompassOctant,
 }
 
-#[derive(Component, PartialEq, Eq, Hash)]
+#[derive(Component, PartialEq, Eq, Hash, Reflect, Default)]
+#[reflect(Component)]
 pub struct Player;
 
 #[derive(Component, Default)]
