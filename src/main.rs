@@ -18,6 +18,7 @@ mod ysort;
 
 use crate::{map::Map, object::object_draw_shape};
 use bevy::{
+  camera_controller::pan_camera::PanCameraPlugin,
   dev_tools::{
     fps_overlay::{FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig},
     picking_debug::{DebugPickingMode, DebugPickingPlugin},
@@ -25,7 +26,7 @@ use bevy::{
   prelude::*,
   window::WindowResolution,
 };
-use camera::{camera_init, pan_camera};
+use camera::camera_init;
 use cone_of_view::{
   cone_of_view_draw_looking_at_position, cone_of_view_toggle_shift, cone_of_view_toggle_visibility,
   cone_of_view_update_looking_at_position, cone_of_view_update_mesh,
@@ -69,6 +70,7 @@ fn main() -> AppExit {
           ..Default::default()
         })
         .set(ImagePlugin::default_nearest()),
+      PanCameraPlugin,
       FpsOverlayPlugin {
         config: FpsOverlayConfig {
           text_config: TextFont {
@@ -142,7 +144,6 @@ fn main() -> AppExit {
         ui_draw_actions,
         //
         change_cursor_on_action_select,
-        pan_camera,
         //
         toggle_debug.distributive_run_if(bevy::input::common_conditions::input_just_pressed(
           KeyCode::F3,
