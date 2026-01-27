@@ -6,4 +6,3 @@
 - [ ] consider `enemy_reset_animation_on_state_change` for player
 - [ ] weird moving animations
 - [ ] minimap? (https://bevy.org/news/bevy-0-17/#viewportnode)
-- [ ] use camera pan (https://github.com/bevyengine/bevy/blob/16a6a96a80aab50dcc14c8bb73ef09520f77c09d/release-content/release-notes/camera_controllers.md?plain=1#L4)
