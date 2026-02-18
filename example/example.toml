@@ -1,0 +1,39 @@
+# RTTE mission toml file
+#
+# LayerIndex
+#   Defines the order in which entities will be rendered.
+#   Entities are z-indexed within the same layer.
+#
+# Polygon
+#   TBD
+#
+# Position
+#   TBD
+#
+# Size
+#   TBD
+#
+
+[[Entities]]
+LayerIndex = 0
+Polygon = [[20, 20], [120, 20], [120, 120], [20, 120]]
+Position = [20, 20]
+Size = [100, 100]
+
+[[Entities]]
+LayerIndex = 0
+Polygon = [[40, 40], [140, 40], [140, 140], [40, 140]]
+Position = [40, 40]
+Size = [100, 100]
+
+[[Entities]]
+LayerIndex = 0
+Polygon = [[100, 20], [200, 20], [200, 100], [100, 100]]
+Position = [100, 20]
+Size = [100, 80]
+
+[[Entities]]
+LayerIndex = 1
+Polygon = [[30, 30], [60, 30], [60, 60], [30, 60]]
+Position = [30, 30]
+Size = [30, 30]
