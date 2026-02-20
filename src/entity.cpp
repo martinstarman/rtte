@@ -4,15 +4,26 @@ Entity::Entity(
     std::tuple<int, int> position,
     std::tuple<int, int> size,
     int layerIndex,
-    const std::vector<std::tuple<int, int>> &polygon)
+    const std::vector<std::tuple<int, int>> &polygon,
+    const std::string &texturePath)
     : m_position(position),
       m_size(size),
       m_layerIndex(layerIndex),
       m_polygon(polygon)
 {
+  if (texturePath != "")
+  {
+    CreatePolygonTexture(texturePath);
+  }
 }
 
-Entity::~Entity() = default;
+Entity::~Entity()
+{
+  if (IsTextureValid(m_texture))
+  {
+    UnloadTexture(m_texture);
+  }
+}
 
 int Entity::LayerIndex()
 {
@@ -26,13 +37,83 @@ int Entity::ZIndex()
 
 void Entity::Draw()
 {
+  int x = std::get<0>(m_position);
+  int y = std::get<1>(m_position);
+
+  if (IsTextureValid(m_texture))
+  {
+    DrawTexture(m_texture, x, y, WHITE);
+  }
+
   for (int i = 0; i < m_polygon.size(); i++)
   {
     DrawLine(
-        std::get<0>(m_polygon.at(i)),
-        std::get<1>(m_polygon.at(i)),
-        std::get<0>(m_polygon.at((i + 1) % m_polygon.size())),
-        std::get<1>(m_polygon.at((i + 1) % m_polygon.size())),
+        x + std::get<0>(m_polygon.at(i)),
+        y + std::get<1>(m_polygon.at(i)),
+        x + std::get<0>(m_polygon.at((i + 1) % m_polygon.size())),
+        y + std::get<1>(m_polygon.at((i + 1) % m_polygon.size())),
         WHITE);
   }
+}
+
+void Entity::CreatePolygonTexture(const std::string &texturePath)
+{
+  int minX = INT_MAX;
+  int maxX = INT_MIN;
+  int minY = INT_MAX;
+  int maxY = INT_MIN;
+  std::vector<Vector2> points;
+
+  for (int i = 0; i < m_polygon.size(); i++)
+  {
+    int x = std::get<0>(m_polygon.at(i));
+    int y = std::get<1>(m_polygon.at(i));
+
+    Vector2 point{(float)x, (float)y};
+    points.emplace_back(point);
+
+    if (x < minX)
+    {
+      minX = x;
+    }
+
+    if (x > maxX)
+    {
+      maxX = x;
+    }
+
+    if (y < minY)
+    {
+      minY = y;
+    }
+
+    if (y > maxY)
+    {
+      maxY = y;
+    }
+  }
+
+  int width = maxX - minX;
+  int height = maxY - minY;
+
+  Image srcImage = LoadImage(texturePath.c_str());
+  Image destImage = GenImageColor(width, height, BLANK);
+
+  for (int x = 0; x < width; x++)
+  {
+    for (int y = 0; y < height; y++)
+    {
+      Vector2 point{(float)x, (float)y};
+
+      if (CheckCollisionPointPoly(point, &points[0], points.size()))
+      {
+        Color color = GetImageColor(srcImage, x % srcImage.width, y % srcImage.height);
+        ImageDrawPixel(&destImage, x, y, color);
+      }
+    }
+  }
+
+  m_texture = LoadTextureFromImage(destImage);
+  UnloadImage(srcImage);
+  UnloadImage(destImage);
 }

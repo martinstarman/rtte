@@ -5,35 +5,45 @@
 #   Entities are z-indexed within the same layer.
 #
 # Polygon
-#   TBD
+#   Entity shape.
+#   Points are relative to Position in anticlockwise order.
+#   Must be convex polygon.
 #
 # Position
-#   TBD
+#   Entity position.
 #
 # Size
-#   TBD
+#   Entity size.
+#
+# TexturePath
+#   Texture file path. 
+#   Relative to this file not a RTTE binary. # TODO: implement me!
 #
 
 [[Entities]]
 LayerIndex = 0
-Polygon = [[20, 20], [120, 20], [120, 120], [20, 120]]
-Position = [20, 20]
-Size = [100, 100]
+Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
+Position = [100, 100]
+Size = [200, 300]
+TexturePath = "textures/grass.png"
 
 [[Entities]]
 LayerIndex = 0
-Polygon = [[40, 40], [140, 40], [140, 140], [40, 140]]
-Position = [40, 40]
-Size = [100, 100]
+Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
+Position = [200, 100]
+Size = [200, 300]
+TexturePath = "textures/snow.png"
 
 [[Entities]]
 LayerIndex = 0
-Polygon = [[100, 20], [200, 20], [200, 100], [100, 100]]
-Position = [100, 20]
-Size = [100, 80]
+Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
+Position = [300, 100]
+Size = [200, 300]
+TexturePath = "textures/water.png"
 
 [[Entities]]
 LayerIndex = 1
-Polygon = [[30, 30], [60, 30], [60, 60], [30, 60]]
-Position = [30, 30]
-Size = [30, 30]
+Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
+Position = [400, 100]
+Size = [200, 300]
+TexturePath = "textures/sand.png"
