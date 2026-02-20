@@ -6,8 +6,7 @@
 #
 # Polygon
 #   Entity shape.
-#   Points are relative to Position in anticlockwise order.
-#   Must be convex polygon.
+#   Points are relative to Position.
 #
 # Position
 #   Entity position.
@@ -16,8 +15,9 @@
 #   Entity size.
 #
 # TexturePath
-#   Texture file path. 
-#   Relative to this file not a RTTE binary. # TODO: implement me!
+#   Texture file path.
+#   Relative to this file.
+#   It will fill the entire polygon. If the texture is smaller it will be repeated in both axes.
 #
 
 [[Entities]]
