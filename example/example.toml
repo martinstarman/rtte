@@ -1,23 +1,29 @@
 # RTTE mission toml file
 #
-# LayerIndex
+# Entities
+#   TBD
+#
+# Entities.LayerIndex
 #   Defines the order in which entities will be rendered.
 #   Entities are z-indexed within the same layer.
 #
-# Polygon
+# Entities.Polygon
 #   Entity shape.
 #   Points are relative to Position.
 #
-# Position
+# Entities.Position
 #   Entity position.
 #
-# Size
+# Entities.Size
 #   Entity size.
 #
-# TexturePath
-#   Texture file path.
-#   Relative to this file.
-#   It will fill the entire polygon. If the texture is smaller it will be repeated in both axes.
+# Entities.Texture.Path
+#   Texture file path relative to this file.
+# 
+# Entities.Texture.Transformation
+#   Possible values are:
+#     "none" The texture is rendered as is.
+#     "fill" The texture will fill the entire polygon. If the texture is smaller, it will be repeated in both axes.
 #
 
 [[Entities]]
@@ -25,25 +31,47 @@ LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
 Position = [100, 100]
 Size = [200, 300]
-TexturePath = "textures/grass.png"
+
+[Entities.Texture]
+Path = "textures/grass.png"
+Transformation = "fill"
 
 [[Entities]]
 LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
 Position = [200, 100]
 Size = [200, 300]
-TexturePath = "textures/snow.png"
+
+[Entities.Texture]
+Path = "textures/snow.png"
+Transformation = "fill"
 
 [[Entities]]
 LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
 Position = [300, 100]
 Size = [200, 300]
-TexturePath = "textures/water.png"
+
+[Entities.Texture]
+Path = "textures/water.png"
+Transformation = "fill"
 
 [[Entities]]
-LayerIndex = 1
+LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
 Position = [400, 100]
 Size = [200, 300]
-TexturePath = "textures/sand.png"
+
+[Entities.Texture]
+Path = "textures/sand.png"
+Transformation = "fill"
+
+[[Entities]]
+LayerIndex = 1
+Polygon = [[22, 22], [22, 42], [42, 42], [42, 22]]
+Position = [150, 150]
+Size = [20, 20]
+
+[Entities.Texture]
+Path = "textures/character.png"
+Transformation = "none"

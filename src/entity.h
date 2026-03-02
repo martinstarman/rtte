@@ -6,6 +6,12 @@
 #include <tuple>
 #include <vector>
 
+enum TextureTransformation
+{
+  None,
+  Fill,
+};
+
 class Entity
 {
 public:
@@ -14,7 +20,8 @@ public:
       std::tuple<int, int> size,
       int layerIndex,
       const std::vector<std::tuple<int, int>> &polygon,
-      const std::string &texturePath);
+      const std::string &texturePath,
+      TextureTransformation textureTransformation);
   ~Entity();
   int LayerIndex();
   int ZIndex();

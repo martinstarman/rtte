@@ -5,13 +5,18 @@ Entity::Entity(
     std::tuple<int, int> size,
     int layerIndex,
     const std::vector<std::tuple<int, int>> &polygon,
-    const std::string &texturePath)
+    const std::string &texturePath,
+    TextureTransformation textureTransformation)
     : m_position(position),
       m_size(size),
       m_layerIndex(layerIndex),
       m_polygon(polygon)
 {
-  if (texturePath != "")
+  if (textureTransformation == TextureTransformation::None)
+  {
+    m_texture = LoadTexture(texturePath.c_str());
+  }
+  else
   {
     CreatePolygonTexture(texturePath);
   }
@@ -19,10 +24,7 @@ Entity::Entity(
 
 Entity::~Entity()
 {
-  if (IsTextureValid(m_texture))
-  {
-    UnloadTexture(m_texture);
-  }
+  UnloadTexture(m_texture);
 }
 
 int Entity::LayerIndex()
@@ -40,10 +42,7 @@ void Entity::Draw()
   int x = std::get<0>(m_position);
   int y = std::get<1>(m_position);
 
-  if (IsTextureValid(m_texture))
-  {
-    DrawTexture(m_texture, x, y, WHITE);
-  }
+  DrawTexture(m_texture, x, y, WHITE);
 
   for (int i = 0; i < m_polygon.size(); i++)
   {
@@ -96,8 +95,8 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
   int width = maxX - minX;
   int height = maxY - minY;
 
-  Image srcImage = LoadImage(texturePath.c_str());
-  Image destImage = GenImageColor(width, height, BLANK);
+  Image sourceImage = LoadImage(texturePath.c_str());
+  Image targetImage = GenImageColor(width, height, BLANK);
 
   for (int x = 0; x < width; x++)
   {
@@ -107,13 +106,13 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
 
       if (CheckCollisionPointPoly(point, &points[0], points.size()))
       {
-        Color color = GetImageColor(srcImage, x % srcImage.width, y % srcImage.height);
-        ImageDrawPixel(&destImage, x, y, color);
+        Color color = GetImageColor(sourceImage, x % sourceImage.width, y % sourceImage.height);
+        ImageDrawPixel(&targetImage, x, y, color);
       }
     }
   }
 
-  m_texture = LoadTextureFromImage(destImage);
-  UnloadImage(srcImage);
-  UnloadImage(destImage);
+  m_texture = LoadTextureFromImage(targetImage);
+  UnloadImage(sourceImage);
+  UnloadImage(targetImage);
 }

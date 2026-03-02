@@ -31,20 +31,35 @@ int main(int argc, char *argv[])
     std::filesystem::path mapFileDir = mapFilePath.parent_path();
     auto data = toml::parse(mapFilePath.string(), toml::spec::v(1, 1, 0));
 
-    for (const auto &entity : toml::find<toml::array>(data, "Entities"))
+    for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {
-      auto position = toml::find<std::tuple<int, int>>(entity, "Position");
-      auto size = toml::find<std::tuple<int, int>>(entity, "Size");
-      auto layerIndex = toml::find<int>(entity, "LayerIndex");
-      auto polygon = toml::find<std::vector<std::tuple<int, int>>>(entity, "Polygon");
-      auto texturePath = mapFileDir / toml::find<std::string>(entity, "TexturePath");
+      TextureTransformation textureTransformation = TextureTransformation::None;
 
-      if (layers < layerIndex)
+      auto tomlPosition = toml::find<std::tuple<int, int>>(tomlEntity, "Position");
+      auto tomlSize = toml::find<std::tuple<int, int>>(tomlEntity, "Size");
+      auto tomlLayerIndex = toml::find<int>(tomlEntity, "LayerIndex");
+      auto tomlPolygon = toml::find<std::vector<std::tuple<int, int>>>(tomlEntity, "Polygon");
+      auto tomlTexture = toml::find<toml::value>(tomlEntity, "Texture");
+      auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlTexture, "Path");
+      auto tomlTextureTransformation = toml::find<std::string>(tomlTexture, "Transformation");
+
+      if (layers < tomlLayerIndex)
       {
-        layers = layerIndex;
+        layers = tomlLayerIndex;
       }
 
-      entities.emplace_back(new Entity(position, size, layerIndex, polygon, texturePath.string()));
+      if (tomlTextureTransformation == "fill")
+      {
+        textureTransformation = TextureTransformation::Fill;
+      }
+
+      entities.emplace_back(new Entity(
+          tomlPosition,
+          tomlSize,
+          tomlLayerIndex,
+          tomlPolygon,
+          tomlTexturePath.string(),
+          textureTransformation));
     }
   }
   catch (const toml::exception &error)
@@ -84,21 +99,18 @@ int main(int argc, char *argv[])
     ClearBackground(MAGENTA);
     BeginMode2D(camera);
 
+    std::sort(entities.begin(), entities.end(),
+              [](Entity *a, Entity *b)
+              { return a->ZIndex() < b->ZIndex(); });
+
     for (int layerIndex = 0; layerIndex <= layers; layerIndex++)
     {
-      std::vector<Entity *> layerEntities = {};
-
-      std::copy_if(entities.begin(), entities.end(), std::back_inserter(layerEntities),
-                   [layerIndex](Entity *entity)
-                   { return entity->LayerIndex() == layerIndex; });
-
-      std::sort(layerEntities.begin(), layerEntities.end(),
-                [](Entity *a, Entity *b)
-                { return a->ZIndex() < b->ZIndex(); });
-
-      for (auto &layerEntity : layerEntities)
+      for (auto &entity : entities)
       {
-        layerEntity->Draw();
+        if (entity->LayerIndex() == layerIndex)
+        {
+          entity->Draw();
+        }
       }
     }
 
