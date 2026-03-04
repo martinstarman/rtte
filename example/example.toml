@@ -25,6 +25,13 @@
 #     "none" The texture is rendered as is.
 #     "fill" The texture will fill the entire polygon. If the texture is smaller, it will be repeated in both axes.
 #
+# Entities.Texture.Animation.Frames
+#   Number of texture frames. 
+#   The frames in the image are on the x axis.
+#
+# Entities.Texture.Animation.FramesPerSecond
+#   Number of texture frames rendered per second.
+#
 
 [[Entities]]
 LayerIndex = 0
@@ -36,6 +43,10 @@ Size = [200, 300]
 Path = "textures/grass.png"
 Transformation = "fill"
 
+[Entities.Texture.Animation]
+Frames = 1
+FramesPerSecond = 1
+
 [[Entities]]
 LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
@@ -45,6 +56,10 @@ Size = [200, 300]
 [Entities.Texture]
 Path = "textures/snow.png"
 Transformation = "fill"
+
+[Entities.Texture.Animation]
+Frames = 1
+FramesPerSecond = 1
 
 [[Entities]]
 LayerIndex = 0
@@ -56,6 +71,10 @@ Size = [200, 300]
 Path = "textures/water.png"
 Transformation = "fill"
 
+[Entities.Texture.Animation]
+Frames = 2
+FramesPerSecond = 2
+
 [[Entities]]
 LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
@@ -66,6 +85,10 @@ Size = [200, 300]
 Path = "textures/sand.png"
 Transformation = "fill"
 
+[Entities.Texture.Animation]
+Frames = 1
+FramesPerSecond = 1
+
 [[Entities]]
 LayerIndex = 1
 Polygon = [[22, 22], [22, 42], [42, 42], [42, 22]]
@@ -75,3 +98,7 @@ Size = [20, 20]
 [Entities.Texture]
 Path = "textures/character.png"
 Transformation = "none"
+
+[Entities.Texture.Animation]
+Frames = 2
+FramesPerSecond = 1

@@ -6,11 +6,17 @@ Entity::Entity(
     int layerIndex,
     const std::vector<std::tuple<int, int>> &polygon,
     const std::string &texturePath,
-    TextureTransformation textureTransformation)
+    TextureTransformation textureTransformation,
+    int textureFrames,
+    int textureFramesPerSecond)
     : m_position(position),
       m_size(size),
       m_layerIndex(layerIndex),
-      m_polygon(polygon)
+      m_polygon(polygon),
+      m_textureFrames(textureFrames),
+      m_textureFramesPerSecond(textureFramesPerSecond),
+      m_textureFrame(0),
+      m_frames(0)
 {
   if (textureTransformation == TextureTransformation::None)
   {
@@ -37,12 +43,27 @@ int Entity::ZIndex()
   return std::get<1>(m_position) + std::get<1>(m_size);
 }
 
+void Entity::Update()
+{
+  if (m_textureFrames > 1)
+  {
+    Animate();
+  }
+}
+
 void Entity::Draw()
 {
+  Rectangle rectangle = {
+      (float)(m_textureFrame * (m_texture.width / m_textureFrames)),
+      0.0f,
+      (float)(m_texture.width / m_textureFrames),
+      (float)m_texture.height};
+
   int x = std::get<0>(m_position);
   int y = std::get<1>(m_position);
+  Vector2 position = {(float)x, (float)y};
 
-  DrawTexture(m_texture, x, y, WHITE);
+  DrawTextureRec(m_texture, rectangle, position, WHITE);
 
   for (int i = 0; i < m_polygon.size(); i++)
   {
@@ -65,49 +86,55 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
 
   for (int i = 0; i < m_polygon.size(); i++)
   {
-    int x = std::get<0>(m_polygon.at(i));
-    int y = std::get<1>(m_polygon.at(i));
+    int pX = std::get<0>(m_polygon.at(i));
+    int pY = std::get<1>(m_polygon.at(i));
+    Vector2 polygonPoint = {(float)pX, (float)pY};
 
-    Vector2 point{(float)x, (float)y};
-    points.emplace_back(point);
+    points.emplace_back(polygonPoint);
 
-    if (x < minX)
+    if (pX < minX)
     {
-      minX = x;
+      minX = pX;
     }
 
-    if (x > maxX)
+    if (pX > maxX)
     {
-      maxX = x;
+      maxX = pX;
     }
 
-    if (y < minY)
+    if (pY < minY)
     {
-      minY = y;
+      minY = pY;
     }
 
-    if (y > maxY)
+    if (pY > maxY)
     {
-      maxY = y;
+      maxY = pY;
     }
   }
 
-  int width = maxX - minX;
+  int targetImageFrameWidth = maxX - minX;
   int height = maxY - minY;
 
   Image sourceImage = LoadImage(texturePath.c_str());
-  Image targetImage = GenImageColor(width, height, BLANK);
+  Image targetImage = GenImageColor(targetImageFrameWidth * m_textureFrames, height, BLANK);
+  int sourceImageFrameWidth = sourceImage.width / m_textureFrames;
 
-  for (int x = 0; x < width; x++)
+  for (int frame = 0; frame < m_textureFrames; frame++)
   {
-    for (int y = 0; y < height; y++)
+    for (int x = 0; x < targetImageFrameWidth; x++)
     {
-      Vector2 point{(float)x, (float)y};
-
-      if (CheckCollisionPointPoly(point, &points[0], points.size()))
+      for (int y = 0; y < height; y++)
       {
-        Color color = GetImageColor(sourceImage, x % sourceImage.width, y % sourceImage.height);
-        ImageDrawPixel(&targetImage, x, y, color);
+        Vector2 point = {(float)x, (float)y};
+
+        if (CheckCollisionPointPoly(point, &points[0], points.size()))
+        {
+          Color color = GetImageColor(sourceImage,
+                                      (x % sourceImageFrameWidth) + (frame * sourceImageFrameWidth),
+                                      y % sourceImage.height);
+          ImageDrawPixel(&targetImage, x + (frame * targetImageFrameWidth), y, color);
+        }
       }
     }
   }
@@ -115,4 +142,20 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
   m_texture = LoadTextureFromImage(targetImage);
   UnloadImage(sourceImage);
   UnloadImage(targetImage);
+}
+
+void Entity::Animate()
+{
+  m_frames++;
+
+  if (m_frames >= (60 / m_textureFramesPerSecond))
+  {
+    m_frames = 0;
+    m_textureFrame++;
+
+    if (m_textureFrame >= m_textureFrames)
+    {
+      m_textureFrame = 0;
+    }
+  }
 }

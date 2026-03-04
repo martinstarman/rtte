@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
       auto tomlTexture = toml::find<toml::value>(tomlEntity, "Texture");
       auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlTexture, "Path");
       auto tomlTextureTransformation = toml::find<std::string>(tomlTexture, "Transformation");
+      auto tomlAnimation = toml::find<toml::value>(tomlTexture, "Animation");
+      auto tomlTextureAnimationFrames = toml::find<int>(tomlAnimation, "Frames");
+      auto tomlTextureAnimationFramesPerSecond = toml::find<int>(tomlAnimation, "FramesPerSecond");
 
       if (layers < tomlLayerIndex)
       {
@@ -59,7 +62,9 @@ int main(int argc, char *argv[])
           tomlLayerIndex,
           tomlPolygon,
           tomlTexturePath.string(),
-          textureTransformation));
+          textureTransformation,
+          tomlTextureAnimationFrames,
+          tomlTextureAnimationFramesPerSecond));
     }
   }
   catch (const toml::exception &error)
@@ -82,17 +87,22 @@ int main(int argc, char *argv[])
     {
       camera.offset.x -= CAMERA_MOVEMENT_SPEED;
     }
-    else if (IsKeyDown(KEY_LEFT))
+    if (IsKeyDown(KEY_LEFT))
     {
       camera.offset.x += CAMERA_MOVEMENT_SPEED;
     }
-    else if (IsKeyDown(KEY_UP))
+    if (IsKeyDown(KEY_UP))
     {
       camera.offset.y += CAMERA_MOVEMENT_SPEED;
     }
-    else if (IsKeyDown(KEY_DOWN))
+    if (IsKeyDown(KEY_DOWN))
     {
       camera.offset.y -= CAMERA_MOVEMENT_SPEED;
+    }
+
+    for (auto &entity : entities)
+    {
+      entity->Update();
     }
 
     BeginDrawing();
