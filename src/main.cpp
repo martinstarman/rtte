@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <filesystem>
 #include <raylib.h>
 #include <string>
@@ -7,7 +6,7 @@
 #include <vector>
 
 #include "entity.h"
-#include "input.h"
+#include "game.h"
 
 int main(int argc, char *argv[])
 {
@@ -21,8 +20,7 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  int layers = 0;
-  std::vector<Entity *> entities;
+  Game *game = new Game();
 
   try
   {
@@ -32,9 +30,8 @@ int main(int argc, char *argv[])
 
     for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {
-      TextureTransformation textureTransformation = TextureTransformation::None;
-
       auto tomlPosition = toml::find<std::tuple<int, int>>(tomlEntity, "Position");
+      auto tomlSelectable = toml::find<bool>(tomlEntity, "Selectable");
       auto tomlSize = toml::find<std::tuple<int, int>>(tomlEntity, "Size");
       auto tomlLayerIndex = toml::find<int>(tomlEntity, "LayerIndex");
       auto tomlPolygon = toml::find<std::vector<std::tuple<int, int>>>(tomlEntity, "Polygon");
@@ -45,23 +42,16 @@ int main(int argc, char *argv[])
       auto tomlTextureAnimationFrames = toml::find<int>(tomlAnimation, "Frames");
       auto tomlTextureAnimationFramesPerSecond = toml::find<int>(tomlAnimation, "FramesPerSecond");
 
-      if (layers < tomlLayerIndex)
-      {
-        layers = tomlLayerIndex;
-      }
-
-      if (tomlTextureTransformation == "fill")
-      {
-        textureTransformation = TextureTransformation::Fill;
-      }
-
-      entities.emplace_back(new Entity(
+      game->AddEntity(new Entity(
           tomlPosition,
           tomlSize,
           tomlLayerIndex,
           tomlPolygon,
+          tomlSelectable,
           tomlTexturePath.string(),
-          textureTransformation,
+          tomlTextureTransformation == "fill"
+              ? TextureTransformation::Fill
+              : TextureTransformation::None,
           tomlTextureAnimationFrames,
           tomlTextureAnimationFramesPerSecond));
     }
@@ -73,51 +63,13 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  Camera2D camera;
-  camera = {0};
-  camera.target = {0, 0};
-  camera.offset = {0, 0};
-  camera.rotation = 0;
-  camera.zoom = 1;
-
   while (!WindowShouldClose())
   {
-    Input::ProcessCameraMovement(&camera);
-
-    for (auto &entity : entities)
-    {
-      entity->Update();
-    }
-
-    BeginDrawing();
-    ClearBackground(MAGENTA);
-    BeginMode2D(camera);
-
-    std::sort(entities.begin(), entities.end(),
-              [](Entity *a, Entity *b)
-              { return a->ZIndex() < b->ZIndex(); });
-
-    for (int layerIndex = 0; layerIndex <= layers; layerIndex++)
-    {
-      for (auto &entity : entities)
-      {
-        if (entity->LayerIndex() == layerIndex)
-        {
-          entity->Draw();
-        }
-      }
-    }
-
-    EndMode2D();
-    EndDrawing();
+    game->Update();
+    game->Draw();
   }
 
-  for (auto const &entity : entities)
-  {
-    delete entity;
-  }
-
+  delete game;
   CloseWindow();
-
   return 0;
 }

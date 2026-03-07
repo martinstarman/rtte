@@ -5,11 +5,14 @@ Entity::Entity(
     std::tuple<int, int> size,
     int layerIndex,
     const std::vector<std::tuple<int, int>> &polygon,
+    bool selectable,
     const std::string &texturePath,
     TextureTransformation textureTransformation,
     int textureFrames,
     int textureFramesPerSecond)
     : m_position(position),
+      m_selectable(selectable),
+      m_selected(false),
       m_size(size),
       m_layerIndex(layerIndex),
       m_polygon(polygon),
@@ -72,8 +75,35 @@ void Entity::Draw()
         y + std::get<1>(m_polygon.at(i)),
         x + std::get<0>(m_polygon.at((i + 1) % m_polygon.size())),
         y + std::get<1>(m_polygon.at((i + 1) % m_polygon.size())),
-        WHITE);
+        m_selected ? GREEN : WHITE);
   }
+}
+
+bool Entity::Selectable()
+{
+  return m_selectable;
+}
+
+void Entity::Selected(bool selected)
+{
+  m_selected = selected;
+}
+
+std::vector<Vector2> Entity::Polygon()
+{
+  std::vector<Vector2> points;
+  int x = std::get<0>(m_position);
+  int y = std::get<1>(m_position);
+
+  for (int i = 0; i < m_polygon.size(); i++)
+  {
+    int pX = std::get<0>(m_polygon.at(i));
+    int pY = std::get<1>(m_polygon.at(i));
+    Vector2 point = {(float)(x + pX), (float)(y + pY)};
+    points.emplace_back(point);
+  }
+
+  return points;
 }
 
 void Entity::CreatePolygonTexture(const std::string &texturePath)

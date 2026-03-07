@@ -20,6 +20,7 @@ public:
       std::tuple<int, int> size,
       int layerIndex,
       const std::vector<std::tuple<int, int>> &polygon,
+      bool selectable,
       const std::string &texturePath,
       TextureTransformation textureTransformation,
       int textureFrames,
@@ -29,11 +30,16 @@ public:
   int ZIndex();
   void Update();
   void Draw();
+  bool Selectable();
+  void Selected(bool selected);
+  std::vector<Vector2> Polygon();
 
 private:
   void CreatePolygonTexture(const std::string &texturePath);
   void Animate();
   std::tuple<int, int> m_position;
+  bool m_selectable;
+  bool m_selected;
   std::tuple<int, int> m_size;
   int m_layerIndex;
   std::vector<std::tuple<int, int>> m_polygon;
