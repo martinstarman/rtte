@@ -1,7 +1,8 @@
 g++                          \
   -o build/rtte.exe          \
-  src/main.cpp               \
   src/entity.cpp             \
+  src/input.cpp              \
+  src/main.cpp               \
   -I external/toml11/include \
   -I include                 \
   -L lib                     \

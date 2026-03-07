@@ -7,8 +7,7 @@
 #include <vector>
 
 #include "entity.h"
-
-const float CAMERA_MOVEMENT_SPEED = 5.0;
+#include "input.h"
 
 int main(int argc, char *argv[])
 {
@@ -83,22 +82,7 @@ int main(int argc, char *argv[])
 
   while (!WindowShouldClose())
   {
-    if (IsKeyDown(KEY_RIGHT))
-    {
-      camera.offset.x -= CAMERA_MOVEMENT_SPEED;
-    }
-    if (IsKeyDown(KEY_LEFT))
-    {
-      camera.offset.x += CAMERA_MOVEMENT_SPEED;
-    }
-    if (IsKeyDown(KEY_UP))
-    {
-      camera.offset.y += CAMERA_MOVEMENT_SPEED;
-    }
-    if (IsKeyDown(KEY_DOWN))
-    {
-      camera.offset.y -= CAMERA_MOVEMENT_SPEED;
-    }
+    Input::ProcessCameraMovement(&camera);
 
     for (auto &entity : entities)
     {
