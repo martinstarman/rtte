@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
 
     for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {
+      auto tomlId = toml::find<std::string>(tomlEntity, "Id");
       auto tomlPosition = toml::find<std::tuple<int, int>>(tomlEntity, "Position");
       auto tomlSelectable = toml::find<bool>(tomlEntity, "Selectable");
       auto tomlSize = toml::find<std::tuple<int, int>>(tomlEntity, "Size");
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
       auto tomlTextureAnimationFramesPerSecond = toml::find<int>(tomlAnimation, "FramesPerSecond");
 
       game->AddEntity(new Entity(
+          tomlId,
           tomlPosition,
           tomlSize,
           tomlLayerIndex,

@@ -88,6 +88,8 @@ void Game::ProcessCameraMovement()
 
 void Game::ProcessEntitySelection()
 {
+  std::string selectedEntityId = "";
+
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
   {
     for (auto &entity : m_entities)
@@ -104,6 +106,18 @@ void Game::ProcessEntitySelection()
         if (CheckCollisionPointPoly(point, &points[0], points.size()))
         {
           entity->Selected(true);
+          selectedEntityId = entity->Id();
+        }
+      }
+    }
+
+    if (selectedEntityId != "")
+    {
+      for (auto &entity : m_entities)
+      {
+        if (entity->Id() != selectedEntityId)
+        {
+          entity->Selected(false);
         }
       }
     }

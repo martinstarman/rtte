@@ -1,6 +1,7 @@
 #include "entity.h"
 
 Entity::Entity(
+    const std::string &id,
     std::tuple<int, int> position,
     std::tuple<int, int> size,
     int layerIndex,
@@ -10,7 +11,8 @@ Entity::Entity(
     TextureTransformation textureTransformation,
     int textureFrames,
     int textureFramesPerSecond)
-    : m_position(position),
+    : m_id(id),
+      m_position(position),
       m_selectable(selectable),
       m_selected(false),
       m_size(size),
@@ -34,6 +36,11 @@ Entity::Entity(
 Entity::~Entity()
 {
   UnloadTexture(m_texture);
+}
+
+const std::string &Entity::Id()
+{
+  return m_id;
 }
 
 int Entity::LayerIndex()

@@ -3,6 +3,9 @@
 # Entities
 #   TBD
 #
+# Entities.Id
+#   Unique entity id.
+#
 # Entities.LayerIndex
 #   Defines the order in which entities will be rendered.
 #   Entities are z-indexed within the same layer.
@@ -37,6 +40,7 @@
 #
 
 [[Entities]]
+Id = "0001"
 LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
 Position = [100, 100]
@@ -52,6 +56,7 @@ Frames = 1
 FramesPerSecond = 1
 
 [[Entities]]
+Id = "0002"
 LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
 Position = [200, 100]
@@ -67,6 +72,7 @@ Frames = 1
 FramesPerSecond = 1
 
 [[Entities]]
+Id = "0003"
 LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
 Position = [300, 100]
@@ -82,6 +88,7 @@ Frames = 2
 FramesPerSecond = 2
 
 [[Entities]]
+Id = "0004"
 LayerIndex = 0
 Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
 Position = [400, 100]
@@ -97,9 +104,26 @@ Frames = 1
 FramesPerSecond = 1
 
 [[Entities]]
+Id = "0005"
 LayerIndex = 1
 Polygon = [[22, 22], [22, 42], [42, 42], [42, 22]]
 Position = [150, 150]
+Selectable = true
+Size = [20, 20]
+
+[Entities.Texture]
+Path = "textures/character.png"
+Transformation = "none"
+
+[Entities.Texture.Animation]
+Frames = 2
+FramesPerSecond = 1
+
+[[Entities]]
+Id = "0006"
+LayerIndex = 1
+Polygon = [[22, 22], [22, 42], [42, 42], [42, 22]]
+Position = [300, 150]
 Selectable = true
 Size = [20, 20]
 

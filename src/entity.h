@@ -16,6 +16,7 @@ class Entity
 {
 public:
   Entity(
+      const std::string &id,
       std::tuple<int, int> position,
       std::tuple<int, int> size,
       int layerIndex,
@@ -26,6 +27,7 @@ public:
       int textureFrames,
       int textureFramesPerSecond);
   ~Entity();
+  const std::string &Id();
   int LayerIndex();
   int ZIndex();
   void Update();
@@ -37,6 +39,7 @@ public:
 private:
   void CreatePolygonTexture(const std::string &texturePath);
   void Animate();
+  std::string m_id;
   std::tuple<int, int> m_position;
   bool m_selectable;
   bool m_selected;
