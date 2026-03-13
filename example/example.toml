@@ -45,7 +45,7 @@ LayerIndex = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [100.0, 100.0]
 Selectable = false
-Size = [200.0, 300.0]
+Size = [0.0, 0.0]
 
 [Entities.Texture]
 Path = "textures/grass.png"
@@ -61,7 +61,7 @@ LayerIndex = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [200.0, 100.0]
 Selectable = false
-Size = [200.0, 300.0]
+Size = [0.0, 0.0]
 
 [Entities.Texture]
 Path = "textures/snow.png"
@@ -77,7 +77,7 @@ LayerIndex = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [300.0, 100.0]
 Selectable = false
-Size = [200.0, 300.0]
+Size = [0.0, 0.0]
 
 [Entities.Texture]
 Path = "textures/water.png"
@@ -93,7 +93,7 @@ LayerIndex = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [400.0, 100.0]
 Selectable = false
-Size = [200.0, 300.0]
+Size = [0.0, 0.0]
 
 [Entities.Texture]
 Path = "textures/sand.png"
@@ -106,10 +106,10 @@ FramesPerSecond = 1
 [[Entities]]
 Id = "0005"
 LayerIndex = 1
-Polygon = [[22.0, 22.0], [22.0, 42.0], [42.0, 42.0], [42.0, 22.0]]
+Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 Position = [150.0, 150.0]
 Selectable = true
-Size = [20.0, 20.0]
+Size = [64.0, 64.0]
 
 [Entities.Texture]
 Path = "textures/character.png"
@@ -122,10 +122,10 @@ FramesPerSecond = 1
 [[Entities]]
 Id = "0006"
 LayerIndex = 1
-Polygon = [[22.0, 22.0], [22.0, 42.0], [42.0, 42.0], [42.0, 22.0]]
+Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 Position = [300.0, 150.0]
 Selectable = true
-Size = [20.0, 20.0]
+Size = [64.0, 64.0]
 
 [Entities.Texture]
 Path = "textures/character.png"

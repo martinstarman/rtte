@@ -106,8 +106,10 @@ void Entity::Draw()
                          0.0f,
                          (float)(m_texture.width / m_textureFrames),
                          (float)m_texture.height};
+  Vector2 position = {m_position.x - (m_size.x / 2),
+                      m_position.y - (m_size.y / 2)};
 
-  DrawTextureRec(m_texture, rectangle, m_position, WHITE);
+  DrawTextureRec(m_texture, rectangle, position, WHITE);
   std::vector<Vector2> polygon = GetPolygon();
 
   for (int i = 0; i < polygon.size(); i++)
