@@ -1,7 +1,5 @@
 #include "game.h"
 
-const float CAMERA_MOVEMENT_SPEED = 5.0;
-
 Game::Game() : m_maxLayerIndex(0)
 {
   m_camera = {0};
@@ -21,8 +19,12 @@ Game::~Game()
 
 void Game::Update()
 {
-  ProcessCameraMovement();
-  ProcessEntitySelection();
+  HandleCameraOffset();
+  bool entitySelected = HandleEntitySelection();
+  if (!entitySelected)
+  {
+    HandleEntityMovement();
+  }
 
   for (auto &entity : m_entities)
   {
@@ -38,13 +40,13 @@ void Game::Draw()
 
   std::sort(m_entities.begin(), m_entities.end(),
             [](Entity *a, Entity *b)
-            { return a->ZIndex() < b->ZIndex(); });
+            { return a->GetZIndex() < b->GetZIndex(); });
 
   for (int layerIndex = 0; layerIndex <= m_maxLayerIndex; layerIndex++)
   {
     for (auto &entity : m_entities)
     {
-      if (entity->LayerIndex() == layerIndex)
+      if (entity->GetLayerIndex() == layerIndex)
       {
         entity->Draw();
       }
@@ -58,7 +60,8 @@ void Game::Draw()
 void Game::AddEntity(Entity *entity)
 {
   m_entities.emplace_back(entity);
-  int layerIndex = entity->LayerIndex();
+
+  int layerIndex = entity->GetLayerIndex();
 
   if (layerIndex > m_maxLayerIndex)
   {
@@ -66,7 +69,15 @@ void Game::AddEntity(Entity *entity)
   }
 }
 
-void Game::ProcessCameraMovement()
+Vector2 Game::GetGameMousePosition()
+{
+  Vector2 mousePosition = GetMousePosition();
+
+  return {mousePosition.x - m_camera.offset.x,
+          mousePosition.y - m_camera.offset.y};
+}
+
+void Game::HandleCameraOffset()
 {
   if (IsKeyDown(KEY_RIGHT))
   {
@@ -86,7 +97,7 @@ void Game::ProcessCameraMovement()
   }
 }
 
-void Game::ProcessEntitySelection()
+bool Game::HandleEntitySelection()
 {
   std::string selectedEntityId = "";
 
@@ -94,19 +105,15 @@ void Game::ProcessEntitySelection()
   {
     for (auto &entity : m_entities)
     {
-      if (entity->Selectable())
+      if (entity->GetSelectable() && !entity->GetSelected())
       {
-        Vector2 mousePos = GetMousePosition();
-        Vector2 point = {
-            mousePos.x - m_camera.offset.x,
-            mousePos.y - m_camera.offset.y,
-        };
-        std::vector<Vector2> points = entity->Polygon();
+        Vector2 mousePosition = GetGameMousePosition();
+        std::vector<Vector2> polygon = entity->GetPolygon();
 
-        if (CheckCollisionPointPoly(point, &points[0], points.size()))
+        if (CheckCollisionPointPoly(mousePosition, &polygon[0], polygon.size()))
         {
-          entity->Selected(true);
-          selectedEntityId = entity->Id();
+          entity->SetSelected(true);
+          selectedEntityId = entity->GetId();
         }
       }
     }
@@ -115,10 +122,27 @@ void Game::ProcessEntitySelection()
     {
       for (auto &entity : m_entities)
       {
-        if (entity->Id() != selectedEntityId)
+        if (entity->GetId() != selectedEntityId)
         {
-          entity->Selected(false);
+          entity->SetSelected(false);
         }
+      }
+    }
+  }
+
+  return selectedEntityId != "";
+}
+
+void Game::HandleEntityMovement()
+{
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+  {
+    for (auto &entity : m_entities)
+    {
+      if (entity->GetSelected())
+      {
+        Vector2 mousePosition = GetGameMousePosition();
+        entity->SetPath({mousePosition});
       }
     }
   }

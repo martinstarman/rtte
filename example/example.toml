@@ -3,49 +3,49 @@
 # Entities
 #   TBD
 #
-# Entities.Id
+# Entities.Id (string)
 #   Unique entity id.
 #
-# Entities.LayerIndex
+# Entities.LayerIndex (int)
 #   Defines the order in which entities will be rendered.
 #   Entities are z-indexed within the same layer.
 #
-# Entities.Polygon
+# Entities.Polygon (float[][])
 #   Entity shape.
 #   Points are relative to Position.
 #
-# Entities.Position
+# Entities.Position (float[])
 #   Entity position.
 #
-# Entities.Selectable
+# Entities.Selectable (boolean)
 #   Is entity selectable by clicking inside polygon.
 #
-# Entities.Size
+# Entities.Size (float[])
 #   Entity size.
 #
-# Entities.Texture.Path
+# Entities.Texture.Path (string)
 #   Texture file path relative to this file.
 # 
-# Entities.Texture.Transformation
+# Entities.Texture.Transformation (enum)
 #   Possible values are:
 #     "none" The texture is rendered as is.
 #     "fill" The texture will fill the entire polygon. If the texture is smaller, it will be repeated in both axes.
 #
-# Entities.Texture.Animation.Frames
+# Entities.Texture.Animation.Frames (int)
 #   Number of texture frames. 
 #   The frames in the image are on the x axis.
 #
-# Entities.Texture.Animation.FramesPerSecond
+# Entities.Texture.Animation.FramesPerSecond (int)
 #   Number of texture frames rendered per second.
 #
 
 [[Entities]]
 Id = "0001"
 LayerIndex = 0
-Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
-Position = [100, 100]
+Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+Position = [100.0, 100.0]
 Selectable = false
-Size = [200, 300]
+Size = [200.0, 300.0]
 
 [Entities.Texture]
 Path = "textures/grass.png"
@@ -58,10 +58,10 @@ FramesPerSecond = 1
 [[Entities]]
 Id = "0002"
 LayerIndex = 0
-Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
-Position = [200, 100]
+Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+Position = [200.0, 100.0]
 Selectable = false
-Size = [200, 300]
+Size = [200.0, 300.0]
 
 [Entities.Texture]
 Path = "textures/snow.png"
@@ -74,10 +74,10 @@ FramesPerSecond = 1
 [[Entities]]
 Id = "0003"
 LayerIndex = 0
-Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
-Position = [300, 100]
+Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+Position = [300.0, 100.0]
 Selectable = false
-Size = [200, 300]
+Size = [200.0, 300.0]
 
 [Entities.Texture]
 Path = "textures/water.png"
@@ -90,10 +90,10 @@ FramesPerSecond = 2
 [[Entities]]
 Id = "0004"
 LayerIndex = 0
-Polygon = [[0, 0], [100, 300], [200, 300], [100, 0]]
-Position = [400, 100]
+Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+Position = [400.0, 100.0]
 Selectable = false
-Size = [200, 300]
+Size = [200.0, 300.0]
 
 [Entities.Texture]
 Path = "textures/sand.png"
@@ -106,10 +106,10 @@ FramesPerSecond = 1
 [[Entities]]
 Id = "0005"
 LayerIndex = 1
-Polygon = [[22, 22], [22, 42], [42, 42], [42, 22]]
-Position = [150, 150]
+Polygon = [[22.0, 22.0], [22.0, 42.0], [42.0, 42.0], [42.0, 22.0]]
+Position = [150.0, 150.0]
 Selectable = true
-Size = [20, 20]
+Size = [20.0, 20.0]
 
 [Entities.Texture]
 Path = "textures/character.png"
@@ -122,10 +122,10 @@ FramesPerSecond = 1
 [[Entities]]
 Id = "0006"
 LayerIndex = 1
-Polygon = [[22, 22], [22, 42], [42, 42], [42, 22]]
-Position = [300, 150]
+Polygon = [[22.0, 22.0], [22.0, 42.0], [42.0, 42.0], [42.0, 22.0]]
+Position = [300.0, 150.0]
 Selectable = true
-Size = [20, 20]
+Size = [20.0, 20.0]
 
 [Entities.Texture]
 Path = "textures/character.png"

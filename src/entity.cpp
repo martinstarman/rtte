@@ -2,26 +2,26 @@
 
 Entity::Entity(
     const std::string &id,
-    std::tuple<int, int> position,
-    std::tuple<int, int> size,
+    Vector2 position,
+    Vector2 size,
     int layerIndex,
-    const std::vector<std::tuple<int, int>> &polygon,
+    const std::vector<Vector2> &polygon,
     bool selectable,
     const std::string &texturePath,
     TextureTransformation textureTransformation,
     int textureFrames,
-    int textureFramesPerSecond)
-    : m_id(id),
-      m_position(position),
-      m_selectable(selectable),
-      m_selected(false),
-      m_size(size),
-      m_layerIndex(layerIndex),
-      m_polygon(polygon),
-      m_textureFrames(textureFrames),
-      m_textureFramesPerSecond(textureFramesPerSecond),
-      m_textureFrame(0),
-      m_frames(0)
+    int textureFramesPerSecond) : m_id(id),
+                                  m_position(position),
+                                  m_selectable(selectable),
+                                  m_selected(false),
+                                  m_size(size),
+                                  m_layerIndex(layerIndex),
+                                  m_polygon(polygon),
+                                  m_textureFrames(textureFrames),
+                                  m_textureFramesPerSecond(textureFramesPerSecond),
+                                  m_textureFrame(0),
+                                  m_frames(0),
+                                  m_path({})
 {
   if (textureTransformation == TextureTransformation::None)
   {
@@ -38,79 +38,84 @@ Entity::~Entity()
   UnloadTexture(m_texture);
 }
 
-const std::string &Entity::Id()
+const std::string &Entity::GetId()
 {
   return m_id;
 }
 
-int Entity::LayerIndex()
+int Entity::GetLayerIndex()
 {
   return m_layerIndex;
 }
 
-int Entity::ZIndex()
+float Entity::GetZIndex()
 {
-  return std::get<1>(m_position) + std::get<1>(m_size);
+  return m_position.y + m_size.y;
+}
+
+bool Entity::GetSelectable()
+{
+  return m_selectable;
+}
+
+bool Entity::GetSelected()
+{
+  return m_selected;
+}
+
+std::vector<Vector2> Entity::GetPolygon()
+{
+  std::vector<Vector2> polygon;
+
+  for (int i = 0; i < m_polygon.size(); i++)
+  {
+    Vector2 polygonPoint = {m_position.x + m_polygon.at(i).x,
+                            m_position.y + m_polygon.at(i).y};
+    polygon.emplace_back(polygonPoint);
+  }
+
+  return polygon;
+}
+
+void Entity::SetSelected(bool selected)
+{
+  m_selected = selected;
+}
+
+void Entity::SetPath(const std::vector<Vector2> &path)
+{
+  m_path = path;
 }
 
 void Entity::Update()
 {
+  if (m_path.size() > 0)
+  {
+    HandleMovement();
+  }
+
   if (m_textureFrames > 1)
   {
-    Animate();
+    HandleAnimation();
   }
 }
 
 void Entity::Draw()
 {
-  Rectangle rectangle = {
-      (float)(m_textureFrame * (m_texture.width / m_textureFrames)),
-      0.0f,
-      (float)(m_texture.width / m_textureFrames),
-      (float)m_texture.height};
+  Rectangle rectangle = {(float)(m_textureFrame * (m_texture.width / m_textureFrames)),
+                         0.0f,
+                         (float)(m_texture.width / m_textureFrames),
+                         (float)m_texture.height};
 
-  int x = std::get<0>(m_position);
-  int y = std::get<1>(m_position);
-  Vector2 position = {(float)x, (float)y};
+  DrawTextureRec(m_texture, rectangle, m_position, WHITE);
+  std::vector<Vector2> polygon = GetPolygon();
 
-  DrawTextureRec(m_texture, rectangle, position, WHITE);
-
-  for (int i = 0; i < m_polygon.size(); i++)
+  for (int i = 0; i < polygon.size(); i++)
   {
-    DrawLine(
-        x + std::get<0>(m_polygon.at(i)),
-        y + std::get<1>(m_polygon.at(i)),
-        x + std::get<0>(m_polygon.at((i + 1) % m_polygon.size())),
-        y + std::get<1>(m_polygon.at((i + 1) % m_polygon.size())),
-        m_selected ? GREEN : WHITE);
+    DrawLineV(polygon.at(i),
+              polygon.at((i + 1) % polygon.size()),
+              m_selected ? GREEN : WHITE);
   }
-}
-
-bool Entity::Selectable()
-{
-  return m_selectable;
-}
-
-void Entity::Selected(bool selected)
-{
-  m_selected = selected;
-}
-
-std::vector<Vector2> Entity::Polygon()
-{
-  std::vector<Vector2> points;
-  int x = std::get<0>(m_position);
-  int y = std::get<1>(m_position);
-
-  for (int i = 0; i < m_polygon.size(); i++)
-  {
-    int pX = std::get<0>(m_polygon.at(i));
-    int pY = std::get<1>(m_polygon.at(i));
-    Vector2 point = {(float)(x + pX), (float)(y + pY)};
-    points.emplace_back(point);
-  }
-
-  return points;
 }
 
 void Entity::CreatePolygonTexture(const std::string &texturePath)
@@ -119,34 +124,27 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
   int maxX = INT_MIN;
   int minY = INT_MAX;
   int maxY = INT_MIN;
-  std::vector<Vector2> points;
 
   for (int i = 0; i < m_polygon.size(); i++)
   {
-    int pX = std::get<0>(m_polygon.at(i));
-    int pY = std::get<1>(m_polygon.at(i));
-    Vector2 polygonPoint = {(float)pX, (float)pY};
-
-    points.emplace_back(polygonPoint);
-
-    if (pX < minX)
+    if (m_polygon.at(i).x < minX)
     {
-      minX = pX;
+      minX = m_polygon.at(i).x;
     }
 
-    if (pX > maxX)
+    if (m_polygon.at(i).x > maxX)
     {
-      maxX = pX;
+      maxX = m_polygon.at(i).x;
     }
 
-    if (pY < minY)
+    if (m_polygon.at(i).y < minY)
     {
-      minY = pY;
+      minY = m_polygon.at(i).y;
     }
 
-    if (pY > maxY)
+    if (m_polygon.at(i).y > maxY)
     {
-      maxY = pY;
+      maxY = m_polygon.at(i).y;
     }
   }
 
@@ -163,9 +161,9 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
     {
       for (int y = 0; y < height; y++)
       {
-        Vector2 point = {(float)x, (float)y};
+        Vector2 pixel = {(float)x, (float)y};
 
-        if (CheckCollisionPointPoly(point, &points[0], points.size()))
+        if (CheckCollisionPointPoly(pixel, &m_polygon[0], m_polygon.size()))
         {
           Color color = GetImageColor(sourceImage,
                                       (x % sourceImageFrameWidth) + (frame * sourceImageFrameWidth),
@@ -181,7 +179,7 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
   UnloadImage(targetImage);
 }
 
-void Entity::Animate()
+void Entity::HandleAnimation()
 {
   m_frames++;
 
@@ -194,5 +192,27 @@ void Entity::Animate()
     {
       m_textureFrame = 0;
     }
+  }
+}
+
+void Entity::HandleMovement()
+{
+  int dx = m_path.at(0).x - m_position.x;
+  int dy = m_path.at(0).y - m_position.y;
+  float magnitude = std::sqrt((dx * dx) + (dy * dy));
+
+  if (magnitude != 0)
+  {
+    m_position = {m_position.x + ((dx / magnitude) * MOVEMENT_SPEED),
+                  m_position.y + ((dy / magnitude) * MOVEMENT_SPEED)};
+  }
+
+  dx = m_path.at(0).x - m_position.x;
+  dy = m_path.at(0).y - m_position.y;
+  magnitude = std::sqrt((dx * dx) + (dy * dy));
+
+  if (magnitude < MOVEMENT_SPEED / 2)
+  {
+    m_path.clear();
   }
 }

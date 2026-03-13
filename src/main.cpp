@@ -2,7 +2,6 @@
 #include <raylib.h>
 #include <string>
 #include <toml.hpp>
-#include <tuple>
 #include <vector>
 
 #include "entity.h"
@@ -31,11 +30,11 @@ int main(int argc, char *argv[])
     for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {
       auto tomlId = toml::find<std::string>(tomlEntity, "Id");
-      auto tomlPosition = toml::find<std::tuple<int, int>>(tomlEntity, "Position");
+      auto tomlPosition = toml::find<std::vector<float>>(tomlEntity, "Position");
       auto tomlSelectable = toml::find<bool>(tomlEntity, "Selectable");
-      auto tomlSize = toml::find<std::tuple<int, int>>(tomlEntity, "Size");
+      auto tomlSize = toml::find<std::vector<float>>(tomlEntity, "Size");
       auto tomlLayerIndex = toml::find<int>(tomlEntity, "LayerIndex");
-      auto tomlPolygon = toml::find<std::vector<std::tuple<int, int>>>(tomlEntity, "Polygon");
+      auto tomlPolygon = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Polygon");
       auto tomlTexture = toml::find<toml::value>(tomlEntity, "Texture");
       auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlTexture, "Path");
       auto tomlTextureTransformation = toml::find<std::string>(tomlTexture, "Transformation");
@@ -43,19 +42,28 @@ int main(int argc, char *argv[])
       auto tomlTextureAnimationFrames = toml::find<int>(tomlAnimation, "Frames");
       auto tomlTextureAnimationFramesPerSecond = toml::find<int>(tomlAnimation, "FramesPerSecond");
 
-      game->AddEntity(new Entity(
-          tomlId,
-          tomlPosition,
-          tomlSize,
-          tomlLayerIndex,
-          tomlPolygon,
-          tomlSelectable,
-          tomlTexturePath.string(),
-          tomlTextureTransformation == "fill"
-              ? TextureTransformation::Fill
-              : TextureTransformation::None,
-          tomlTextureAnimationFrames,
-          tomlTextureAnimationFramesPerSecond));
+      Vector2 position = {tomlPosition.at(0), tomlPosition.at(1)};
+      Vector2 size = {tomlSize.at(0), tomlSize.at(1)};
+      std::vector<Vector2> polygon;
+      for (int i = 0; i < tomlPolygon.size(); i++)
+      {
+        Vector2 polygonPoint = {tomlPolygon.at(i).at(0),
+                                tomlPolygon.at(i).at(1)};
+        polygon.emplace_back(polygonPoint);
+      }
+
+      game->AddEntity(new Entity(tomlId,
+                                 position,
+                                 size,
+                                 tomlLayerIndex,
+                                 polygon,
+                                 tomlSelectable,
+                                 tomlTexturePath.string(),
+                                 tomlTextureTransformation == "fill"
+                                     ? TextureTransformation::Fill
+                                     : TextureTransformation::None,
+                                 tomlTextureAnimationFrames,
+                                 tomlTextureAnimationFramesPerSecond));
     }
   }
   catch (const toml::exception &error)

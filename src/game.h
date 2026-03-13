@@ -7,6 +7,8 @@
 
 #include "entity.h"
 
+const float CAMERA_MOVEMENT_SPEED = 5.0;
+
 class Game
 {
 public:
@@ -17,9 +19,11 @@ public:
   void AddEntity(Entity *entity);
 
 private:
-  void ProcessCameraMovement();
-  void ProcessEntitySelection();
   Camera2D m_camera;
   std::vector<Entity *> m_entities;
   int m_maxLayerIndex;
+  Vector2 GetGameMousePosition();
+  void HandleCameraOffset();
+  bool HandleEntitySelection();
+  void HandleEntityMovement();
 };

@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cmath>
 #include <limits>
 #include <raylib.h>
 #include <string>
-#include <tuple>
 #include <vector>
+
+const float MOVEMENT_SPEED = 2.5;
 
 enum TextureTransformation
 {
@@ -15,40 +17,43 @@ enum TextureTransformation
 class Entity
 {
 public:
-  Entity(
-      const std::string &id,
-      std::tuple<int, int> position,
-      std::tuple<int, int> size,
-      int layerIndex,
-      const std::vector<std::tuple<int, int>> &polygon,
-      bool selectable,
-      const std::string &texturePath,
-      TextureTransformation textureTransformation,
-      int textureFrames,
-      int textureFramesPerSecond);
+  Entity(const std::string &id,
+         Vector2 position,
+         Vector2 size,
+         int layerIndex,
+         const std::vector<Vector2> &polygon,
+         bool selectable,
+         const std::string &texturePath,
+         TextureTransformation textureTransformation,
+         int textureFrames,
+         int textureFramesPerSecond);
   ~Entity();
-  const std::string &Id();
-  int LayerIndex();
-  int ZIndex();
+  const std::string &GetId();
+  int GetLayerIndex();
+  float GetZIndex();
+  bool GetSelectable();
+  bool GetSelected();
+  std::vector<Vector2> GetPolygon();
+  void SetSelected(bool selected);
+  void SetPath(const std::vector<Vector2> &path);
   void Update();
   void Draw();
-  bool Selectable();
-  void Selected(bool selected);
-  std::vector<Vector2> Polygon();
 
 private:
-  void CreatePolygonTexture(const std::string &texturePath);
-  void Animate();
   std::string m_id;
-  std::tuple<int, int> m_position;
+  Vector2 m_position;
   bool m_selectable;
   bool m_selected;
-  std::tuple<int, int> m_size;
+  Vector2 m_size;
   int m_layerIndex;
-  std::vector<std::tuple<int, int>> m_polygon;
+  std::vector<Vector2> m_polygon;
   Texture m_texture;
   int m_textureFrames;
   int m_textureFramesPerSecond;
   int m_textureFrame;
   int m_frames;
+  std::vector<Vector2> m_path;
+  void CreatePolygonTexture(const std::string &texturePath);
+  void HandleAnimation();
+  void HandleMovement();
 };
