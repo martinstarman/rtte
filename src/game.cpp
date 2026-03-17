@@ -25,6 +25,7 @@ void Game::Update()
   {
     HandleEntityMovement();
   }
+  HandleEntityTraces();
 
   for (auto &entity : m_entities)
   {
@@ -143,6 +144,30 @@ void Game::HandleEntityMovement()
       {
         Vector2 mousePosition = GetGameMousePosition();
         entity->SetPath({mousePosition});
+      }
+    }
+  }
+}
+
+void Game::HandleEntityTraces()
+{
+  for (const auto leavesTraceEntities : m_entities)
+  {
+    if (leavesTraceEntities->GetLeavesTraces())
+    {
+      std::vector<Vector2> polygon = leavesTraceEntities->GetPolygon();
+
+      for (const auto movingEntities : m_entities)
+      {
+        if (movingEntities->IsMoving())
+        {
+          Vector2 position = movingEntities->GetPosition();
+
+          if (CheckCollisionPointPoly(position, &polygon[0], polygon.size()))
+          {
+            movingEntities->SetTrace();
+          }
+        }
       }
     }
   }

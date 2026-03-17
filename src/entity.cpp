@@ -10,18 +10,21 @@ Entity::Entity(
     const std::string &texturePath,
     TextureTransformation textureTransformation,
     int textureFrames,
-    int textureFramesPerSecond) : m_id(id),
-                                  m_position(position),
-                                  m_selectable(selectable),
-                                  m_selected(false),
-                                  m_size(size),
-                                  m_layerIndex(layerIndex),
-                                  m_polygon(polygon),
-                                  m_textureFrames(textureFrames),
-                                  m_textureFramesPerSecond(textureFramesPerSecond),
-                                  m_textureFrame(0),
-                                  m_frames(0),
-                                  m_path({})
+    int textureFramesPerSecond,
+    bool leavesTraces,
+    const std::string &traceTexturePath) : m_id(id),
+                                           m_position(position),
+                                           m_selectable(selectable),
+                                           m_selected(false),
+                                           m_size(size),
+                                           m_layerIndex(layerIndex),
+                                           m_polygon(polygon),
+                                           m_textureFrames(textureFrames),
+                                           m_textureFramesPerSecond(textureFramesPerSecond),
+                                           m_textureFrame(0),
+                                           m_frames(0),
+                                           m_path({}),
+                                           m_leavesTraces(leavesTraces)
 {
   if (textureTransformation == TextureTransformation::None)
   {
@@ -31,11 +34,21 @@ Entity::Entity(
   {
     CreatePolygonTexture(texturePath);
   }
+
+  if (traceTexturePath != "")
+  {
+    m_traceTexture = LoadTexture(traceTexturePath.c_str());
+  }
 }
 
 Entity::~Entity()
 {
   UnloadTexture(m_texture);
+
+  if (IsTextureValid(m_traceTexture))
+  {
+    UnloadTexture(m_traceTexture);
+  }
 }
 
 const std::string &Entity::GetId()
@@ -77,6 +90,21 @@ std::vector<Vector2> Entity::GetPolygon()
   return polygon;
 }
 
+Vector2 Entity::GetPosition()
+{
+  return m_position;
+}
+
+bool Entity::GetLeavesTraces()
+{
+  return m_leavesTraces;
+}
+
+bool Entity::IsMoving()
+{
+  return m_path.size() > 0;
+}
+
 void Entity::SetSelected(bool selected)
 {
   m_selected = selected;
@@ -85,6 +113,26 @@ void Entity::SetSelected(bool selected)
 void Entity::SetPath(const std::vector<Vector2> &path)
 {
   m_path = path;
+}
+
+void Entity::SetTrace()
+{
+  if (m_traces.size() > 0 && m_traces.back().ttl <= 10) // TODO: toml
+  {
+    return;
+  }
+
+  float dx = m_path[0].x - m_position.x;
+  float dy = m_path[0].y - m_position.y;
+  float rotation = std::atan2(dy, dx) * (180.0f / M_PI);
+
+  Trace trace = {
+      m_position,
+      rotation,
+      0,
+  };
+
+  m_traces.emplace_back(trace);
 }
 
 void Entity::Update()
@@ -98,10 +146,23 @@ void Entity::Update()
   {
     HandleAnimation();
   }
+
+  for (auto &trace : m_traces)
+  {
+    trace.ttl += 1;
+  }
+
+  m_traces.erase(std::remove_if(
+                     m_traces.begin(),
+                     m_traces.end(),
+                     [](Trace trace)
+                     { return trace.ttl >= 100; }), // TODO: toml
+                 m_traces.end());
 }
 
 void Entity::Draw()
 {
+  // draw texture
   Rectangle rectangle = {(float)(m_textureFrame * (m_texture.width / m_textureFrames)),
                          0.0f,
                          (float)(m_texture.width / m_textureFrames),
@@ -110,6 +171,22 @@ void Entity::Draw()
                       m_position.y - (m_size.y / 2)};
 
   DrawTextureRec(m_texture, rectangle, position, WHITE);
+
+  // draw traces
+  float textureWidth = (float)m_traceTexture.width;
+  float textureHeight = (float)m_traceTexture.height;
+
+  for (const auto &trace : m_traces)
+  {
+    DrawTexturePro(m_traceTexture,
+                   {0, 0, textureWidth, textureHeight},
+                   {trace.position.x, trace.position.y, textureWidth, textureHeight},
+                   {textureWidth / 2, textureHeight / 2},
+                   trace.rotation,
+                   WHITE);
+  }
+
+  // draw polygon
   std::vector<Vector2> polygon = GetPolygon();
 
   for (int i = 0; i < polygon.size(); i++)

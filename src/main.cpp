@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
       auto tomlSelectable = toml::find<bool>(tomlEntity, "Selectable");
       auto tomlSize = toml::find<std::vector<float>>(tomlEntity, "Size");
       auto tomlLayerIndex = toml::find<int>(tomlEntity, "LayerIndex");
+      auto tomlLeavesTraces = toml::find<bool>(tomlEntity, "LeavesTraces");
       auto tomlPolygon = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Polygon");
       auto tomlTexture = toml::find<toml::value>(tomlEntity, "Texture");
       auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlTexture, "Path");
@@ -41,6 +42,8 @@ int main(int argc, char *argv[])
       auto tomlAnimation = toml::find<toml::value>(tomlTexture, "Animation");
       auto tomlTextureAnimationFrames = toml::find<int>(tomlAnimation, "Frames");
       auto tomlTextureAnimationFramesPerSecond = toml::find<int>(tomlAnimation, "FramesPerSecond");
+      auto tomlTrace = toml::find<toml::value>(tomlEntity, "Trace");
+      auto tomlTraceTexturePath = toml::find<std::string>(tomlTrace, "TexturePath");
 
       Vector2 position = {tomlPosition.at(0), tomlPosition.at(1)};
       Vector2 size = {tomlSize.at(0), tomlSize.at(1)};
@@ -51,6 +54,9 @@ int main(int argc, char *argv[])
                                 tomlPolygon.at(i).at(1)};
         polygon.emplace_back(polygonPoint);
       }
+      std::string traceTexturePath = tomlTraceTexturePath == ""
+                                         ? ""
+                                         : (mapFileDir / tomlTraceTexturePath).string();
 
       game->AddEntity(new Entity(tomlId,
                                  position,
@@ -63,7 +69,9 @@ int main(int argc, char *argv[])
                                      ? TextureTransformation::Fill
                                      : TextureTransformation::None,
                                  tomlTextureAnimationFrames,
-                                 tomlTextureAnimationFramesPerSecond));
+                                 tomlTextureAnimationFramesPerSecond,
+                                 tomlLeavesTraces,
+                                 traceTexturePath));
     }
   }
   catch (const toml::exception &error)
