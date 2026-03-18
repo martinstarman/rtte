@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <raylib.h>
@@ -14,6 +15,13 @@ enum TextureTransformation
   Fill,
 };
 
+struct Trace
+{
+  Vector2 position;
+  float rotation;
+  int frames;
+};
+
 class Entity
 {
 public:
@@ -26,7 +34,11 @@ public:
          const std::string &texturePath,
          TextureTransformation textureTransformation,
          int textureFrames,
-         int textureFramesPerSecond);
+         int textureFramesPerSecond,
+         bool leavesTraces,
+         const std::string &traceTexturePath,
+         int traceFramesToLive,
+         int traceFramesSpacing);
   ~Entity();
   const std::string &GetId();
   int GetLayerIndex();
@@ -34,8 +46,12 @@ public:
   bool GetSelectable();
   bool GetSelected();
   std::vector<Vector2> GetPolygon();
+  Vector2 GetPosition();
+  bool GetLeavesTraces();
+  bool IsMoving();
   void SetSelected(bool selected);
   void SetPath(const std::vector<Vector2> &path);
+  void SetTrace();
   void Update();
   void Draw();
 
@@ -53,6 +69,11 @@ private:
   int m_textureFrame;
   int m_frames;
   std::vector<Vector2> m_path;
+  bool m_leavesTraces;
+  Texture m_traceTexture;
+  std::vector<Trace> m_traces;
+  int m_traceFramesToLive;
+  int m_traceFramesSpacing;
   void CreatePolygonTexture(const std::string &texturePath);
   void HandleAnimation();
   void HandleMovement();

@@ -1,4 +1,5 @@
 # RTTE mission toml file
+#   All file paths must to be relative to this file.
 #
 # Entities
 #   TBD
@@ -9,6 +10,9 @@
 # Entities.LayerIndex (int)
 #   Defines the order in which entities will be rendered.
 #   Entities are z-indexed within the same layer.
+#
+# Entities.LeavesTraces (boolean)
+#   It leaves traces on itself.
 #
 # Entities.Polygon (float[][])
 #   Entity shape.
@@ -24,7 +28,7 @@
 #   Entity size.
 #
 # Entities.Texture.Path (string)
-#   Texture file path relative to this file.
+#   Texture file path.
 # 
 # Entities.Texture.Transformation (enum)
 #   Possible values are:
@@ -38,10 +42,20 @@
 # Entities.Texture.Animation.FramesPerSecond (int)
 #   Number of texture frames rendered per second.
 #
+# Entities.Trace.FramesSpacing (int)
+#   Number of frames after which a new trace can be created.
+#
+# Entities.Trace.FramesToLive (int)
+#   Number of frames when the image trace texture will be visible.
+#
+# Entities.Trace.TexturePath (string)
+#   Texture file.
+#
 
 [[Entities]]
 Id = "0001"
 LayerIndex = 0
+LeavesTraces = false
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [100.0, 100.0]
 Selectable = false
@@ -55,9 +69,15 @@ Transformation = "fill"
 Frames = 1
 FramesPerSecond = 1
 
+[Entities.Trace]
+FramesSpacing = 0
+FramesToLive = 0
+TexturePath = ""
+
 [[Entities]]
 Id = "0002"
 LayerIndex = 0
+LeavesTraces = true
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [200.0, 100.0]
 Selectable = false
@@ -71,9 +91,15 @@ Transformation = "fill"
 Frames = 1
 FramesPerSecond = 1
 
+[Entities.Trace]
+FramesSpacing = 0
+FramesToLive = 0
+TexturePath = ""
+
 [[Entities]]
 Id = "0003"
 LayerIndex = 0
+LeavesTraces = false
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [300.0, 100.0]
 Selectable = false
@@ -87,9 +113,15 @@ Transformation = "fill"
 Frames = 2
 FramesPerSecond = 2
 
+[Entities.Trace]
+FramesSpacing = 0
+FramesToLive = 0
+TexturePath = ""
+
 [[Entities]]
 Id = "0004"
 LayerIndex = 0
+LeavesTraces = true
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [400.0, 100.0]
 Selectable = false
@@ -103,9 +135,15 @@ Transformation = "fill"
 Frames = 1
 FramesPerSecond = 1
 
+[Entities.Trace]
+FramesSpacing = 0
+FramesToLive = 0
+TexturePath = ""
+
 [[Entities]]
 Id = "0005"
 LayerIndex = 1
+LeavesTraces = false
 Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 Position = [150.0, 150.0]
 Selectable = true
@@ -119,9 +157,15 @@ Transformation = "none"
 Frames = 2
 FramesPerSecond = 1
 
+[Entities.Trace]
+FramesSpacing = 10
+FramesToLive = 100
+TexturePath = "textures/character-trace.png"
+
 [[Entities]]
 Id = "0006"
 LayerIndex = 1
+LeavesTraces = false
 Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 Position = [300.0, 150.0]
 Selectable = true
@@ -134,3 +178,8 @@ Transformation = "none"
 [Entities.Texture.Animation]
 Frames = 2
 FramesPerSecond = 1
+
+[Entities.Trace]
+FramesSpacing = 10
+FramesToLive = 100
+TexturePath = "textures/character-trace.png"

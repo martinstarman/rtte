@@ -26,4 +26,5 @@ private:
   void HandleCameraOffset();
   bool HandleEntitySelection();
   void HandleEntityMovement();
+  void HandleEntityTraces();
 };
