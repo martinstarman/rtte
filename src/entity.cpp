@@ -12,19 +12,23 @@ Entity::Entity(
     int textureFrames,
     int textureFramesPerSecond,
     bool leavesTraces,
-    const std::string &traceTexturePath) : m_id(id),
-                                           m_position(position),
-                                           m_selectable(selectable),
-                                           m_selected(false),
-                                           m_size(size),
-                                           m_layerIndex(layerIndex),
-                                           m_polygon(polygon),
-                                           m_textureFrames(textureFrames),
-                                           m_textureFramesPerSecond(textureFramesPerSecond),
-                                           m_textureFrame(0),
-                                           m_frames(0),
-                                           m_path({}),
-                                           m_leavesTraces(leavesTraces)
+    const std::string &traceTexturePath,
+    int traceFramesToLive,
+    int traceFramesSpacing) : m_id(id),
+                              m_position(position),
+                              m_selectable(selectable),
+                              m_selected(false),
+                              m_size(size),
+                              m_layerIndex(layerIndex),
+                              m_polygon(polygon),
+                              m_textureFrames(textureFrames),
+                              m_textureFramesPerSecond(textureFramesPerSecond),
+                              m_textureFrame(0),
+                              m_frames(0),
+                              m_path({}),
+                              m_leavesTraces(leavesTraces),
+                              m_traceFramesToLive(traceFramesToLive),
+                              m_traceFramesSpacing(traceFramesSpacing)
 {
   if (textureTransformation == TextureTransformation::None)
   {
@@ -117,7 +121,7 @@ void Entity::SetPath(const std::vector<Vector2> &path)
 
 void Entity::SetTrace()
 {
-  if (m_traces.size() > 0 && m_traces.back().ttl <= 10) // TODO: toml
+  if (m_traces.size() > 0 && m_traces.back().frames <= m_traceFramesSpacing)
   {
     return;
   }
@@ -149,14 +153,11 @@ void Entity::Update()
 
   for (auto &trace : m_traces)
   {
-    trace.ttl += 1;
+    trace.frames += 1;
   }
 
-  m_traces.erase(std::remove_if(
-                     m_traces.begin(),
-                     m_traces.end(),
-                     [](Trace trace)
-                     { return trace.ttl >= 100; }), // TODO: toml
+  m_traces.erase(std::remove_if(m_traces.begin(), m_traces.end(), [this](Trace trace)
+                                { return trace.frames >= m_traceFramesToLive; }),
                  m_traces.end());
 }
 

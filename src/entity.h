@@ -19,7 +19,7 @@ struct Trace
 {
   Vector2 position;
   float rotation;
-  int ttl;
+  int frames;
 };
 
 class Entity
@@ -36,7 +36,9 @@ public:
          int textureFrames,
          int textureFramesPerSecond,
          bool leavesTraces,
-         const std::string &traceTexturePath);
+         const std::string &traceTexturePath,
+         int traceFramesToLive,
+         int traceFramesSpacing);
   ~Entity();
   const std::string &GetId();
   int GetLayerIndex();
@@ -70,6 +72,8 @@ private:
   bool m_leavesTraces;
   Texture m_traceTexture;
   std::vector<Trace> m_traces;
+  int m_traceFramesToLive;
+  int m_traceFramesSpacing;
   void CreatePolygonTexture(const std::string &texturePath);
   void HandleAnimation();
   void HandleMovement();

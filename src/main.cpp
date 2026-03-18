@@ -44,6 +44,8 @@ int main(int argc, char *argv[])
       auto tomlTextureAnimationFramesPerSecond = toml::find<int>(tomlAnimation, "FramesPerSecond");
       auto tomlTrace = toml::find<toml::value>(tomlEntity, "Trace");
       auto tomlTraceTexturePath = toml::find<std::string>(tomlTrace, "TexturePath");
+      auto tomlTraceFramesToLive = toml::find<int>(tomlTrace, "FramesToLive");
+      auto tomlTraceFramesSpacing = toml::find<int>(tomlTrace, "FramesSpacing");
 
       Vector2 position = {tomlPosition.at(0), tomlPosition.at(1)};
       Vector2 size = {tomlSize.at(0), tomlSize.at(1)};
@@ -71,7 +73,9 @@ int main(int argc, char *argv[])
                                  tomlTextureAnimationFrames,
                                  tomlTextureAnimationFramesPerSecond,
                                  tomlLeavesTraces,
-                                 traceTexturePath));
+                                 traceTexturePath,
+                                 tomlTraceFramesToLive,
+                                 tomlTraceFramesSpacing));
     }
   }
   catch (const toml::exception &error)
