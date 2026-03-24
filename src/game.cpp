@@ -100,13 +100,13 @@ void Game::HandleCameraOffset()
 
 bool Game::HandleEntitySelection()
 {
-  std::string selectedEntityId = "";
+  int selectedEntityId = -1;
 
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
   {
     for (auto &entity : m_entities)
     {
-      if (entity->GetSelectable() && !entity->GetSelected())
+      if (entity->GetLayerIndex() > 0 && !entity->GetSelected())
       {
         Vector2 mousePosition = GetGameMousePosition();
         std::vector<Vector2> polygon = entity->GetPolygon();
@@ -119,7 +119,7 @@ bool Game::HandleEntitySelection()
       }
     }
 
-    if (selectedEntityId != "")
+    if (selectedEntityId != -1)
     {
       for (auto &entity : m_entities)
       {
@@ -131,7 +131,7 @@ bool Game::HandleEntitySelection()
     }
   }
 
-  return selectedEntityId != "";
+  return selectedEntityId != -1;
 }
 
 void Game::HandleEntityMovement()
@@ -153,7 +153,7 @@ void Game::HandleEntityTraces()
 {
   for (const auto leavesTraceEntities : m_entities)
   {
-    if (leavesTraceEntities->GetLeavesTraces())
+    if (leavesTraceEntities->GetShowsTraces())
     {
       std::vector<Vector2> polygon = leavesTraceEntities->GetPolygon();
 

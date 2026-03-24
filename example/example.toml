@@ -4,14 +4,14 @@
 # Entities
 #   TBD
 #
-# Entities.Id (string)
-#   Unique entity id.
-#
 # Entities.LayerIndex (int)
 #   Defines the order in which entities will be rendered.
 #   Entities are z-indexed within the same layer.
+#   Textures in layer 0 will fill the entire polygon. If the texture is smaller, it will be repeated 
+#     in both axes.
+#   Textures in layer > 0 are rendered as is.
 #
-# Entities.LeavesTraces (boolean)
+# Entities.ShowsTraces (?boolean)
 #   It leaves traces on itself.
 #
 # Entities.Polygon (float[][])
@@ -21,165 +21,114 @@
 # Entities.Position (float[])
 #   Entity position.
 #
-# Entities.Selectable (boolean)
-#   Is entity selectable by clicking inside polygon.
+# Entities.Texture.FramesInRow (int)
+#   Number of texture frames.
+#   The frames in the image are on the x axis.
 #
-# Entities.Size (float[])
-#   Entity size.
+# Entities.Texture.FramesPerSecond (int)
+#   Number of texture frames rendered per second.
 #
 # Entities.Texture.Path (string)
 #   Texture file path.
-# 
-# Entities.Texture.Transformation (enum)
-#   Possible values are:
-#     "none" The texture is rendered as is.
-#     "fill" The texture will fill the entire polygon. If the texture is smaller, it will be repeated in both axes.
-#
-# Entities.Texture.Animation.Frames (int)
-#   Number of texture frames. 
-#   The frames in the image are on the x axis.
-#
-# Entities.Texture.Animation.FramesPerSecond (int)
-#   Number of texture frames rendered per second.
-#
-# Entities.Trace.FramesSpacing (int)
-#   Number of frames after which a new trace can be created.
-#
-# Entities.Trace.FramesToLive (int)
-#   Number of frames when the image trace texture will be visible.
 #
 # Entities.Trace.TexturePath (string)
 #   Texture file.
 #
+# Entities.Trace.TicksToLive (int)
+#   Number of frames when the image trace texture will be visible.
+#
+# Entities.Trace.TracesPerSecond (int)
+#   Number of trace texture rendered per second.
+#
 
 [[Entities]]
-Id = "0001"
 LayerIndex = 0
-LeavesTraces = false
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [100.0, 100.0]
-Selectable = false
-Size = [0.0, 0.0]
 
 [Entities.Texture]
-Path = "textures/grass.png"
-Transformation = "fill"
-
-[Entities.Texture.Animation]
-Frames = 1
+FramesInRow = 1
 FramesPerSecond = 1
+Path = "textures/grass.png"
 
 [Entities.Trace]
-FramesSpacing = 0
-FramesToLive = 0
 TexturePath = ""
+TicksToLive = 0
+TracesPerSecond = 0
 
 [[Entities]]
-Id = "0002"
 LayerIndex = 0
-LeavesTraces = true
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [200.0, 100.0]
-Selectable = false
-Size = [0.0, 0.0]
+ShowsTraces = true
 
 [Entities.Texture]
-Path = "textures/snow.png"
-Transformation = "fill"
-
-[Entities.Texture.Animation]
-Frames = 1
+FramesInRow = 1
 FramesPerSecond = 1
+Path = "textures/snow.png"
 
 [Entities.Trace]
-FramesSpacing = 0
-FramesToLive = 0
 TexturePath = ""
+TicksToLive = 0
+TracesPerSecond = 0
 
 [[Entities]]
-Id = "0003"
 LayerIndex = 0
-LeavesTraces = false
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [300.0, 100.0]
-Selectable = false
-Size = [0.0, 0.0]
 
 [Entities.Texture]
-Path = "textures/water.png"
-Transformation = "fill"
-
-[Entities.Texture.Animation]
-Frames = 2
+FramesInRow = 2
 FramesPerSecond = 2
+Path = "textures/water.png"
 
 [Entities.Trace]
-FramesSpacing = 0
-FramesToLive = 0
 TexturePath = ""
+TicksToLive = 0
+TracesPerSecond = 0
 
 [[Entities]]
-Id = "0004"
 LayerIndex = 0
-LeavesTraces = true
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 Position = [400.0, 100.0]
-Selectable = false
-Size = [0.0, 0.0]
+ShowsTraces = true
 
 [Entities.Texture]
-Path = "textures/sand.png"
-Transformation = "fill"
-
-[Entities.Texture.Animation]
-Frames = 1
+FramesInRow = 1
 FramesPerSecond = 1
+Path = "textures/sand.png"
 
 [Entities.Trace]
-FramesSpacing = 0
-FramesToLive = 0
 TexturePath = ""
+TicksToLive = 0
+TracesPerSecond = 0
 
 [[Entities]]
-Id = "0005"
 LayerIndex = 1
-LeavesTraces = false
 Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 Position = [150.0, 150.0]
-Selectable = true
-Size = [64.0, 64.0]
 
 [Entities.Texture]
-Path = "textures/character.png"
-Transformation = "none"
-
-[Entities.Texture.Animation]
-Frames = 2
+FramesInRow = 2
 FramesPerSecond = 1
+Path = "textures/character.png"
 
 [Entities.Trace]
-FramesSpacing = 10
-FramesToLive = 100
 TexturePath = "textures/character-trace.png"
+TicksToLive = 100
+TracesPerSecond = 3
 
 [[Entities]]
-Id = "0006"
 LayerIndex = 1
-LeavesTraces = false
 Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 Position = [300.0, 150.0]
-Selectable = true
-Size = [64.0, 64.0]
 
 [Entities.Texture]
-Path = "textures/character.png"
-Transformation = "none"
-
-[Entities.Texture.Animation]
-Frames = 2
+FramesInRow = 2
 FramesPerSecond = 1
+Path = "textures/character.png"
 
 [Entities.Trace]
-FramesSpacing = 10
-FramesToLive = 100
 TexturePath = "textures/character-trace.png"
+TicksToLive = 100
+TracesPerSecond = 3

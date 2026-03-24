@@ -1,42 +1,38 @@
 #include "entity.h"
 
 Entity::Entity(
-    const std::string &id,
+    int id,
     Vector2 position,
-    Vector2 size,
     int layerIndex,
     const std::vector<Vector2> &polygon,
-    bool selectable,
     const std::string &texturePath,
-    TextureTransformation textureTransformation,
-    int textureFrames,
+    int textureFramesInRow,
     int textureFramesPerSecond,
-    bool leavesTraces,
+    bool showsTraces,
     const std::string &traceTexturePath,
-    int traceFramesToLive,
-    int traceFramesSpacing) : m_id(id),
-                              m_position(position),
-                              m_selectable(selectable),
-                              m_selected(false),
-                              m_size(size),
-                              m_layerIndex(layerIndex),
-                              m_polygon(polygon),
-                              m_textureFrames(textureFrames),
-                              m_textureFramesPerSecond(textureFramesPerSecond),
-                              m_textureFrame(0),
-                              m_frames(0),
-                              m_path({}),
-                              m_leavesTraces(leavesTraces),
-                              m_traceFramesToLive(traceFramesToLive),
-                              m_traceFramesSpacing(traceFramesSpacing)
+    int traceTicksToLive,
+    int traceTracesPerSecond) : m_id(id),
+                                m_position(position),
+                                m_selected(false),
+                                m_layerIndex(layerIndex),
+                                m_polygon(polygon),
+                                m_textureFramesInRow(textureFramesInRow),
+                                m_textureFramesPerSecond(textureFramesPerSecond),
+                                m_currentTextureFrame(0),
+                                m_animationTicks(0),
+                                m_path({}),
+                                m_showsTraces(showsTraces),
+                                m_traceTicksToLive(traceTicksToLive),
+                                m_traceTracesPerSecond(traceTracesPerSecond),
+                                m_textureRectangleY(0.0)
 {
-  if (textureTransformation == TextureTransformation::None)
+  if (layerIndex == 0)
   {
-    m_texture = LoadTexture(texturePath.c_str());
+    CreatePolygonTexture(texturePath);
   }
   else
   {
-    CreatePolygonTexture(texturePath);
+    m_texture = LoadTexture(texturePath.c_str());
   }
 
   if (traceTexturePath != "")
@@ -55,7 +51,7 @@ Entity::~Entity()
   }
 }
 
-const std::string &Entity::GetId()
+int Entity::GetId()
 {
   return m_id;
 }
@@ -67,12 +63,7 @@ int Entity::GetLayerIndex()
 
 float Entity::GetZIndex()
 {
-  return m_position.y + m_size.y;
-}
-
-bool Entity::GetSelectable()
-{
-  return m_selectable;
+  return m_position.y + (m_texture.height / 2.0);
 }
 
 bool Entity::GetSelected()
@@ -99,9 +90,9 @@ Vector2 Entity::GetPosition()
   return m_position;
 }
 
-bool Entity::GetLeavesTraces()
+bool Entity::GetShowsTraces()
 {
-  return m_leavesTraces;
+  return m_showsTraces;
 }
 
 bool Entity::IsMoving()
@@ -117,26 +108,28 @@ void Entity::SetSelected(bool selected)
 void Entity::SetPath(const std::vector<Vector2> &path)
 {
   m_path = path;
+
+  // set correct octant sprite frame
+  int textureFramesInColumn = m_layerIndex == 0 ? 1 : 8;
+  float angle = GetAngleBetween(path[0], m_position);
+  Octant octant = GetOctantFrom(-angle);
+  m_textureRectangleY = (m_texture.height / (float)textureFramesInColumn) * (float)(octant);
 }
 
 void Entity::SetTrace()
 {
-  if (m_traces.size() > 0 && m_traces.back().frames <= m_traceFramesSpacing)
+  if (m_traces.size() == 0 || m_traces.back().ticks >= (60 / m_traceTracesPerSecond))
   {
-    return;
+    float degrees = GetAngleBetween(m_path[0], m_position) * (180.0f / M_PI);
+
+    Trace trace = {
+        m_position,
+        degrees,
+        0,
+    };
+
+    m_traces.emplace_back(trace);
   }
-
-  float dx = m_path[0].x - m_position.x;
-  float dy = m_path[0].y - m_position.y;
-  float rotation = std::atan2(dy, dx) * (180.0f / M_PI);
-
-  Trace trace = {
-      m_position,
-      rotation,
-      0,
-  };
-
-  m_traces.emplace_back(trace);
 }
 
 void Entity::Update()
@@ -146,33 +139,23 @@ void Entity::Update()
     HandleMovement();
   }
 
-  if (m_textureFrames > 1)
+  if (m_textureFramesInRow > 1)
   {
     HandleAnimation();
   }
 
   for (auto &trace : m_traces)
   {
-    trace.frames += 1;
+    trace.ticks += 1;
   }
 
   m_traces.erase(std::remove_if(m_traces.begin(), m_traces.end(), [this](Trace trace)
-                                { return trace.frames >= m_traceFramesToLive; }),
+                                { return trace.ticks >= m_traceTicksToLive; }),
                  m_traces.end());
 }
 
 void Entity::Draw()
 {
-  // draw texture
-  Rectangle rectangle = {(float)(m_textureFrame * (m_texture.width / m_textureFrames)),
-                         0.0f,
-                         (float)(m_texture.width / m_textureFrames),
-                         (float)m_texture.height};
-  Vector2 position = {m_position.x - (m_size.x / 2),
-                      m_position.y - (m_size.y / 2)};
-
-  DrawTextureRec(m_texture, rectangle, position, WHITE);
-
   // draw traces
   float textureWidth = (float)m_traceTexture.width;
   float textureHeight = (float)m_traceTexture.height;
@@ -186,6 +169,18 @@ void Entity::Draw()
                    trace.rotation,
                    WHITE);
   }
+
+  // draw texture
+  int textureFramesInColumn = m_layerIndex == 0 ? 1 : 8;
+  float rectX = (float)(m_currentTextureFrame * (m_texture.width / m_textureFramesInRow));
+  float rectWidth = (float)(m_texture.width / m_textureFramesInRow);
+  float rectHeight = (float)(m_texture.height / textureFramesInColumn);
+
+  Rectangle rectangle = {rectX, m_textureRectangleY, rectWidth, rectHeight};
+  Vector2 position = {m_position.x - (m_layerIndex == 0 ? 0 : rectWidth / 2),
+                      m_position.y - (m_layerIndex == 0 ? 0 : rectHeight / 2)};
+
+  DrawTextureRec(m_texture, rectangle, position, WHITE);
 
   // draw polygon
   std::vector<Vector2> polygon = GetPolygon();
@@ -232,10 +227,10 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
   int height = maxY - minY;
 
   Image sourceImage = LoadImage(texturePath.c_str());
-  Image targetImage = GenImageColor(targetImageFrameWidth * m_textureFrames, height, BLANK);
-  int sourceImageFrameWidth = sourceImage.width / m_textureFrames;
+  Image targetImage = GenImageColor(targetImageFrameWidth * m_textureFramesInRow, height, BLANK);
+  int sourceImageFrameWidth = sourceImage.width / m_textureFramesInRow;
 
-  for (int frame = 0; frame < m_textureFrames; frame++)
+  for (int frame = 0; frame < m_textureFramesInRow; frame++)
   {
     for (int x = 0; x < targetImageFrameWidth; x++)
     {
@@ -261,16 +256,16 @@ void Entity::CreatePolygonTexture(const std::string &texturePath)
 
 void Entity::HandleAnimation()
 {
-  m_frames++;
+  m_animationTicks++;
 
-  if (m_frames >= (60 / m_textureFramesPerSecond))
+  if (m_animationTicks >= (60 / m_textureFramesPerSecond))
   {
-    m_frames = 0;
-    m_textureFrame++;
+    m_animationTicks = 0;
+    m_currentTextureFrame++;
 
-    if (m_textureFrame >= m_textureFrames)
+    if (m_currentTextureFrame >= m_textureFramesInRow)
     {
-      m_textureFrame = 0;
+      m_currentTextureFrame = 0;
     }
   }
 }

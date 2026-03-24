@@ -26,29 +26,24 @@ int main(int argc, char *argv[])
     std::filesystem::path mapFilePath = argv[1];
     std::filesystem::path mapFileDir = mapFilePath.parent_path();
     auto data = toml::parse(mapFilePath.string(), toml::spec::v(1, 1, 0));
+    int id = 0;
 
     for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {
-      auto tomlId = toml::find<std::string>(tomlEntity, "Id");
       auto tomlPosition = toml::find<std::vector<float>>(tomlEntity, "Position");
-      auto tomlSelectable = toml::find<bool>(tomlEntity, "Selectable");
-      auto tomlSize = toml::find<std::vector<float>>(tomlEntity, "Size");
       auto tomlLayerIndex = toml::find<int>(tomlEntity, "LayerIndex");
-      auto tomlLeavesTraces = toml::find<bool>(tomlEntity, "LeavesTraces");
+      auto tomlShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
       auto tomlPolygon = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Polygon");
       auto tomlTexture = toml::find<toml::value>(tomlEntity, "Texture");
       auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlTexture, "Path");
-      auto tomlTextureTransformation = toml::find<std::string>(tomlTexture, "Transformation");
-      auto tomlAnimation = toml::find<toml::value>(tomlTexture, "Animation");
-      auto tomlTextureAnimationFrames = toml::find<int>(tomlAnimation, "Frames");
-      auto tomlTextureAnimationFramesPerSecond = toml::find<int>(tomlAnimation, "FramesPerSecond");
+      auto tomlTextureFramesInRow = toml::find<int>(tomlTexture, "FramesInRow");
+      auto tomlTextureFramesPerSecond = toml::find<int>(tomlTexture, "FramesPerSecond");
       auto tomlTrace = toml::find<toml::value>(tomlEntity, "Trace");
       auto tomlTraceTexturePath = toml::find<std::string>(tomlTrace, "TexturePath");
-      auto tomlTraceFramesToLive = toml::find<int>(tomlTrace, "FramesToLive");
-      auto tomlTraceFramesSpacing = toml::find<int>(tomlTrace, "FramesSpacing");
+      auto tomlTraceTicksToLive = toml::find<int>(tomlTrace, "TicksToLive");
+      auto tomlTraceTracesPerSecond = toml::find<int>(tomlTrace, "TracesPerSecond");
 
       Vector2 position = {tomlPosition.at(0), tomlPosition.at(1)};
-      Vector2 size = {tomlSize.at(0), tomlSize.at(1)};
       std::vector<Vector2> polygon;
       for (int i = 0; i < tomlPolygon.size(); i++)
       {
@@ -60,22 +55,19 @@ int main(int argc, char *argv[])
                                          ? ""
                                          : (mapFileDir / tomlTraceTexturePath).string();
 
-      game->AddEntity(new Entity(tomlId,
+      game->AddEntity(new Entity(id,
                                  position,
-                                 size,
                                  tomlLayerIndex,
                                  polygon,
-                                 tomlSelectable,
                                  tomlTexturePath.string(),
-                                 tomlTextureTransformation == "fill"
-                                     ? TextureTransformation::Fill
-                                     : TextureTransformation::None,
-                                 tomlTextureAnimationFrames,
-                                 tomlTextureAnimationFramesPerSecond,
-                                 tomlLeavesTraces,
+                                 tomlTextureFramesInRow,
+                                 tomlTextureFramesPerSecond,
+                                 tomlShowsTraces,
                                  traceTexturePath,
-                                 tomlTraceFramesToLive,
-                                 tomlTraceFramesSpacing));
+                                 tomlTraceTicksToLive,
+                                 tomlTraceTracesPerSecond));
+
+      id += 1;
     }
   }
   catch (const toml::exception &error)
