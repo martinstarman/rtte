@@ -5,10 +5,34 @@
 #include <limits>
 #include <raylib.h>
 #include <string>
-#include "utils.h"
 #include <vector>
 
+#include "utils.h"
+
 const float MOVEMENT_SPEED = 2.5;
+
+struct Config
+{
+  int id;
+  Vector2 position;
+  int layerIndex;
+  std::vector<Vector2> polygon;
+  bool showsTraces;
+};
+
+struct TextureConfig
+{
+  std::string path;
+  int framesInRow;
+  int framesPerSecond;
+};
+
+struct TraceConfig
+{
+  std::string path;
+  int ticksToLive;
+  int tracesPerSecond;
+};
 
 struct Trace
 {
@@ -20,17 +44,10 @@ struct Trace
 class Entity
 {
 public:
-  Entity(int id,
-         Vector2 position,
-         int layerIndex,
-         const std::vector<Vector2> &polygon,
-         const std::string &texturePath,
-         int textureFramesInRow,
-         int textureFramesPerSecond,
-         bool showsTraces,
-         const std::string &traceTexturePath,
-         int traceTicksToLive,
-         int traceTracesPerSecond);
+  Entity(
+      const Config &config,
+      const TextureConfig &textureConfig,
+      const TraceConfig &traceConfig);
   ~Entity();
   int GetId();
   int GetLayerIndex();
@@ -47,26 +64,21 @@ public:
   void Draw();
 
 private:
-  int m_id;
+  Config m_config;
   Vector2 m_position;
   bool m_selected;
-  int m_layerIndex;
-  std::vector<Vector2> m_polygon;
+  std::vector<Vector2> m_path;
+  Octant m_octant;
+  TextureConfig m_textureConfig;
   Texture m_texture;
-  int m_textureFramesInRow;
-  int m_textureFramesPerSecond;
   int m_currentTextureFrame;
   int m_animationTicks;
-  std::vector<Vector2> m_path;
-  bool m_showsTraces;
+  TraceConfig m_traceConfig;
   Texture m_traceTexture;
   std::vector<Trace> m_traces;
-  int m_traceTicksToLive;
-  int m_traceTracesPerSecond;
-  float m_textureRectangleY;
 
 private:
-  void CreatePolygonTexture(const std::string &texturePath);
+  void CreatePolygonTexture();
   void HandleAnimation();
   void HandleMovement();
 };

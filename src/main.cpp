@@ -55,17 +55,29 @@ int main(int argc, char *argv[])
                                          ? ""
                                          : (mapFileDir / tomlTraceTexturePath).string();
 
-      game->AddEntity(new Entity(id,
-                                 position,
-                                 tomlLayerIndex,
-                                 polygon,
-                                 tomlTexturePath.string(),
-                                 tomlTextureFramesInRow,
-                                 tomlTextureFramesPerSecond,
-                                 tomlShowsTraces,
-                                 traceTexturePath,
-                                 tomlTraceTicksToLive,
-                                 tomlTraceTracesPerSecond));
+      Config config = {
+          id,
+          position,
+          tomlLayerIndex,
+          polygon,
+          tomlShowsTraces,
+      };
+
+      TextureConfig textureConfig = {
+          tomlTexturePath.string(),
+          tomlTextureFramesInRow,
+          tomlTextureFramesPerSecond,
+      };
+
+      TraceConfig traceConfig = {
+          traceTexturePath,
+          tomlTraceTicksToLive,
+          tomlTraceTracesPerSecond,
+      };
+
+      game->AddEntity(new Entity(config,
+                                 textureConfig,
+                                 traceConfig));
 
       id += 1;
     }
