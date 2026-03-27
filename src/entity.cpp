@@ -8,7 +8,7 @@ Entity::Entity(
       m_position(config.defaultPosition),
       m_selected(false),
       m_path({}),
-      m_octant(Octant::East),
+      m_octant(config.defaultOctant),
       m_textureConfig(textureConfig),
       m_currentTextureFrame(0),
       m_animationTicks(0),

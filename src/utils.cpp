@@ -14,3 +14,8 @@ Octant GetOctantFrom(float angle)
   int octant = (int)(value + 0.5); // round
   return static_cast<Octant>(octant % 8);
 }
+
+Octant GetOctantFrom(const std::string &string)
+{
+  return OCTANT_MAP.at(string);
+}

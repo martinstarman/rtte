@@ -6,6 +6,7 @@
 
 #include "entity.h"
 #include "game.h"
+#include "utils.h"
 
 int main(int argc, char *argv[])
 {
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
 
     for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {
+      auto tomlDefaultOctant = toml::find_or<std::string>(tomlEntity, "DefaultOctant", "East");
       auto tomlDefaultPosition = toml::find<std::vector<float>>(tomlEntity, "DefaultPosition");
       auto tomlDrawingLayer = toml::find<int>(tomlEntity, "DrawingLayer");
       auto tomlShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
@@ -57,7 +59,7 @@ int main(int argc, char *argv[])
       for (int i = 0; i < tomlShape.size(); i++)
       {
         Vector2 shapePoint = {tomlShape.at(i).at(0),
-                                tomlShape.at(i).at(1)};
+                              tomlShape.at(i).at(1)};
         shape.emplace_back(shapePoint);
       }
 
@@ -67,6 +69,7 @@ int main(int argc, char *argv[])
           tomlDrawingLayer,
           shape,
           tomlShowsTraces,
+          GetOctantFrom(tomlDefaultOctant),
       };
 
       TextureConfig textureConfig = {

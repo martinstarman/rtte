@@ -18,6 +18,7 @@ struct Config
   int drawingLayer;
   std::vector<Vector2> shape;
   bool showsTraces;
+  Octant defaultOctant;
 };
 
 struct TextureConfig
