@@ -14,7 +14,7 @@
 # Entities.ShowsTraces (?boolean)
 #   It leaves traces on itself.
 #
-# Entities.Polygon (float[][])
+# Entities.Shape (float[][])
 #   Entity shape.
 #   Points are relative to DefaultPosition.
 #
@@ -49,7 +49,7 @@
 
 [[Entities]]
 DrawingLayer = 0
-Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 DefaultPosition = [100.0, 100.0]
 
 [Entities.Texture]
@@ -59,7 +59,7 @@ Path = "textures/grass.png"
 
 [[Entities]]
 DrawingLayer = 0
-Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 DefaultPosition = [200.0, 100.0]
 ShowsTraces = true
 
@@ -70,7 +70,7 @@ Path = "textures/snow.png"
 
 [[Entities]]
 DrawingLayer = 0
-Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 DefaultPosition = [300.0, 100.0]
 
 [Entities.Texture]
@@ -80,7 +80,7 @@ Path = "textures/water.png"
 
 [[Entities]]
 DrawingLayer = 0
-Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 DefaultPosition = [400.0, 100.0]
 ShowsTraces = true
 
@@ -91,7 +91,7 @@ Path = "textures/sand.png"
 
 [[Entities]]
 DrawingLayer = 1
-Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
+Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 DefaultPosition = [150.0, 150.0]
 
 [Entities.Texture]
@@ -106,7 +106,7 @@ TracesPerSecond = 3
 
 [[Entities]]
 DrawingLayer = 1
-Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
+Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 DefaultPosition = [300.0, 150.0]
 
 [Entities.Texture]

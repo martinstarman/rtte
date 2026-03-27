@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
       auto tomlDefaultPosition = toml::find<std::vector<float>>(tomlEntity, "DefaultPosition");
       auto tomlDrawingLayer = toml::find<int>(tomlEntity, "DrawingLayer");
       auto tomlShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
-      auto tomlPolygon = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Polygon");
+      auto tomlShape = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Shape");
       auto tomlTexture = toml::find<toml::value>(tomlEntity, "Texture");
       auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlTexture, "Path");
       auto tomlTextureFramesInRow = toml::find<int>(tomlTexture, "FramesInRow");
@@ -53,19 +53,19 @@ int main(int argc, char *argv[])
 
       Vector2 defaultPosition = {tomlDefaultPosition.at(0),
                                  tomlDefaultPosition.at(1)};
-      std::vector<Vector2> polygon;
-      for (int i = 0; i < tomlPolygon.size(); i++)
+      std::vector<Vector2> shape;
+      for (int i = 0; i < tomlShape.size(); i++)
       {
-        Vector2 polygonPoint = {tomlPolygon.at(i).at(0),
-                                tomlPolygon.at(i).at(1)};
-        polygon.emplace_back(polygonPoint);
+        Vector2 shapePoint = {tomlShape.at(i).at(0),
+                                tomlShape.at(i).at(1)};
+        shape.emplace_back(shapePoint);
       }
 
       Config config = {
           id,
           defaultPosition,
           tomlDrawingLayer,
-          polygon,
+          shape,
           tomlShowsTraces,
       };
 

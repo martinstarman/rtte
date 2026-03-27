@@ -109,9 +109,9 @@ bool Game::HandleEntitySelection()
       if (entity->GetDrawingLayer() > 0 && !entity->GetSelected())
       {
         Vector2 mousePosition = GetGameMousePosition();
-        std::vector<Vector2> polygon = entity->GetPolygon();
+        std::vector<Vector2> shape = entity->GetShape();
 
-        if (CheckCollisionPointPoly(mousePosition, &polygon[0], polygon.size()))
+        if (CheckCollisionPointPoly(mousePosition, &shape[0], shape.size()))
         {
           entity->SetSelected(true);
           selectedEntityId = entity->GetId();
@@ -155,7 +155,7 @@ void Game::HandleEntityTraces()
   {
     if (leavesTraceEntities->GetShowsTraces())
     {
-      std::vector<Vector2> polygon = leavesTraceEntities->GetPolygon();
+      std::vector<Vector2> shape = leavesTraceEntities->GetShape();
 
       for (const auto movingEntities : m_entities)
       {
@@ -163,7 +163,7 @@ void Game::HandleEntityTraces()
         {
           Vector2 position = movingEntities->GetPosition();
 
-          if (CheckCollisionPointPoly(position, &polygon[0], polygon.size()))
+          if (CheckCollisionPointPoly(position, &shape[0], shape.size()))
           {
             movingEntities->SetTrace();
           }

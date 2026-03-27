@@ -59,18 +59,18 @@ bool Entity::GetSelected()
   return m_selected;
 }
 
-std::vector<Vector2> Entity::GetPolygon()
+std::vector<Vector2> Entity::GetShape()
 {
-  std::vector<Vector2> polygon;
+  std::vector<Vector2> shape;
 
-  for (int i = 0; i < m_config.polygon.size(); i++)
+  for (int i = 0; i < m_config.shape.size(); i++)
   {
-    Vector2 polygonPoint = {m_position.x + m_config.polygon.at(i).x,
-                            m_position.y + m_config.polygon.at(i).y};
-    polygon.emplace_back(polygonPoint);
+    Vector2 shapePoint = {m_position.x + m_config.shape.at(i).x,
+                            m_position.y + m_config.shape.at(i).y};
+    shape.emplace_back(shapePoint);
   }
 
-  return polygon;
+  return shape;
 }
 
 Vector2 Entity::GetPosition()
@@ -165,13 +165,13 @@ void Entity::Draw()
 
   DrawTextureRec(m_texture, rectangle, position, WHITE);
 
-  // draw polygon
-  std::vector<Vector2> polygon = GetPolygon();
+  // draw shape
+  std::vector<Vector2> shape = GetShape();
 
-  for (int i = 0; i < polygon.size(); i++)
+  for (int i = 0; i < shape.size(); i++)
   {
-    DrawLineV(polygon.at(i),
-              polygon.at((i + 1) % polygon.size()),
+    DrawLineV(shape.at(i),
+              shape.at((i + 1) % shape.size()),
               m_selected ? GREEN : WHITE);
   }
 }
@@ -183,26 +183,26 @@ void Entity::CreatePolygonTexture()
   int minY = INT_MAX;
   int maxY = INT_MIN;
 
-  for (int i = 0; i < m_config.polygon.size(); i++)
+  for (int i = 0; i < m_config.shape.size(); i++)
   {
-    if (m_config.polygon.at(i).x < minX)
+    if (m_config.shape.at(i).x < minX)
     {
-      minX = m_config.polygon.at(i).x;
+      minX = m_config.shape.at(i).x;
     }
 
-    if (m_config.polygon.at(i).x > maxX)
+    if (m_config.shape.at(i).x > maxX)
     {
-      maxX = m_config.polygon.at(i).x;
+      maxX = m_config.shape.at(i).x;
     }
 
-    if (m_config.polygon.at(i).y < minY)
+    if (m_config.shape.at(i).y < minY)
     {
-      minY = m_config.polygon.at(i).y;
+      minY = m_config.shape.at(i).y;
     }
 
-    if (m_config.polygon.at(i).y > maxY)
+    if (m_config.shape.at(i).y > maxY)
     {
-      maxY = m_config.polygon.at(i).y;
+      maxY = m_config.shape.at(i).y;
     }
   }
 
@@ -221,7 +221,7 @@ void Entity::CreatePolygonTexture()
       {
         Vector2 pixel = {(float)x, (float)y};
 
-        if (CheckCollisionPointPoly(pixel, &m_config.polygon[0], m_config.polygon.size()))
+        if (CheckCollisionPointPoly(pixel, &m_config.shape[0], m_config.shape.size()))
         {
           Color color = GetImageColor(sourceImage,
                                       (x % sourceImageFrameWidth) + (frame * sourceImageFrameWidth),

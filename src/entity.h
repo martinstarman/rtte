@@ -16,7 +16,7 @@ struct Config
   int id;
   Vector2 defaultPosition;
   int drawingLayer;
-  std::vector<Vector2> polygon;
+  std::vector<Vector2> shape;
   bool showsTraces;
 };
 
@@ -53,7 +53,7 @@ public:
   int GetDrawingLayer();
   float GetZIndex();
   bool GetSelected();
-  std::vector<Vector2> GetPolygon();
+  std::vector<Vector2> GetShape();
   Vector2 GetPosition();
   bool GetShowsTraces();
   bool IsMoving();
