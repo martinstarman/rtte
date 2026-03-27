@@ -14,7 +14,7 @@ Entity::Entity(
       m_animationTicks(0),
       m_traceConfig(traceConfig)
 {
-  if (config.layerIndex == 0)
+  if (config.drawingLayer == 0)
   {
     CreatePolygonTexture();
   }
@@ -44,9 +44,9 @@ int Entity::GetId()
   return m_config.id;
 }
 
-int Entity::GetLayerIndex()
+int Entity::GetDrawingLayer()
 {
-  return m_config.layerIndex;
+  return m_config.drawingLayer;
 }
 
 float Entity::GetZIndex()
@@ -154,14 +154,14 @@ void Entity::Draw()
   }
 
   // draw texture
-  int textureFramesInColumn = m_config.layerIndex == 0 ? 1 : 8;
+  int textureFramesInColumn = m_config.drawingLayer == 0 ? 1 : 8;
   float rectX = (float)(m_currentTextureFrame * (m_texture.width / m_textureConfig.framesInRow));
   float rectY = (float)(m_texture.height / textureFramesInColumn * m_octant);
   float rectWidth = (float)(m_texture.width / m_textureConfig.framesInRow);
   float rectHeight = (float)(m_texture.height / textureFramesInColumn);
   Rectangle rectangle = {rectX, rectY, rectWidth, rectHeight};
-  Vector2 position = {m_position.x - (m_config.layerIndex == 0 ? 0 : rectWidth / 2),
-                      m_position.y - (m_config.layerIndex == 0 ? 0 : rectHeight / 2)};
+  Vector2 position = {m_position.x - (m_config.drawingLayer == 0 ? 0 : rectWidth / 2),
+                      m_position.y - (m_config.drawingLayer == 0 ? 0 : rectHeight / 2)};
 
   DrawTextureRec(m_texture, rectangle, position, WHITE);
 

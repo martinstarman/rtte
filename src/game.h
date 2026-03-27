@@ -21,7 +21,7 @@ public:
 private:
   Camera2D m_camera;
   std::vector<Entity *> m_entities;
-  int m_maxLayerIndex;
+  int m_maxDrawingLayer;
   Vector2 GetGameMousePosition();
   void HandleCameraOffset();
   bool HandleEntitySelection();

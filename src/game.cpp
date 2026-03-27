@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game() : m_maxLayerIndex(0)
+Game::Game() : m_maxDrawingLayer(0)
 {
   m_camera = {0};
   m_camera.target = {0, 0};
@@ -43,11 +43,11 @@ void Game::Draw()
             [](Entity *a, Entity *b)
             { return a->GetZIndex() < b->GetZIndex(); });
 
-  for (int layerIndex = 0; layerIndex <= m_maxLayerIndex; layerIndex++)
+  for (int drawingLayer = 0; drawingLayer <= m_maxDrawingLayer; drawingLayer++)
   {
     for (auto &entity : m_entities)
     {
-      if (entity->GetLayerIndex() == layerIndex)
+      if (entity->GetDrawingLayer() == drawingLayer)
       {
         entity->Draw();
       }
@@ -62,11 +62,11 @@ void Game::AddEntity(Entity *entity)
 {
   m_entities.emplace_back(entity);
 
-  int layerIndex = entity->GetLayerIndex();
+  int drawingLayer = entity->GetDrawingLayer();
 
-  if (layerIndex > m_maxLayerIndex)
+  if (drawingLayer > m_maxDrawingLayer)
   {
-    m_maxLayerIndex = layerIndex;
+    m_maxDrawingLayer = drawingLayer;
   }
 }
 
@@ -106,7 +106,7 @@ bool Game::HandleEntitySelection()
   {
     for (auto &entity : m_entities)
     {
-      if (entity->GetLayerIndex() > 0 && !entity->GetSelected())
+      if (entity->GetDrawingLayer() > 0 && !entity->GetSelected())
       {
         Vector2 mousePosition = GetGameMousePosition();
         std::vector<Vector2> polygon = entity->GetPolygon();

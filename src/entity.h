@@ -15,7 +15,7 @@ struct Config
 {
   int id;
   Vector2 defaultPosition;
-  int layerIndex;
+  int drawingLayer;
   std::vector<Vector2> polygon;
   bool showsTraces;
 };
@@ -50,7 +50,7 @@ public:
       const TraceConfig &traceConfig);
   ~Entity();
   int GetId();
-  int GetLayerIndex();
+  int GetDrawingLayer();
   float GetZIndex();
   bool GetSelected();
   std::vector<Vector2> GetPolygon();

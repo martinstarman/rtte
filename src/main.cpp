@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {
       auto tomlDefaultPosition = toml::find<std::vector<float>>(tomlEntity, "DefaultPosition");
-      auto tomlLayerIndex = toml::find<int>(tomlEntity, "LayerIndex");
+      auto tomlDrawingLayer = toml::find<int>(tomlEntity, "DrawingLayer");
       auto tomlShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
       auto tomlPolygon = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Polygon");
       auto tomlTexture = toml::find<toml::value>(tomlEntity, "Texture");
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
       Config config = {
           id,
           defaultPosition,
-          tomlLayerIndex,
+          tomlDrawingLayer,
           polygon,
           tomlShowsTraces,
       };

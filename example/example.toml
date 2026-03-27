@@ -4,7 +4,7 @@
 # Entities
 #   TBD
 #
-# Entities.LayerIndex (int)
+# Entities.DrawingLayer (int)
 #   Defines the order in which entities will be rendered.
 #   Entities are z-indexed within the same layer.
 #   Textures in layer 0 will fill the entire polygon. If the texture is smaller, it will be repeated 
@@ -48,7 +48,7 @@
 #
 
 [[Entities]]
-LayerIndex = 0
+DrawingLayer = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 DefaultPosition = [100.0, 100.0]
 
@@ -58,7 +58,7 @@ FramesPerSecond = 1
 Path = "textures/grass.png"
 
 [[Entities]]
-LayerIndex = 0
+DrawingLayer = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 DefaultPosition = [200.0, 100.0]
 ShowsTraces = true
@@ -69,7 +69,7 @@ FramesPerSecond = 1
 Path = "textures/snow.png"
 
 [[Entities]]
-LayerIndex = 0
+DrawingLayer = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 DefaultPosition = [300.0, 100.0]
 
@@ -79,7 +79,7 @@ FramesPerSecond = 2
 Path = "textures/water.png"
 
 [[Entities]]
-LayerIndex = 0
+DrawingLayer = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 DefaultPosition = [400.0, 100.0]
 ShowsTraces = true
@@ -90,7 +90,7 @@ FramesPerSecond = 1
 Path = "textures/sand.png"
 
 [[Entities]]
-LayerIndex = 1
+DrawingLayer = 1
 Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 DefaultPosition = [150.0, 150.0]
 
@@ -105,7 +105,7 @@ TicksToLive = 100
 TracesPerSecond = 3
 
 [[Entities]]
-LayerIndex = 1
+DrawingLayer = 1
 Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 DefaultPosition = [300.0, 150.0]
 
