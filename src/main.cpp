@@ -38,10 +38,18 @@ int main(int argc, char *argv[])
       auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlTexture, "Path");
       auto tomlTextureFramesInRow = toml::find<int>(tomlTexture, "FramesInRow");
       auto tomlTextureFramesPerSecond = toml::find<int>(tomlTexture, "FramesPerSecond");
-      auto tomlTrace = toml::find<toml::value>(tomlEntity, "Trace");
-      auto tomlTraceTexturePath = toml::find<std::string>(tomlTrace, "TexturePath");
-      auto tomlTraceTicksToLive = toml::find<int>(tomlTrace, "TicksToLive");
-      auto tomlTraceTracesPerSecond = toml::find<int>(tomlTrace, "TracesPerSecond");
+
+      std::string traceTexturePath = "";
+      int traceTicksToLive = 0;
+      int traceTracesPerSecond = 0;
+
+      if (tomlEntity.contains("Trace"))
+      {
+        auto tomlTrace = toml::find<toml::value>(tomlEntity, "Trace");
+        traceTexturePath = (mapFileDir / toml::find<std::string>(tomlTrace, "TexturePath")).string();
+        traceTicksToLive = toml::find<int>(tomlTrace, "TicksToLive");
+        traceTracesPerSecond = toml::find<int>(tomlTrace, "TracesPerSecond");
+      }
 
       Vector2 position = {tomlPosition.at(0), tomlPosition.at(1)};
       std::vector<Vector2> polygon;
@@ -51,9 +59,6 @@ int main(int argc, char *argv[])
                                 tomlPolygon.at(i).at(1)};
         polygon.emplace_back(polygonPoint);
       }
-      std::string traceTexturePath = tomlTraceTexturePath == ""
-                                         ? ""
-                                         : (mapFileDir / tomlTraceTexturePath).string();
 
       Config config = {
           id,
@@ -71,8 +76,8 @@ int main(int argc, char *argv[])
 
       TraceConfig traceConfig = {
           traceTexturePath,
-          tomlTraceTicksToLive,
-          tomlTraceTracesPerSecond,
+          traceTicksToLive,
+          traceTracesPerSecond,
       };
 
       game->AddEntity(new Entity(config,
