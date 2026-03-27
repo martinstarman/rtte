@@ -30,7 +30,7 @@ struct TextureConfig
 
 struct TraceConfig
 {
-  std::string path;
+  std::string texturePath;
   int ticksToLive;
   int tracesPerSecond;
 };

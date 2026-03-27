@@ -23,9 +23,9 @@ Entity::Entity(
     m_texture = LoadTexture(textureConfig.path.c_str());
   }
 
-  if (traceConfig.path != "")
+  if (traceConfig.texturePath != "")
   {
-    m_traceTexture = LoadTexture(traceConfig.path.c_str());
+    m_traceTexture = LoadTexture(traceConfig.texturePath.c_str());
   }
 }
 
