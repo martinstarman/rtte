@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
     for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {
-      auto tomlPosition = toml::find<std::vector<float>>(tomlEntity, "Position");
+      auto tomlDefaultPosition = toml::find<std::vector<float>>(tomlEntity, "DefaultPosition");
       auto tomlLayerIndex = toml::find<int>(tomlEntity, "LayerIndex");
       auto tomlShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
       auto tomlPolygon = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Polygon");
@@ -51,7 +51,8 @@ int main(int argc, char *argv[])
         traceTracesPerSecond = toml::find<int>(tomlTrace, "TracesPerSecond");
       }
 
-      Vector2 position = {tomlPosition.at(0), tomlPosition.at(1)};
+      Vector2 defaultPosition = {tomlDefaultPosition.at(0),
+                                 tomlDefaultPosition.at(1)};
       std::vector<Vector2> polygon;
       for (int i = 0; i < tomlPolygon.size(); i++)
       {
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
 
       Config config = {
           id,
-          position,
+          defaultPosition,
           tomlLayerIndex,
           polygon,
           tomlShowsTraces,

@@ -14,7 +14,7 @@ const float MOVEMENT_SPEED = 2.5;
 struct Config
 {
   int id;
-  Vector2 position;
+  Vector2 defaultPosition;
   int layerIndex;
   std::vector<Vector2> polygon;
   bool showsTraces;

@@ -16,10 +16,10 @@
 #
 # Entities.Polygon (float[][])
 #   Entity shape.
-#   Points are relative to Position.
+#   Points are relative to DefaultPosition.
 #
-# Entities.Position (float[])
-#   Entity position.
+# Entities.DefaultPosition (float[])
+#   Entity DefaultPosition.
 #
 # Entities.Texture
 #   Required.
@@ -50,7 +50,7 @@
 [[Entities]]
 LayerIndex = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
-Position = [100.0, 100.0]
+DefaultPosition = [100.0, 100.0]
 
 [Entities.Texture]
 FramesInRow = 1
@@ -60,7 +60,7 @@ Path = "textures/grass.png"
 [[Entities]]
 LayerIndex = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
-Position = [200.0, 100.0]
+DefaultPosition = [200.0, 100.0]
 ShowsTraces = true
 
 [Entities.Texture]
@@ -71,7 +71,7 @@ Path = "textures/snow.png"
 [[Entities]]
 LayerIndex = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
-Position = [300.0, 100.0]
+DefaultPosition = [300.0, 100.0]
 
 [Entities.Texture]
 FramesInRow = 2
@@ -81,7 +81,7 @@ Path = "textures/water.png"
 [[Entities]]
 LayerIndex = 0
 Polygon = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
-Position = [400.0, 100.0]
+DefaultPosition = [400.0, 100.0]
 ShowsTraces = true
 
 [Entities.Texture]
@@ -92,7 +92,7 @@ Path = "textures/sand.png"
 [[Entities]]
 LayerIndex = 1
 Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
-Position = [150.0, 150.0]
+DefaultPosition = [150.0, 150.0]
 
 [Entities.Texture]
 FramesInRow = 2
@@ -107,7 +107,7 @@ TracesPerSecond = 3
 [[Entities]]
 LayerIndex = 1
 Polygon = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
-Position = [300.0, 150.0]
+DefaultPosition = [300.0, 150.0]
 
 [Entities.Texture]
 FramesInRow = 2

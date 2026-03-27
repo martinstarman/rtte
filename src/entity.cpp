@@ -5,7 +5,7 @@ Entity::Entity(
     const TextureConfig &textureConfig,
     const TraceConfig &traceConfig)
     : m_config(config),
-      m_position(config.position),
+      m_position(config.defaultPosition),
       m_selected(false),
       m_path({}),
       m_octant(Octant::East),
