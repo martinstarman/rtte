@@ -83,6 +83,16 @@ bool Entity::GetShowsTraces()
   return m_entityConfig.showsTraces;
 }
 
+const std::string &Entity::GetAbility()
+{
+  return m_entityConfig.ability;
+}
+
+const std::string &Entity::GetNeedsAbility()
+{
+  return m_entityConfig.needsAbility;
+}
+
 bool Entity::IsMoving()
 {
   return m_path.size() > 0;
@@ -96,7 +106,11 @@ void Entity::SetSelected(bool selected)
 void Entity::SetPath(const std::vector<Vector2> &path)
 {
   m_path = path;
-  m_octant = GetOctantFrom(-GetAngleBetween(path[0], m_position));
+
+  if (path.size() > 0)
+  {
+    m_octant = GetOctantFrom(-GetAngleBetween(path[0], m_position));
+  }
 }
 
 void Entity::SetTrace()

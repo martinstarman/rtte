@@ -22,6 +22,7 @@ Path = "textures/snow.png"
 [[Entities]]
 DefaultPosition = [300.0, 100.0]
 DrawingLayer = 0
+NeedsAbility = "Swiming"
 Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 
 [Entities.EntityTexture]
@@ -56,6 +57,7 @@ Path = "textures/character-trace.png"
 TracesPerSecond = 3
 
 [[Entities]]
+Ability = "Swimming"
 DefaultOctant = "NorthWest"
 DefaultPosition = [300.0, 150.0]
 DrawingLayer = 1
