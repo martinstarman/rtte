@@ -1,61 +1,9 @@
-# RTTE mission toml file
-#   All file paths must to be relative to this file.
-#
-# Entities
-#   TBD
-#
-# Entities.DrawingLayer (int)
-#   Defines the order in which entities will be rendered.
-#   Entities are z-indexed within the same layer.
-#   Textures in layer 0 will fill the entire polygon. If the texture is smaller, it will be repeated 
-#     in both axes.
-#   Textures in layer > 0 are rendered as is.
-#
-# Entities.ShowsTraces (?boolean)
-#   It leaves traces on itself.
-#
-# Entities.Shape (float[][])
-#   Entity shape.
-#   Points are relative to DefaultPosition.
-#
-# Entities.DefaultPosition (float[])
-#   Entity DefaultPosition.
-#
-# Entities.DefaultOctant (string)
-#   Default entity direction.
-#
-# Entities.Texture
-#   Required.
-#
-# Entities.Texture.FramesInRow (int)
-#   Number of texture frames.
-#   The frames in the image are on the x axis.
-#
-# Entities.Texture.FramesPerSecond (int)
-#   Number of texture frames rendered per second.
-#
-# Entities.Texture.Path (string)
-#   Texture file path.
-#
-# Entities.Trace
-#   Optional.
-#
-# Entities.Trace.TexturePath (string)
-#   Texture file.
-#
-# Entities.Trace.TicksToLive (int)
-#   Number of frames when the image trace texture will be visible.
-#
-# Entities.Trace.TracesPerSecond (int)
-#   Number of trace texture rendered per second.
-#
-
 [[Entities]]
 DefaultPosition = [100.0, 100.0]
 DrawingLayer = 0
 Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 
-[Entities.Texture]
+[Entities.EntityTexture]
 FramesInRow = 1
 FramesPerSecond = 1
 Path = "textures/grass.png"
@@ -66,7 +14,7 @@ DrawingLayer = 0
 Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 ShowsTraces = true
 
-[Entities.Texture]
+[Entities.EntityTexture]
 FramesInRow = 1
 FramesPerSecond = 1
 Path = "textures/snow.png"
@@ -76,7 +24,7 @@ DefaultPosition = [300.0, 100.0]
 DrawingLayer = 0
 Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 
-[Entities.Texture]
+[Entities.EntityTexture]
 FramesInRow = 2
 FramesPerSecond = 2
 Path = "textures/water.png"
@@ -87,7 +35,7 @@ DrawingLayer = 0
 Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 ShowsTraces = true
 
-[Entities.Texture]
+[Entities.EntityTexture]
 FramesInRow = 1
 FramesPerSecond = 1
 Path = "textures/sand.png"
@@ -98,14 +46,13 @@ DefaultPosition = [150.0, 150.0]
 DrawingLayer = 1
 Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 
-[Entities.Texture]
+[Entities.EntityTexture]
 FramesInRow = 2
 FramesPerSecond = 1
 Path = "textures/character.png"
 
-[Entities.Trace]
-TexturePath = "textures/character-trace.png"
-TicksToLive = 100
+[Entities.TraceTexture]
+Path = "textures/character-trace.png"
 TracesPerSecond = 3
 
 [[Entities]]
@@ -114,12 +61,11 @@ DefaultPosition = [300.0, 150.0]
 DrawingLayer = 1
 Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 
-[Entities.Texture]
+[Entities.EntityTexture]
 FramesInRow = 2
 FramesPerSecond = 1
 Path = "textures/character.png"
 
-[Entities.Trace]
-TexturePath = "textures/character-trace.png"
-TicksToLive = 100
+[Entities.TraceTexture]
+Path = "textures/character-trace.png"
 TracesPerSecond = 3

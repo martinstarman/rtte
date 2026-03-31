@@ -36,21 +36,19 @@ int main(int argc, char *argv[])
       auto tomlDrawingLayer = toml::find<int>(tomlEntity, "DrawingLayer");
       auto tomlShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
       auto tomlShape = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Shape");
-      auto tomlTexture = toml::find<toml::value>(tomlEntity, "Texture");
-      auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlTexture, "Path");
-      auto tomlTextureFramesInRow = toml::find<int>(tomlTexture, "FramesInRow");
-      auto tomlTextureFramesPerSecond = toml::find<int>(tomlTexture, "FramesPerSecond");
+      auto tomlEntityTexture = toml::find<toml::value>(tomlEntity, "EntityTexture");
+      auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlEntityTexture, "Path");
+      auto tomlTextureFramesInRow = toml::find<int>(tomlEntityTexture, "FramesInRow");
+      auto tomlTextureFramesPerSecond = toml::find<int>(tomlEntityTexture, "FramesPerSecond");
 
       std::string traceTexturePath = "";
-      int traceTicksToLive = 0;
-      int traceTracesPerSecond = 0;
+      int traceTextureTracesPerSecond = 0;
 
-      if (tomlEntity.contains("Trace"))
+      if (tomlEntity.contains("TraceTexture"))
       {
-        auto tomlTrace = toml::find<toml::value>(tomlEntity, "Trace");
-        traceTexturePath = (mapFileDir / toml::find<std::string>(tomlTrace, "TexturePath")).string();
-        traceTicksToLive = toml::find<int>(tomlTrace, "TicksToLive");
-        traceTracesPerSecond = toml::find<int>(tomlTrace, "TracesPerSecond");
+        auto tomlTraceTexture = toml::find<toml::value>(tomlEntity, "TraceTexture");
+        traceTexturePath = (mapFileDir / toml::find<std::string>(tomlTraceTexture, "Path")).string();
+        traceTextureTracesPerSecond = toml::find<int>(tomlTraceTexture, "TracesPerSecond");
       }
 
       Vector2 defaultPosition = {tomlDefaultPosition.at(0),
@@ -63,7 +61,7 @@ int main(int argc, char *argv[])
         shape.emplace_back(shapePoint);
       }
 
-      Config config = {
+      EntityConfig config = {
           id,
           defaultPosition,
           tomlDrawingLayer,
@@ -72,16 +70,15 @@ int main(int argc, char *argv[])
           GetOctantFrom(tomlDefaultOctant),
       };
 
-      TextureConfig textureConfig = {
+      EntityTextureConfig textureConfig = {
           tomlTexturePath.string(),
           tomlTextureFramesInRow,
           tomlTextureFramesPerSecond,
       };
 
-      TraceConfig traceConfig = {
+      TraceTextureConfig traceConfig = {
           traceTexturePath,
-          traceTicksToLive,
-          traceTracesPerSecond,
+          traceTextureTracesPerSecond,
       };
 
       game->AddEntity(new Entity(config,

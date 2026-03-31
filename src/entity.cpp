@@ -1,31 +1,31 @@
 #include "entity.h"
 
 Entity::Entity(
-    const Config &config,
-    const TextureConfig &textureConfig,
-    const TraceConfig &traceConfig)
-    : m_config(config),
-      m_position(config.defaultPosition),
+    const EntityConfig &entityConfig,
+    const EntityTextureConfig &entityTextureConfig,
+    const TraceTextureConfig &traceTextureConfig)
+    : m_entityConfig(entityConfig),
+      m_position(entityConfig.defaultPosition),
       m_selected(false),
       m_path({}),
-      m_octant(config.defaultOctant),
-      m_textureConfig(textureConfig),
+      m_octant(entityConfig.defaultOctant),
+      m_entityTextureConfig(entityTextureConfig),
       m_currentTextureFrame(0),
       m_animationTicks(0),
-      m_traceConfig(traceConfig)
+      m_traceTextureConfig(traceTextureConfig)
 {
-  if (config.drawingLayer == 0)
+  if (entityConfig.drawingLayer == 0)
   {
     CreatePolygonTexture();
   }
   else
   {
-    m_texture = LoadTexture(textureConfig.path.c_str());
+    m_texture = LoadTexture(entityTextureConfig.path.c_str());
   }
 
-  if (traceConfig.texturePath != "")
+  if (traceTextureConfig.path != "")
   {
-    m_traceTexture = LoadTexture(traceConfig.texturePath.c_str());
+    m_traceTexture = LoadTexture(traceTextureConfig.path.c_str());
   }
 }
 
@@ -41,12 +41,12 @@ Entity::~Entity()
 
 int Entity::GetId()
 {
-  return m_config.id;
+  return m_entityConfig.id;
 }
 
 int Entity::GetDrawingLayer()
 {
-  return m_config.drawingLayer;
+  return m_entityConfig.drawingLayer;
 }
 
 float Entity::GetZIndex()
@@ -63,10 +63,10 @@ std::vector<Vector2> Entity::GetShape()
 {
   std::vector<Vector2> shape;
 
-  for (int i = 0; i < m_config.shape.size(); i++)
+  for (int i = 0; i < m_entityConfig.shape.size(); i++)
   {
-    Vector2 shapePoint = {m_position.x + m_config.shape.at(i).x,
-                            m_position.y + m_config.shape.at(i).y};
+    Vector2 shapePoint = {m_position.x + m_entityConfig.shape.at(i).x,
+                          m_position.y + m_entityConfig.shape.at(i).y};
     shape.emplace_back(shapePoint);
   }
 
@@ -80,7 +80,7 @@ Vector2 Entity::GetPosition()
 
 bool Entity::GetShowsTraces()
 {
-  return m_config.showsTraces;
+  return m_entityConfig.showsTraces;
 }
 
 bool Entity::IsMoving()
@@ -101,13 +101,11 @@ void Entity::SetPath(const std::vector<Vector2> &path)
 
 void Entity::SetTrace()
 {
-  if (m_traces.size() == 0 || m_traces.back().ticks >= (60 / m_traceConfig.tracesPerSecond))
+  if (m_traces.size() == 0 || m_traces.back().ticks >= (60 / m_traceTextureConfig.tracesPerSecond))
   {
-    float degrees = GetAngleBetween(m_path[0], m_position) * (180.0f / M_PI);
-
     Trace trace = {
         m_position,
-        degrees,
+        (float)(GetAngleBetween(m_path[0], m_position) * (180.0f / M_PI)),
         0,
     };
 
@@ -122,7 +120,7 @@ void Entity::Update()
     HandleMovement();
   }
 
-  if (m_textureConfig.framesInRow > 1)
+  if (m_entityTextureConfig.framesInRow > 1)
   {
     HandleAnimation();
   }
@@ -132,9 +130,7 @@ void Entity::Update()
     trace.ticks += 1;
   }
 
-  m_traces.erase(std::remove_if(m_traces.begin(), m_traces.end(), [this](Trace trace)
-                                { return trace.ticks >= m_traceConfig.ticksToLive; }),
-                 m_traces.end());
+  RemoveOldTraces();
 }
 
 void Entity::Draw()
@@ -154,14 +150,14 @@ void Entity::Draw()
   }
 
   // draw texture
-  int textureFramesInColumn = m_config.drawingLayer == 0 ? 1 : 8;
-  float rectX = (float)(m_currentTextureFrame * (m_texture.width / m_textureConfig.framesInRow));
+  int textureFramesInColumn = m_entityConfig.drawingLayer == 0 ? 1 : 8;
+  float rectX = (float)(m_currentTextureFrame * (m_texture.width / m_entityTextureConfig.framesInRow));
   float rectY = (float)(m_texture.height / textureFramesInColumn * m_octant);
-  float rectWidth = (float)(m_texture.width / m_textureConfig.framesInRow);
+  float rectWidth = (float)(m_texture.width / m_entityTextureConfig.framesInRow);
   float rectHeight = (float)(m_texture.height / textureFramesInColumn);
   Rectangle rectangle = {rectX, rectY, rectWidth, rectHeight};
-  Vector2 position = {m_position.x - (m_config.drawingLayer == 0 ? 0 : rectWidth / 2),
-                      m_position.y - (m_config.drawingLayer == 0 ? 0 : rectHeight / 2)};
+  Vector2 position = {m_position.x - (m_entityConfig.drawingLayer == 0 ? 0 : rectWidth / 2),
+                      m_position.y - (m_entityConfig.drawingLayer == 0 ? 0 : rectHeight / 2)};
 
   DrawTextureRec(m_texture, rectangle, position, WHITE);
 
@@ -183,37 +179,37 @@ void Entity::CreatePolygonTexture()
   int minY = INT_MAX;
   int maxY = INT_MIN;
 
-  for (int i = 0; i < m_config.shape.size(); i++)
+  for (int i = 0; i < m_entityConfig.shape.size(); i++)
   {
-    if (m_config.shape.at(i).x < minX)
+    if (m_entityConfig.shape.at(i).x < minX)
     {
-      minX = m_config.shape.at(i).x;
+      minX = m_entityConfig.shape.at(i).x;
     }
 
-    if (m_config.shape.at(i).x > maxX)
+    if (m_entityConfig.shape.at(i).x > maxX)
     {
-      maxX = m_config.shape.at(i).x;
+      maxX = m_entityConfig.shape.at(i).x;
     }
 
-    if (m_config.shape.at(i).y < minY)
+    if (m_entityConfig.shape.at(i).y < minY)
     {
-      minY = m_config.shape.at(i).y;
+      minY = m_entityConfig.shape.at(i).y;
     }
 
-    if (m_config.shape.at(i).y > maxY)
+    if (m_entityConfig.shape.at(i).y > maxY)
     {
-      maxY = m_config.shape.at(i).y;
+      maxY = m_entityConfig.shape.at(i).y;
     }
   }
 
   int targetImageFrameWidth = maxX - minX;
   int height = maxY - minY;
 
-  Image sourceImage = LoadImage(m_textureConfig.path.c_str());
-  Image targetImage = GenImageColor(targetImageFrameWidth * m_textureConfig.framesInRow, height, BLANK);
-  int sourceImageFrameWidth = sourceImage.width / m_textureConfig.framesInRow;
+  Image sourceImage = LoadImage(m_entityTextureConfig.path.c_str());
+  Image targetImage = GenImageColor(targetImageFrameWidth * m_entityTextureConfig.framesInRow, height, BLANK);
+  int sourceImageFrameWidth = sourceImage.width / m_entityTextureConfig.framesInRow;
 
-  for (int frame = 0; frame < m_textureConfig.framesInRow; frame++)
+  for (int frame = 0; frame < m_entityTextureConfig.framesInRow; frame++)
   {
     for (int x = 0; x < targetImageFrameWidth; x++)
     {
@@ -221,7 +217,7 @@ void Entity::CreatePolygonTexture()
       {
         Vector2 pixel = {(float)x, (float)y};
 
-        if (CheckCollisionPointPoly(pixel, &m_config.shape[0], m_config.shape.size()))
+        if (CheckCollisionPointPoly(pixel, &m_entityConfig.shape[0], m_entityConfig.shape.size()))
         {
           Color color = GetImageColor(sourceImage,
                                       (x % sourceImageFrameWidth) + (frame * sourceImageFrameWidth),
@@ -241,12 +237,12 @@ void Entity::HandleAnimation()
 {
   m_animationTicks++;
 
-  if (m_animationTicks >= (60 / m_textureConfig.framesPerSecond))
+  if (m_animationTicks >= (60 / m_entityTextureConfig.framesPerSecond))
   {
     m_animationTicks = 0;
     m_currentTextureFrame++;
 
-    if (m_currentTextureFrame >= m_textureConfig.framesInRow)
+    if (m_currentTextureFrame >= m_entityTextureConfig.framesInRow)
     {
       m_currentTextureFrame = 0;
     }
@@ -273,4 +269,12 @@ void Entity::HandleMovement()
   {
     m_path.clear();
   }
+}
+
+void Entity::RemoveOldTraces()
+{
+  m_traces.erase(std::remove_if(m_traces.begin(), m_traces.end(),
+                                [this](Trace trace)
+                                { return trace.ticks >= TRACE_VISIBILITY_TICKS_COUNT; }),
+                 m_traces.end());
 }

@@ -10,8 +10,9 @@
 #include "utils.h"
 
 const float MOVEMENT_SPEED = 2.5;
+const int TRACE_VISIBILITY_TICKS_COUNT = 100;
 
-struct Config
+struct EntityConfig
 {
   int id;
   Vector2 defaultPosition;
@@ -21,17 +22,16 @@ struct Config
   Octant defaultOctant;
 };
 
-struct TextureConfig
+struct EntityTextureConfig
 {
   std::string path;
   int framesInRow;
   int framesPerSecond;
 };
 
-struct TraceConfig
+struct TraceTextureConfig
 {
-  std::string texturePath;
-  int ticksToLive;
+  std::string path;
   int tracesPerSecond;
 };
 
@@ -46,9 +46,9 @@ class Entity
 {
 public:
   Entity(
-      const Config &config,
-      const TextureConfig &textureConfig,
-      const TraceConfig &traceConfig);
+      const EntityConfig &entityConfig,
+      const EntityTextureConfig &entityTextureConfig,
+      const TraceTextureConfig &traceTextureConfig);
   ~Entity();
   int GetId();
   int GetDrawingLayer();
@@ -65,16 +65,20 @@ public:
   void Draw();
 
 private:
-  Config m_config;
+  EntityConfig m_entityConfig;
   Vector2 m_position;
   bool m_selected;
   std::vector<Vector2> m_path;
   Octant m_octant;
-  TextureConfig m_textureConfig;
+
+private:
+  EntityTextureConfig m_entityTextureConfig;
   Texture m_texture;
   int m_currentTextureFrame;
   int m_animationTicks;
-  TraceConfig m_traceConfig;
+
+private:
+  TraceTextureConfig m_traceTextureConfig;
   Texture m_traceTexture;
   std::vector<Trace> m_traces;
 
@@ -82,4 +86,5 @@ private:
   void CreatePolygonTexture();
   void HandleAnimation();
   void HandleMovement();
+  void RemoveOldTraces();
 };
