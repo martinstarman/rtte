@@ -36,6 +36,8 @@ int main(int argc, char *argv[])
       auto tomlDrawingLayer = toml::find<int>(tomlEntity, "DrawingLayer");
       auto tomlShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
       auto tomlShape = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Shape");
+      auto tomlAbility = toml::find_or<std::string>(tomlEntity, "Ability", "");
+      auto tomlNeedsAbility = toml::find_or<std::string>(tomlEntity, "NeedsAbility", "");
       auto tomlEntityTexture = toml::find<toml::value>(tomlEntity, "EntityTexture");
       auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlEntityTexture, "Path");
       auto tomlTextureFramesInRow = toml::find<int>(tomlEntityTexture, "FramesInRow");
@@ -68,6 +70,8 @@ int main(int argc, char *argv[])
           shape,
           tomlShowsTraces,
           GetOctantFrom(tomlDefaultOctant),
+          tomlAbility,
+          tomlNeedsAbility,
       };
 
       EntityTextureConfig textureConfig = {

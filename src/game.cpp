@@ -26,6 +26,7 @@ void Game::Update()
     HandleEntityMovement();
   }
   HandleEntityTraces();
+  HandleEntityAbilities();
 
   for (auto &entity : m_entities)
   {
@@ -167,6 +168,33 @@ void Game::HandleEntityTraces()
           {
             movingEntities->SetTrace();
           }
+        }
+      }
+    }
+  }
+}
+
+void Game::HandleEntityAbilities()
+{
+  for (const auto &needsAbilityEntity : m_entities)
+  {
+    TraceLog(LOG_INFO, "1");
+    std::string needsAbility = needsAbilityEntity->GetNeedsAbility();
+    
+    if (needsAbility != "")
+    {
+      TraceLog(LOG_INFO, "2");
+      std::vector<Vector2> shape = needsAbilityEntity->GetShape();
+      
+      for (const auto &abilityEntity : m_entities)
+      {
+        Vector2 position = abilityEntity->GetPosition();
+        std::string ability = abilityEntity->GetAbility();
+        
+        if (CheckCollisionPointPoly(position, &shape[0], shape.size()) && needsAbility != ability)
+        {
+          TraceLog(LOG_INFO, "4");
+          abilityEntity->SetPath({});
         }
       }
     }
