@@ -20,6 +20,7 @@ struct EntityConfig
   std::vector<Vector2> shape;
   bool showsTraces;
   Octant defaultOctant;
+  std::string name;
 };
 
 struct EntityTextureConfig
@@ -50,6 +51,8 @@ public:
       const EntityTextureConfig &entityTextureConfig,
       const TraceTextureConfig &traceTextureConfig);
   ~Entity();
+
+public:
   int GetId();
   int GetDrawingLayer();
   float GetZIndex();
@@ -57,6 +60,9 @@ public:
   std::vector<Vector2> GetShape();
   Vector2 GetPosition();
   bool GetShowsTraces();
+  const std::string &GetName();
+
+public:
   bool IsMoving();
   void SetSelected(bool selected);
   void SetPath(const std::vector<Vector2> &path);

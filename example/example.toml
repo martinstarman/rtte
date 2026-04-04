@@ -44,6 +44,7 @@ Path = "textures/sand.png"
 DefaultOctant = "East"
 DefaultPosition = [150.0, 150.0]
 DrawingLayer = 1
+Name = "Entity #1"
 Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 
 [Entities.EntityTexture]
@@ -59,6 +60,7 @@ TracesPerSecond = 3
 DefaultOctant = "NorthWest"
 DefaultPosition = [300.0, 150.0]
 DrawingLayer = 1
+Name = "Entity #2"
 Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 
 [Entities.EntityTexture]

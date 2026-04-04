@@ -83,6 +83,11 @@ bool Entity::GetShowsTraces()
   return m_entityConfig.showsTraces;
 }
 
+const std::string &Entity::GetName()
+{
+  return m_entityConfig.name;
+}
+
 bool Entity::IsMoving()
 {
   return m_path.size() > 0;
