@@ -27,4 +27,5 @@ private:
   bool HandleEntitySelection();
   void HandleEntityMovement();
   void HandleEntityTraces();
+  void HandleEntityAbilities();
 };

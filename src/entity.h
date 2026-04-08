@@ -22,6 +22,8 @@ struct EntityConfig
   std::vector<Vector2> shape;
   bool showsTraces;
   Octant defaultOctant;
+  std::string ability;
+  std::string needsAbility;
 };
 
 struct EntityTextureConfig
@@ -59,6 +61,8 @@ public:
   std::vector<Vector2> GetShape();
   Vector2 GetPosition();
   bool GetShowsTraces();
+  const std::string &GetAbility();
+  const std::string &GetNeedsAbility();
   bool IsMoving();
   void SetSelected(bool selected);
   void SetPath(const std::vector<Vector2> &path);
