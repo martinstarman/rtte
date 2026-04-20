@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "entity.h"
+#include "navmesh.h"
 
 const float CAMERA_MOVEMENT_SPEED = 5.0;
 
@@ -27,4 +28,6 @@ private:
   bool HandleEntitySelection();
   void HandleEntityMovement();
   void HandleEntityTraces();
+
+  Navmesh *m_navmesh;
 };

@@ -7,6 +7,9 @@ Game::Game() : m_maxDrawingLayer(0)
   m_camera.offset = {0, 0};
   m_camera.rotation = 0;
   m_camera.zoom = 1;
+
+  m_navmesh = new Navmesh();
+  m_navmesh->Build();
 }
 
 Game::~Game()
@@ -15,6 +18,8 @@ Game::~Game()
   {
     delete entity;
   }
+
+  delete m_navmesh;
 }
 
 void Game::Update()
@@ -53,6 +58,8 @@ void Game::Draw()
       }
     }
   }
+
+  m_navmesh->Draw();
 
   EndMode2D();
   EndDrawing();
