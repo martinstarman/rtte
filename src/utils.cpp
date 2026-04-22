@@ -19,3 +19,15 @@ Octant GetOctantFrom(const std::string &string)
 {
   return OCTANT_MAP.at(string);
 }
+
+bool Vector2Equals(const Vector2 &lhs, const Vector2 &rhs)
+{
+  return std::fabs(lhs.x - rhs.x) <= EPSILON && std::fabs(lhs.y - rhs.y) <= EPSILON;
+}
+
+float Vector2Distance(const Vector2 &lhs, const Vector2 &rhs)
+{
+  const float dx = lhs.x - rhs.x;
+  const float dy = lhs.y - rhs.y;
+  return std::sqrt((dx * dx) + (dy * dy));
+}
