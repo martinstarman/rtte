@@ -31,3 +31,8 @@ float Vector2Distance(const Vector2 &lhs, const Vector2 &rhs)
   const float dy = lhs.y - rhs.y;
   return std::sqrt((dx * dx) + (dy * dy));
 }
+
+float CrossProduct(const Vector2 &a, const Vector2 &b, const Vector2 &c)
+{
+  return ((b.x - a.x) * (c.y - a.y)) - ((b.y - a.y) * (c.x - a.x));
+}

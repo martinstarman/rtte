@@ -12,7 +12,7 @@ target_sources(rtte
     src/game.cpp
     src/main.cpp
     src/navmesh.cpp
-    # src/triangle.cpp
+    src/triangle.cpp
     src/utils.cpp
 )
 

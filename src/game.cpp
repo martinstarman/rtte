@@ -1,6 +1,8 @@
 #include "game.h"
 
-Game::Game() : m_maxDrawingLayer(0)
+Game::Game()
+    : m_maxDrawingLayer(0),
+      m_navmesh(new Navmesh())
 {
   m_camera = {0};
   m_camera.target = {0, 0};
@@ -8,12 +10,11 @@ Game::Game() : m_maxDrawingLayer(0)
   m_camera.rotation = 0;
   m_camera.zoom = 1;
 
-  m_navmesh = new Navmesh();
   m_navmesh->Build();
   m_navmesh->GetPath(
-    Vector2{1.0, 1.0},
-    Vector2{80.0, 47.0});
-    m_navmesh->GetPathCleaned();
+      Vector2{1.0, 1.0},
+      Vector2{80.0, 47.0});
+  m_navmesh->GetPathCleaned();
 }
 
 Game::~Game()

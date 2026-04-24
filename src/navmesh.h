@@ -5,21 +5,12 @@
 #include <mapbox/earcut.hpp>
 #include <raylib.h>
 #include <vector>
-#include <CXXGraph/CXXGraph.hpp>
-#include <string> // TODO: remove me
 #include <limits>
-#include <memory> // shared_ptr
+#include <algorithm>
+#include <cassert>
 
-// #include "triangle.h"
+#include "triangle.h"
 #include "utils.h"
-
-struct Triangle
-{
-  Vector2 a;
-  Vector2 b;
-  Vector2 c;
-  Vector2 centroid;
-};
 
 struct Portal
 {
@@ -39,7 +30,6 @@ public:
 
 private:
   std::vector<Triangle> m_triangles;
-
   std::vector<Vector2> m_path;
   std::vector<Vector2> m_pathCleaned;
 };

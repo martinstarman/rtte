@@ -23,11 +23,10 @@ private:
   Camera2D m_camera;
   std::vector<Entity *> m_entities;
   int m_maxDrawingLayer;
+  Navmesh *m_navmesh;
   Vector2 GetGameMousePosition();
   void HandleCameraOffset();
   bool HandleEntitySelection();
   void HandleEntityMovement();
   void HandleEntityTraces();
-
-  Navmesh *m_navmesh;
 };
