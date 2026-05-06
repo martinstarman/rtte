@@ -54,6 +54,8 @@ void Game::Draw()
     }
   }
 
+  HandleEntityTooltip();
+
   EndMode2D();
   EndDrawing();
 }
@@ -169,6 +171,22 @@ void Game::HandleEntityTraces()
           }
         }
       }
+    }
+  }
+}
+
+void Game::HandleEntityTooltip()
+{
+  Vector2 mousePosition = GetMousePosition();
+
+  for (const auto &entity : m_entities)
+  {
+    std::vector<Vector2> shape = entity->GetShape();
+    std::string name = entity->GetName();
+
+    if (CheckCollisionPointPoly(mousePosition, &shape[0], shape.size()) && name != "")
+    {
+      DrawText(name.c_str(), mousePosition.x, mousePosition.y, 10, DARKGRAY);
     }
   }
 }
