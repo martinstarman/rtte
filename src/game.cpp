@@ -12,7 +12,7 @@ Game::Game()
 
   m_navmesh->Build();
   m_navmesh->GetPath(
-      Vector2{1.0, 1.0},
+      Vector2{10.0, 15.0},
       Vector2{80.0, 47.0});
   m_navmesh->GetPathCleaned();
 }

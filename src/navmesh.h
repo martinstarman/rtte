@@ -29,7 +29,11 @@ public:
   void GetPathCleaned();
 
 private:
+  std::vector<Vector2> m_outerPolygon;
+  std::vector<std::vector<Vector2>> m_holes;
+  std::vector<size_t> m_trianglePath;
   std::vector<Triangle> m_triangles;
   std::vector<Vector2> m_path;
   std::vector<Vector2> m_pathCleaned;
+  std::vector<Portal> m_debugPortals;
 };
