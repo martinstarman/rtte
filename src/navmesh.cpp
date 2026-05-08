@@ -1,72 +1,11 @@
 #include "navmesh.h"
 
-float Cross2D(const Vector2 &a, const Vector2 &b, const Vector2 &c)
+Navmesh::Navmesh()
 {
-  return ((b.x - a.x) * (c.y - a.y)) - ((b.y - a.y) * (c.x - a.x));
-}
+  Build();
+};
 
-bool PointInTriangle(const Vector2 &point, const Triangle &triangle)
-{
-  const float d1 = Cross2D(point, triangle.a, triangle.b);
-  const float d2 = Cross2D(point, triangle.b, triangle.c);
-  const float d3 = Cross2D(point, triangle.c, triangle.a);
-
-  const bool hasNeg = (d1 < 0.0f) || (d2 < 0.0f) || (d3 < 0.0f);
-  const bool hasPos = (d1 > 0.0f) || (d2 > 0.0f) || (d3 > 0.0f);
-
-  return !(hasNeg && hasPos);
-}
-
-bool TrianglesShareEdge(const Triangle &lhs, const Triangle &rhs)
-{
-  int sharedVertices = 0;
-  Vector2 lhsVertices[3] = {lhs.a, lhs.b, lhs.c};
-  Vector2 rhsVertices[3] = {rhs.a, rhs.b, rhs.c};
-
-  for (const auto &l : lhsVertices)
-  {
-    for (const auto &r : rhsVertices)
-    {
-      if (Vector2Equals(l, r))
-      {
-        sharedVertices++;
-        break;
-      }
-    }
-  }
-
-  return sharedVertices >= 2;
-}
-
-size_t FindTriangleForPoint(const std::vector<Triangle> &triangles, const Vector2 &point)
-{
-  for (size_t i = 0; i < triangles.size(); ++i)
-  {
-    if (PointInTriangle(point, triangles[i]))
-    {
-      return i;
-    }
-  }
-
-  size_t nearestTriangle = 0;
-  float bestDistance = std::numeric_limits<float>::max();
-
-  for (size_t i = 0; i < triangles.size(); ++i)
-  {
-    const float d = Vector2Distance(point, triangles[i].centroid);
-    if (d < bestDistance)
-    {
-      bestDistance = d;
-      nearestTriangle = i;
-    }
-  }
-
-  return nearestTriangle;
-}
-
-Navmesh::Navmesh() {};
-
-Navmesh::~Navmesh() {};
+Navmesh::~Navmesh() = default;
 
 void Navmesh::Build()
 {
@@ -97,60 +36,47 @@ void Navmesh::Build()
 
   for (size_t i = 0; i + 2 < trianglesIndices.size(); i += 3)
   {
-    Triangle triangle;
-    triangle.a = trianglesIndices.at(i);
-    triangle.b = trianglesIndices.at(i + 1);
-    triangle.c = trianglesIndices.at(i + 2);
-    // TODO: use Triangle(a,b,c) class
-    triangle.centroid = Vector2{(triangle.a.x + triangle.b.x + triangle.c.x) / 3.0f,
-                                (triangle.a.y + triangle.b.y + triangle.c.y) / 3.0f};
+    Triangle triangle = Triangle(
+        trianglesIndices.at(i),
+        trianglesIndices.at(i + 1),
+        trianglesIndices.at(i + 2));
     m_triangles.push_back(triangle);
   }
 };
 
 void Navmesh::Draw()
 {
-  for (int i = 0; i < m_triangles.size(); i++)
+  for (const auto &t : m_triangles)
   {
-    Vector2 a = m_triangles.at(i).a;
-    Vector2 b = m_triangles.at(i).b;
-    Vector2 c = m_triangles.at(i).c;
-
-    DrawLineV(a, b, WHITE);
-    DrawLineV(b, c, WHITE);
-    DrawLineV(c, a, WHITE);
+    DrawLineV(t.GetA(), t.GetB(), WHITE);
+    DrawLineV(t.GetB(), t.GetC(), WHITE);
+    DrawLineV(t.GetC(), t.GetA(), WHITE);
   }
 
   // path
   for (size_t i = 0; i + 1 < m_path.size(); ++i)
   {
-    Vector2 a = m_path[i];
-    Vector2 b = m_path[i + 1];
+    Vector2 a = m_path.at(i);
+    Vector2 b = m_path.at(i + 1);
     DrawLineV(a, b, BLACK);
   }
 
   // cleaned path
   for (size_t i = 0; i + 1 < m_pathCleaned.size(); ++i)
   {
-    Vector2 a = m_pathCleaned[i];
-    Vector2 b = m_pathCleaned[i + 1];
-    DrawLineV(a, b, LIME);
+    Vector2 a = m_pathCleaned.at(i);
+    Vector2 b = m_pathCleaned.at(i + 1);
+    DrawLineV(a, b, GREEN);
   }
 };
 
-void Navmesh::GetPath(Vector2 start, Vector2 target)
+void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 {
   m_path.clear();
-
-  if (m_triangles.empty())
-  {
-    return;
-  }
-
   m_path.push_back(start);
 
-  const size_t startTriangleIndex = FindTriangleForPoint(m_triangles, start);
-  const size_t targetTriangleIndex = FindTriangleForPoint(m_triangles, target);
+  const size_t startTriangleIndex = FindTriangleForPoint(start);
+  const size_t targetTriangleIndex = FindTriangleForPoint(target);
 
   std::vector<std::shared_ptr<const CXXGraph::Node<size_t>>> nodes;
   nodes.reserve(m_triangles.size());
@@ -166,24 +92,24 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
   {
     for (size_t j = i + 1; j < m_triangles.size(); ++j)
     {
-      if (!TrianglesShareEdge(m_triangles[i], m_triangles[j]))
+      if (!m_triangles.at(i).ShareEdge(m_triangles.at(j)))
       {
         continue;
       }
 
-      const double weight = static_cast<double>(Vector2Distance(m_triangles[i].centroid, m_triangles[j].centroid));
-      edgeSet.insert(std::make_shared<const CXXGraph::UndirectedWeightedEdge<size_t>>(edgeId++, nodes[i], nodes[j], weight));
+      const double weight = static_cast<double>(Vector2Distance(m_triangles.at(i).GetCentroid(), m_triangles.at(j).GetCentroid()));
+      edgeSet.insert(std::make_shared<const CXXGraph::UndirectedWeightedEdge<size_t>>(edgeId++, nodes.at(i), nodes.at(j), weight));
     }
   }
 
   CXXGraph::Graph<size_t> graph(edgeSet);
-  const auto result = graph.dijkstra(*nodes[startTriangleIndex], *nodes[targetTriangleIndex]);
+  const auto result = graph.dijkstra(*nodes.at(startTriangleIndex), *nodes.at(targetTriangleIndex));
 
   if (!result.success || result.path.empty())
   {
     if (startTriangleIndex == targetTriangleIndex)
     {
-      m_path.push_back(m_triangles[startTriangleIndex].centroid);
+      m_path.push_back(m_triangles.at(startTriangleIndex).GetCentroid());
       m_path.push_back(target);
     }
     return;
@@ -194,39 +120,19 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
     const size_t triangleIndex = static_cast<size_t>(std::stoull(nodeId));
     if (triangleIndex < m_triangles.size())
     {
-      m_path.push_back(m_triangles[triangleIndex].centroid);
+      m_path.push_back(m_triangles.at(triangleIndex).GetCentroid());
     }
   }
 
   m_path.push_back(target);
-}
 
-void Navmesh::GetPathCleaned()
-{
   m_pathCleaned.clear();
-
-  if (m_path.empty())
-  {
-    return;
-  }
-
-  if (m_path.size() <= 2)
-  {
-    m_pathCleaned = m_path;
-    return;
-  }
-
-  if (m_triangles.empty())
-  {
-    m_pathCleaned = m_path;
-    return;
-  }
 
   std::vector<size_t> corridor;
   corridor.reserve(m_path.size());
   for (size_t i = 1; i + 1 < m_path.size(); ++i)
   {
-    const size_t triangleIndex = FindTriangleForPoint(m_triangles, m_path[i]);
+    const size_t triangleIndex = FindTriangleForPoint(m_path.at(i));
     if (corridor.empty() || corridor.back() != triangleIndex)
     {
       corridor.push_back(triangleIndex);
@@ -239,11 +145,6 @@ void Navmesh::GetPathCleaned()
     return;
   }
 
-  auto triArea2 = [](const Vector2 &a, const Vector2 &b, const Vector2 &c) -> float
-  {
-    return ((b.x - a.x) * (c.y - a.y)) - ((b.y - a.y) * (c.x - a.x));
-  };
-
   auto addIfDifferent = [&](const Vector2 &point)
   {
     if (m_pathCleaned.empty() || !Vector2Equals(m_pathCleaned.back(), point))
@@ -254,8 +155,8 @@ void Navmesh::GetPathCleaned()
 
   auto sharedEdge = [&](size_t lhs, size_t rhs, Vector2 &outA, Vector2 &outB) -> bool
   {
-    Vector2 lhsVertices[3] = {m_triangles[lhs].a, m_triangles[lhs].b, m_triangles[lhs].c};
-    Vector2 rhsVertices[3] = {m_triangles[rhs].a, m_triangles[rhs].b, m_triangles[rhs].c};
+    auto lhsVertices = m_triangles.at(lhs).GetVertices();
+    auto rhsVertices = m_triangles.at(rhs).GetVertices();
 
     int sharedCount = 0;
     Vector2 shared[2] = {};
@@ -294,29 +195,31 @@ void Navmesh::GetPathCleaned()
 
   for (size_t i = 0; i + 1 < corridor.size(); ++i)
   {
-    Vector2 edgeA{};
-    Vector2 edgeB{};
-    if (!sharedEdge(corridor[i], corridor[i + 1], edgeA, edgeB))
+    Vector2 edgeA;
+    Vector2 edgeB;
+
+    if (!sharedEdge(corridor.at(i), corridor.at(i + 1), edgeA, edgeB))
     {
       m_pathCleaned = m_path;
       return;
     }
 
-    const Vector2 from = m_triangles[corridor[i]].centroid;
-    const Vector2 to = m_triangles[corridor[i + 1]].centroid;
-    const float sideA = triArea2(from, to, edgeA);
-    const float sideB = triArea2(from, to, edgeB);
+    const Vector2 from = m_triangles.at(corridor.at(i)).GetCentroid();
+    const Vector2 to = m_triangles.at(corridor.at(i + 1)).GetCentroid();
+    const float sideA = CrossProduct(from, to, edgeA);
+    const float sideB = CrossProduct(from, to, edgeB);
 
-    Portal portal{};
+    Portal portal;
+
     if (sideA >= sideB)
-    {
-      portal.left = edgeA;
-      portal.right = edgeB;
-    }
-    else
     {
       portal.left = edgeB;
       portal.right = edgeA;
+    }
+    else
+    {
+      portal.left = edgeA;
+      portal.right = edgeB;
     }
 
     portals.push_back(portal);
@@ -324,9 +227,9 @@ void Navmesh::GetPathCleaned()
 
   portals.push_back(Portal{m_path.back(), m_path.back()});
 
-  Vector2 portalApex = portals[0].left;
-  Vector2 portalLeft = portals[0].left;
-  Vector2 portalRight = portals[0].right;
+  Vector2 portalApex = portals.at(0).left;
+  Vector2 portalLeft = portals.at(0).left;
+  Vector2 portalRight = portals.at(0).right;
   size_t apexIndex = 0;
   size_t leftIndex = 0;
   size_t rightIndex = 0;
@@ -335,12 +238,12 @@ void Navmesh::GetPathCleaned()
 
   for (size_t i = 1; i < portals.size(); ++i)
   {
-    const Vector2 left = portals[i].left;
-    const Vector2 right = portals[i].right;
+    const Vector2 left = portals.at(i).left;
+    const Vector2 right = portals.at(i).right;
 
-    if (triArea2(portalApex, portalRight, right) <= 0.0f)
+    if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
     {
-      if (Vector2Equals(portalApex, portalRight) || triArea2(portalApex, portalLeft, right) > 0.0f)
+      if (Vector2Equals(portalApex, portalRight) || CrossProduct(portalApex, portalLeft, right) > 0.0f)
       {
         portalRight = right;
         rightIndex = i;
@@ -351,18 +254,16 @@ void Navmesh::GetPathCleaned()
 
         portalApex = portalLeft;
         apexIndex = leftIndex;
-        portalLeft = portalApex;
         portalRight = portalApex;
-        leftIndex = apexIndex;
         rightIndex = apexIndex;
         i = apexIndex;
         continue;
       }
     }
 
-    if (triArea2(portalApex, portalLeft, left) >= 0.0f)
+    if (CrossProduct(portalApex, portalLeft, left) >= 0.0f)
     {
-      if (Vector2Equals(portalApex, portalLeft) || triArea2(portalApex, portalRight, left) < 0.0f)
+      if (Vector2Equals(portalApex, portalLeft) || CrossProduct(portalApex, portalRight, left) < 0.0f)
       {
         portalLeft = left;
         leftIndex = i;
@@ -374,9 +275,7 @@ void Navmesh::GetPathCleaned()
         portalApex = portalRight;
         apexIndex = rightIndex;
         portalLeft = portalApex;
-        portalRight = portalApex;
         leftIndex = apexIndex;
-        rightIndex = apexIndex;
         i = apexIndex;
         continue;
       }
@@ -384,4 +283,17 @@ void Navmesh::GetPathCleaned()
   }
 
   addIfDifferent(m_path.back());
+}
+
+size_t Navmesh::FindTriangleForPoint(const Vector2 &point)
+{
+  for (size_t i = 0; i < m_triangles.size(); ++i)
+  {
+    if (m_triangles.at(i).Contains(point))
+    {
+      return i;
+    }
+  }
+
+  return -1;
 }
