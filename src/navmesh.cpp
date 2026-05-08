@@ -95,9 +95,7 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
   {
     for (size_t j = i + 1; j < m_triangles.size(); ++j)
     {
-      std::vector<Vector2> edge = GetSharedEdge(m_triangles[i], m_triangles[j]);
-
-      if (!edge.empty())
+      if (m_triangles.at(i).ShareEdge(m_triangles.at(j)))
       {
         neighbors[i].push_back(j);
         neighbors[j].push_back(i);
