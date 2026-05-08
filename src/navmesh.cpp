@@ -97,8 +97,8 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
     {
       if (m_triangles.at(i).ShareEdge(m_triangles.at(j)))
       {
-        neighbors[i].push_back(j);
-        neighbors[j].push_back(i);
+        neighbors.at(i).push_back(j);
+        neighbors.at(j).push_back(i);
       }
     }
   }
@@ -107,7 +107,7 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
   std::vector<size_t> previous(m_triangles.size(), m_triangles.size());
   std::vector<bool> visited(m_triangles.size(), false);
 
-  distance[startTriangleIndex] = 0.0f;
+  distance.at(startTriangleIndex) = 0.0f;
 
   for (size_t step = 0; step < m_triangles.size(); ++step)
   {
@@ -116,9 +116,9 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 
     for (size_t i = 0; i < m_triangles.size(); ++i)
     {
-      if (!visited[i] && distance[i] < bestDistance)
+      if (!visited.at(i) && distance.at(i) < bestDistance)
       {
-        bestDistance = distance[i];
+        bestDistance = distance.at(i);
         current = i;
       }
     }
@@ -133,26 +133,26 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
       break;
     }
 
-    visited[current] = true;
+    visited.at(current) = true;
 
-    for (const size_t neighbor : neighbors[current])
+    for (const size_t neighbor : neighbors.at(current))
     {
-      if (visited[neighbor])
+      if (visited.at(neighbor))
       {
         continue;
       }
 
-      const float weight = Vector2Distance(m_triangles[current].GetCentroid(), m_triangles[neighbor].GetCentroid());
-      const float candidateDistance = distance[current] + weight;
-      if (candidateDistance < distance[neighbor])
+      const float weight = Vector2Distance(m_triangles.at(current).GetCentroid(), m_triangles.at(neighbor).GetCentroid());
+      const float candidateDistance = distance.at(current) + weight;
+      if (candidateDistance < distance.at(neighbor))
       {
-        distance[neighbor] = candidateDistance;
-        previous[neighbor] = current;
+        distance.at(neighbor) = candidateDistance;
+        previous.at(neighbor) = current;
       }
     }
   }
 
-  if (distance[targetTriangleIndex] == std::numeric_limits<float>::max())
+  if (distance.at(targetTriangleIndex) == std::numeric_limits<float>::max())
   {
     if (startTriangleIndex == targetTriangleIndex)
     {
@@ -163,10 +163,11 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
     return;
   }
 
-  for (size_t node = targetTriangleIndex; node != m_triangles.size(); node = previous[node])
+  for (size_t nodeindex = targetTriangleIndex; nodeindex != m_triangles.size(); nodeindex = previous.at(nodeindex))
   {
-    m_trianglePath.push_back(node);
-    if (node == startTriangleIndex)
+    m_trianglePath.push_back(nodeindex);
+
+    if (nodeindex == startTriangleIndex)
     {
       break;
     }
@@ -223,9 +224,9 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 
   m_portals.push_back(Portal{target, target});
 
-  Vector2 portalApex = m_portals[0].left;
-  Vector2 portalLeft = m_portals[0].left;
-  Vector2 portalRight = m_portals[0].right;
+  Vector2 portalApex = m_portals.at(0).left;
+  Vector2 portalLeft = m_portals.at(0).left;
+  Vector2 portalRight = m_portals.at(0).right;
   size_t apexIndex = 0;
   size_t leftIndex = 0;
   size_t rightIndex = 0;
@@ -234,8 +235,8 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 
   for (size_t i = 1; i < m_portals.size(); ++i)
   {
-    const Vector2 left = m_portals[i].left;
-    const Vector2 right = m_portals[i].right;
+    const Vector2 left = m_portals.at(i).left;
+    const Vector2 right = m_portals.at(i).right;
 
     if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
     {
