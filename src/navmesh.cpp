@@ -1,52 +1,5 @@
 #include "navmesh.h"
 
-bool GetSharedEdge(const Triangle &lhs, const Triangle &rhs, Vector2 &outA, Vector2 &outB)
-{
-  int sharedCount = 0;
-  Vector2 shared[2] = {};
-
-  for (const Vector2 &l : lhs.GetVertices())
-  {
-    for (const Vector2 &r : rhs.GetVertices())
-    {
-      if (Vector2Equals(l, r))
-      {
-        if (sharedCount == 0 || !Vector2Equals(shared[0], l))
-        {
-          if (sharedCount < 2)
-          {
-            shared[sharedCount] = l;
-          }
-          ++sharedCount;
-        }
-        break;
-      }
-    }
-  }
-
-  if (sharedCount < 2)
-  {
-    return false;
-  }
-
-  outA = shared[0];
-  outB = shared[1];
-  return true;
-}
-
-int FindTriangleForPoint(const std::vector<Triangle> &triangles, const Vector2 &point)
-{
-  for (size_t i = 0; i < triangles.size(); ++i)
-  {
-    if (triangles.at(i).Contains(point))
-    {
-      return static_cast<int>(i);
-    }
-  }
-
-  return -1;
-}
-
 Navmesh::Navmesh()
 {
   Build();
@@ -128,15 +81,15 @@ void Navmesh::Draw()
   }
 };
 
-void Navmesh::GetPath(Vector2 start, Vector2 target)
+void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 {
   m_trianglePath.clear();
   m_path.clear();
   m_path.push_back(start);
   m_pathCleaned.clear();
 
-  const int startTriangleIndex = FindTriangleForPoint(m_triangles, start);
-  const int targetTriangleIndex = FindTriangleForPoint(m_triangles, target);
+  const size_t startTriangleIndex = FindTriangleForPoint(start);
+  const size_t targetTriangleIndex = FindTriangleForPoint(target);
 
   if (startTriangleIndex < 0 || targetTriangleIndex < 0)
   {
@@ -161,17 +114,16 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
     }
   }
 
-  const float inf = std::numeric_limits<float>::max();
-  std::vector<float> distance(m_triangles.size(), inf);
+  std::vector<float> distance(m_triangles.size(), std::numeric_limits<float>::max());
   std::vector<size_t> previous(m_triangles.size(), m_triangles.size());
   std::vector<bool> visited(m_triangles.size(), false);
 
-  distance[static_cast<size_t>(startTriangleIndex)] = 0.0f;
+  distance[startTriangleIndex] = 0.0f;
 
   for (size_t step = 0; step < m_triangles.size(); ++step)
   {
     size_t current = m_triangles.size();
-    float bestDistance = inf;
+    float bestDistance = std::numeric_limits<float>::max();
 
     for (size_t i = 0; i < m_triangles.size(); ++i)
     {
@@ -187,7 +139,7 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
       break;
     }
 
-    if (current == static_cast<size_t>(targetTriangleIndex))
+    if (current == targetTriangleIndex)
     {
       break;
     }
@@ -211,28 +163,28 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
     }
   }
 
-  if (distance[static_cast<size_t>(targetTriangleIndex)] == inf)
+  if (distance[targetTriangleIndex] == std::numeric_limits<float>::max())
   {
     if (startTriangleIndex == targetTriangleIndex)
     {
-      m_trianglePath.push_back(static_cast<size_t>(startTriangleIndex));
-      m_path.push_back(m_triangles[static_cast<size_t>(startTriangleIndex)].GetCentroid());
+      m_trianglePath.push_back(startTriangleIndex);
+      m_path.push_back(m_triangles[startTriangleIndex].GetCentroid());
       m_path.push_back(target);
     }
     return;
   }
 
   std::vector<size_t> trianglePath;
-  for (size_t node = static_cast<size_t>(targetTriangleIndex); node != m_triangles.size(); node = previous[node])
+  for (size_t node = targetTriangleIndex; node != m_triangles.size(); node = previous[node])
   {
     trianglePath.push_back(node);
-    if (node == static_cast<size_t>(startTriangleIndex))
+    if (node == startTriangleIndex)
     {
       break;
     }
   }
 
-  if (trianglePath.empty() || trianglePath.back() != static_cast<size_t>(startTriangleIndex))
+  if (trianglePath.empty() || trianglePath.back() != startTriangleIndex)
   {
     return;
   }
@@ -247,11 +199,6 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
 
   m_path.push_back(target);
 
-  GetPathCleaned();
-}
-
-void Navmesh::GetPathCleaned()
-{
   auto addIfDifferent = [&](const Vector2 &point)
   {
     if (m_pathCleaned.empty() || !Vector2Equals(m_pathCleaned.back(), point))
@@ -359,4 +306,51 @@ void Navmesh::GetPathCleaned()
   }
 
   addIfDifferent(m_path.back());
+}
+
+size_t Navmesh::FindTriangleForPoint(const Vector2 &point)
+{
+  for (size_t i = 0; i < m_triangles.size(); ++i)
+  {
+    if (m_triangles.at(i).Contains(point))
+    {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+bool Navmesh::GetSharedEdge(const Triangle &lhs, const Triangle &rhs, Vector2 &outA, Vector2 &outB)
+{
+  int sharedCount = 0;
+  Vector2 shared[2] = {};
+
+  for (const Vector2 &l : lhs.GetVertices())
+  {
+    for (const Vector2 &r : rhs.GetVertices())
+    {
+      if (Vector2Equals(l, r))
+      {
+        if (sharedCount == 0 || !Vector2Equals(shared[0], l))
+        {
+          if (sharedCount < 2)
+          {
+            shared[sharedCount] = l;
+          }
+          ++sharedCount;
+        }
+        break;
+      }
+    }
+  }
+
+  if (sharedCount < 2)
+  {
+    return false;
+  }
+
+  outA = shared[0];
+  outB = shared[1];
+  return true;
 }
