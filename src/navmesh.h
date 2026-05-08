@@ -32,6 +32,6 @@ private:
   bool GetSharedEdge(const Triangle &lhs, const Triangle &rhs, Vector2 &outA, Vector2 &outB);
   std::vector<Triangle> m_triangles;
   std::vector<Vector2> m_path;
-  std::vector<Vector2> m_pathCleaned;
-  std::vector<Portal> m_debugPortals;
+  std::vector<Portal> m_portals;
+  std::vector<size_t> m_trianglePath;
 };

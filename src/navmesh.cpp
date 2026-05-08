@@ -10,8 +10,8 @@ Navmesh::~Navmesh() = default;
 void Navmesh::Build()
 {
   m_triangles.clear();
+  m_trianglePath.clear();
   m_path.clear();
-  m_pathCleaned.clear();
 
   std::vector<std::vector<std::array<float, 2>>> polygon;
   polygon.push_back({{100, 0}, {100, 100}, {0, 100}, {0, 0}}); // main polygon (map rect)
@@ -58,34 +58,33 @@ void Navmesh::Draw()
     DrawLineV(t.GetC(), t.GetA(), WHITE);
   }
 
+  for (size_t i = 0; i + 1 < m_trianglePath.size(); ++i)
+  {
+    Vector2 a = m_triangles.at(m_trianglePath.at(i)).GetCentroid();
+    Vector2 b = m_triangles.at(m_trianglePath.at(i + 1)).GetCentroid();
+    DrawLineV(a, b, BLACK);
+  }
+
   for (size_t i = 0; i + 1 < m_path.size(); ++i)
   {
     Vector2 a = m_path.at(i);
     Vector2 b = m_path.at(i + 1);
-    DrawLineV(a, b, BLACK);
+    DrawLineV(a, b, GREEN);
   }
 
-  for (size_t i = 0; i + 1 < m_pathCleaned.size(); ++i)
+  for (const auto &p : m_portals)
   {
-    Vector2 a = m_pathCleaned.at(i);
-    Vector2 b = m_pathCleaned.at(i + 1);
-    DrawLineV(a, b, LIME);
-  }
-
-  for (size_t i = 1; i + 1 < m_debugPortals.size(); ++i)
-  {
-    const Portal &portal = m_debugPortals.at(i);
-    DrawCircleV(portal.left, 4.0f, BLUE);
-    DrawCircleV(portal.right, 4.0f, RED);
-    DrawLineV(portal.left, portal.right, YELLOW);
+    DrawCircleV(p.left, 4.0f, BLUE);
+    DrawCircleV(p.right, 4.0f, RED);
+    DrawLineV(p.left, p.right, YELLOW);
   }
 };
 
 void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 {
   m_path.clear();
-  m_path.push_back(start);
-  m_pathCleaned.clear();
+  m_portals.clear();
+  m_trianglePath.clear();
 
   const size_t startTriangleIndex = FindTriangleForPoint(start);
   const size_t targetTriangleIndex = FindTriangleForPoint(target);
@@ -162,14 +161,12 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
     }
   }
 
-  std::vector<size_t> trianglePath;
-
   if (distance[targetTriangleIndex] == std::numeric_limits<float>::max())
   {
     if (startTriangleIndex == targetTriangleIndex)
     {
-      trianglePath.push_back(startTriangleIndex);
-      m_path.push_back(m_triangles[startTriangleIndex].GetCentroid());
+      m_trianglePath.push_back(startTriangleIndex);
+      m_path.push_back(start);
       m_path.push_back(target);
     }
     return;
@@ -177,48 +174,39 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 
   for (size_t node = targetTriangleIndex; node != m_triangles.size(); node = previous[node])
   {
-    trianglePath.push_back(node);
+    m_trianglePath.push_back(node);
     if (node == startTriangleIndex)
     {
       break;
     }
   }
 
-  if (trianglePath.empty() || trianglePath.back() != startTriangleIndex)
+  if (m_trianglePath.empty() || m_trianglePath.back() != startTriangleIndex)
   {
     return;
   }
 
-  std::reverse(trianglePath.begin(), trianglePath.end());
-
-  for (const size_t triangleIndex : trianglePath)
-  {
-    m_path.push_back(m_triangles[triangleIndex].GetCentroid());
-  }
-
-  m_path.push_back(target);
+  std::reverse(m_trianglePath.begin(), m_trianglePath.end());
 
   auto addIfDifferent = [&](const Vector2 &point)
   {
-    if (m_pathCleaned.empty() || !Vector2Equals(m_pathCleaned.back(), point))
+    if (m_path.empty() || !Vector2Equals(m_path.back(), point))
     {
-      m_pathCleaned.push_back(point);
+      m_path.push_back(point);
     }
   };
 
-  std::vector<Portal> portals;
-  portals.reserve(trianglePath.size() + 1);
-  portals.push_back(Portal{m_path.front(), m_path.front()});
+  m_portals.reserve(m_trianglePath.size() + 1);
+  m_portals.push_back(Portal{start, start});
 
-  for (size_t i = 0; i + 1 < trianglePath.size(); ++i)
+  for (size_t i = 0; i + 1 < m_trianglePath.size(); ++i)
   {
     Vector2 edgeA;
     Vector2 edgeB;
-    const size_t fromTriangle = trianglePath[i];
-    const size_t toTriangle = trianglePath[i + 1];
+    const size_t fromTriangle = m_trianglePath[i];
+    const size_t toTriangle = m_trianglePath[i + 1];
     if (!GetSharedEdge(m_triangles[fromTriangle], m_triangles[toTriangle], edgeA, edgeB))
     {
-      m_pathCleaned = m_path;
       return;
     }
 
@@ -239,25 +227,24 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
       portal.right = edgeB;
     }
 
-    portals.push_back(portal);
+    m_portals.push_back(portal);
   }
 
-  portals.push_back(Portal{m_path.back(), m_path.back()});
-  m_debugPortals = portals;
+  m_portals.push_back(Portal{target, target});
 
-  Vector2 portalApex = portals[0].left;
-  Vector2 portalLeft = portals[0].left;
-  Vector2 portalRight = portals[0].right;
+  Vector2 portalApex = m_portals[0].left;
+  Vector2 portalLeft = m_portals[0].left;
+  Vector2 portalRight = m_portals[0].right;
   size_t apexIndex = 0;
   size_t leftIndex = 0;
   size_t rightIndex = 0;
 
   addIfDifferent(portalApex);
 
-  for (size_t i = 1; i < portals.size(); ++i)
+  for (size_t i = 1; i < m_portals.size(); ++i)
   {
-    const Vector2 left = portals[i].left;
-    const Vector2 right = portals[i].right;
+    const Vector2 left = m_portals[i].left;
+    const Vector2 right = m_portals[i].right;
 
     if (CrossProduct(portalApex, portalRight, right) <= 0.0f)
     {
@@ -272,9 +259,7 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 
         portalApex = portalLeft;
         apexIndex = leftIndex;
-        portalLeft = portalApex;
         portalRight = portalApex;
-        leftIndex = apexIndex;
         rightIndex = apexIndex;
         i = apexIndex;
         continue;
@@ -295,16 +280,14 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
         portalApex = portalRight;
         apexIndex = rightIndex;
         portalLeft = portalApex;
-        portalRight = portalApex;
         leftIndex = apexIndex;
-        rightIndex = apexIndex;
         i = apexIndex;
         continue;
       }
     }
   }
 
-  addIfDifferent(m_path.back());
+  addIfDifferent(target);
 }
 
 size_t Navmesh::FindTriangleForPoint(const Vector2 &point)

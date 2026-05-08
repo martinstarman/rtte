@@ -11,7 +11,7 @@ Game::Game()
   m_camera.zoom = 1;
 
   m_navmesh->GetPath(
-      Vector2{10.0, 15.0},
+      Vector2{5.0, 65.0},
       Vector2{80.0, 47.0});
 }
 
@@ -44,7 +44,7 @@ void Game::Update()
 void Game::Draw()
 {
   BeginDrawing();
-  ClearBackground(MAGENTA);
+  ClearBackground(GRAY);
   BeginMode2D(m_camera);
 
   std::sort(m_entities.begin(), m_entities.end(),
