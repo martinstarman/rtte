@@ -83,7 +83,6 @@ void Navmesh::Draw()
 
 void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 {
-  m_trianglePath.clear();
   m_path.clear();
   m_path.push_back(start);
   m_pathCleaned.clear();
@@ -163,18 +162,19 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
     }
   }
 
+  std::vector<size_t> trianglePath;
+
   if (distance[targetTriangleIndex] == std::numeric_limits<float>::max())
   {
     if (startTriangleIndex == targetTriangleIndex)
     {
-      m_trianglePath.push_back(startTriangleIndex);
+      trianglePath.push_back(startTriangleIndex);
       m_path.push_back(m_triangles[startTriangleIndex].GetCentroid());
       m_path.push_back(target);
     }
     return;
   }
 
-  std::vector<size_t> trianglePath;
   for (size_t node = targetTriangleIndex; node != m_triangles.size(); node = previous[node])
   {
     trianglePath.push_back(node);
@@ -190,7 +190,6 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
   }
 
   std::reverse(trianglePath.begin(), trianglePath.end());
-  m_trianglePath = trianglePath;
 
   for (const size_t triangleIndex : trianglePath)
   {
@@ -208,15 +207,15 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
   };
 
   std::vector<Portal> portals;
-  portals.reserve(m_trianglePath.size() + 1);
+  portals.reserve(trianglePath.size() + 1);
   portals.push_back(Portal{m_path.front(), m_path.front()});
 
-  for (size_t i = 0; i + 1 < m_trianglePath.size(); ++i)
+  for (size_t i = 0; i + 1 < trianglePath.size(); ++i)
   {
     Vector2 edgeA;
     Vector2 edgeB;
-    const size_t fromTriangle = m_trianglePath[i];
-    const size_t toTriangle = m_trianglePath[i + 1];
+    const size_t fromTriangle = trianglePath[i];
+    const size_t toTriangle = trianglePath[i + 1];
     if (!GetSharedEdge(m_triangles[fromTriangle], m_triangles[toTriangle], edgeA, edgeB))
     {
       m_pathCleaned = m_path;

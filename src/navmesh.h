@@ -30,7 +30,6 @@ private:
   void Build();
   size_t FindTriangleForPoint(const Vector2 &point);
   bool GetSharedEdge(const Triangle &lhs, const Triangle &rhs, Vector2 &outA, Vector2 &outB);
-  std::vector<size_t> m_trianglePath;
   std::vector<Triangle> m_triangles;
   std::vector<Vector2> m_path;
   std::vector<Vector2> m_pathCleaned;
