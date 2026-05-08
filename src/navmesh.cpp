@@ -89,26 +89,19 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
   const size_t startTriangleIndex = FindTriangleForPoint(start);
   const size_t targetTriangleIndex = FindTriangleForPoint(target);
 
-  if (startTriangleIndex < 0 || targetTriangleIndex < 0)
-  {
-    return;
-  }
-
   std::vector<std::vector<size_t>> neighbors(m_triangles.size());
 
   for (size_t i = 0; i < m_triangles.size(); ++i)
   {
     for (size_t j = i + 1; j < m_triangles.size(); ++j)
     {
-      Vector2 sharedA;
-      Vector2 sharedB;
-      if (!GetSharedEdge(m_triangles[i], m_triangles[j], sharedA, sharedB))
-      {
-        continue;
-      }
+      std::vector<Vector2> edge = GetSharedEdge(m_triangles[i], m_triangles[j]);
 
-      neighbors[i].push_back(j);
-      neighbors[j].push_back(i);
+      if (!edge.empty())
+      {
+        neighbors[i].push_back(j);
+        neighbors[j].push_back(i);
+      }
     }
   }
 
@@ -201,30 +194,30 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 
   for (size_t i = 0; i + 1 < m_trianglePath.size(); ++i)
   {
-    Vector2 edgeA;
-    Vector2 edgeB;
-    const size_t fromTriangle = m_trianglePath[i];
-    const size_t toTriangle = m_trianglePath[i + 1];
-    if (!GetSharedEdge(m_triangles[fromTriangle], m_triangles[toTriangle], edgeA, edgeB))
+    const Triangle fromTriangle = m_triangles.at(m_trianglePath.at(i));
+    const Triangle toTriangle = m_triangles.at(m_trianglePath.at(i + 1));
+    std::vector<Vector2> edge = GetSharedEdge(fromTriangle, toTriangle);
+
+    if (edge.size() < 2)
     {
       return;
     }
 
-    const Vector2 from = m_triangles[fromTriangle].GetCentroid();
-    const Vector2 to = m_triangles[toTriangle].GetCentroid();
-    const float sideA = CrossProduct(from, to, edgeA);
-    const float sideB = CrossProduct(from, to, edgeB);
+    const Vector2 from = fromTriangle.GetCentroid();
+    const Vector2 to = toTriangle.GetCentroid();
+    const float sideA = CrossProduct(from, to, edge.at(0));
+    const float sideB = CrossProduct(from, to, edge.at(1));
 
     Portal portal;
     if (sideA >= sideB)
     {
-      portal.left = edgeB;
-      portal.right = edgeA;
+      portal.left = edge.at(1);
+      portal.right = edge.at(0);
     }
     else
     {
-      portal.left = edgeA;
-      portal.right = edgeB;
+      portal.left = edge.at(0);
+      portal.right = edge.at(1);
     }
 
     m_portals.push_back(portal);
@@ -303,7 +296,7 @@ size_t Navmesh::FindTriangleForPoint(const Vector2 &point)
   return -1;
 }
 
-bool Navmesh::GetSharedEdge(const Triangle &lhs, const Triangle &rhs, Vector2 &outA, Vector2 &outB)
+std::vector<Vector2> Navmesh::GetSharedEdge(const Triangle &lhs, const Triangle &rhs)
 {
   int sharedCount = 0;
   Vector2 shared[2] = {};
@@ -329,10 +322,8 @@ bool Navmesh::GetSharedEdge(const Triangle &lhs, const Triangle &rhs, Vector2 &o
 
   if (sharedCount < 2)
   {
-    return false;
+    return {};
   }
 
-  outA = shared[0];
-  outB = shared[1];
-  return true;
+  return {shared[0], shared[1]};
 }
