@@ -10,11 +10,9 @@ Game::Game()
   m_camera.rotation = 0;
   m_camera.zoom = 1;
 
-  m_navmesh->Build();
   m_navmesh->GetPath(
       Vector2{10.0, 15.0},
       Vector2{80.0, 47.0});
-  m_navmesh->GetPathCleaned();
 }
 
 Game::~Game()
@@ -64,6 +62,7 @@ void Game::Draw()
     }
   }
 
+  // TODO: if debug
   m_navmesh->Draw();
 
   EndMode2D();

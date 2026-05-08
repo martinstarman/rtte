@@ -1,63 +1,38 @@
 #include "navmesh.h"
 
-namespace
+bool GetSharedEdge(const Triangle &lhs, const Triangle &rhs, Vector2 &outA, Vector2 &outB)
 {
-  bool GetSharedEdge(const Triangle &lhs, const Triangle &rhs, Vector2 &outA, Vector2 &outB)
-  {
-    int sharedCount = 0;
-    Vector2 shared[2] = {};
+  int sharedCount = 0;
+  Vector2 shared[2] = {};
 
-    for (const Vector2 &l : lhs.GetVertices())
+  for (const Vector2 &l : lhs.GetVertices())
+  {
+    for (const Vector2 &r : rhs.GetVertices())
     {
-      for (const Vector2 &r : rhs.GetVertices())
+      if (Vector2Equals(l, r))
       {
-        if (Vector2Equals(l, r))
+        if (sharedCount == 0 || !Vector2Equals(shared[0], l))
         {
-          if (sharedCount == 0 || !Vector2Equals(shared[0], l))
+          if (sharedCount < 2)
           {
-            if (sharedCount < 2)
-            {
-              shared[sharedCount] = l;
-            }
-            ++sharedCount;
+            shared[sharedCount] = l;
           }
-          break;
+          ++sharedCount;
         }
+        break;
       }
     }
-
-    if (sharedCount < 2)
-    {
-      return false;
-    }
-
-    outA = shared[0];
-    outB = shared[1];
-    return true;
   }
 
-  bool IsBoundaryEdge(const std::vector<Vector2> &outerPolygon, const Vector2 &a, const Vector2 &b)
+  if (sharedCount < 2)
   {
-    if (outerPolygon.size() < 2)
-    {
-      return false;
-    }
-
-    for (size_t i = 0; i < outerPolygon.size(); ++i)
-    {
-      const Vector2 edgeA = outerPolygon[i];
-      const Vector2 edgeB = outerPolygon[(i + 1) % outerPolygon.size()];
-      const bool sameDirection = Vector2Equals(edgeA, a) && Vector2Equals(edgeB, b);
-      const bool oppositeDirection = Vector2Equals(edgeA, b) && Vector2Equals(edgeB, a);
-      if (sameDirection || oppositeDirection)
-      {
-        return true;
-      }
-    }
-
     return false;
   }
-} // namespace
+
+  outA = shared[0];
+  outB = shared[1];
+  return true;
+}
 
 int FindTriangleForPoint(const std::vector<Triangle> &triangles, const Vector2 &point)
 {
@@ -72,9 +47,12 @@ int FindTriangleForPoint(const std::vector<Triangle> &triangles, const Vector2 &
   return -1;
 }
 
-Navmesh::Navmesh() {};
+Navmesh::Navmesh()
+{
+  Build();
+};
 
-Navmesh::~Navmesh() {};
+Navmesh::~Navmesh() = default;
 
 void Navmesh::Build()
 {
@@ -85,25 +63,6 @@ void Navmesh::Build()
   std::vector<std::vector<std::array<float, 2>>> polygon;
   polygon.push_back({{100, 0}, {100, 100}, {0, 100}, {0, 0}}); // main polygon (map rect)
   polygon.push_back({{75, 25}, {75, 75}, {25, 75}, {25, 25}}); // holes in main polygon
-  m_outerPolygon.clear();
-  m_outerPolygon.reserve(polygon[0].size());
-  for (const auto &point : polygon[0])
-  {
-    m_outerPolygon.push_back(Vector2{point[0], point[1]});
-  }
-
-  m_holes.clear();
-  m_holes.reserve(polygon.size() > 1 ? polygon.size() - 1 : 0);
-  for (size_t ringIndex = 1; ringIndex < polygon.size(); ++ringIndex)
-  {
-    std::vector<Vector2> hole;
-    hole.reserve(polygon[ringIndex].size());
-    for (const auto &point : polygon[ringIndex])
-    {
-      hole.push_back(Vector2{point[0], point[1]});
-    }
-    m_holes.push_back(hole);
-  }
 
   std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(polygon);
   std::vector<Vector2> trianglesIndices;
@@ -146,7 +105,6 @@ void Navmesh::Draw()
     DrawLineV(t.GetC(), t.GetA(), WHITE);
   }
 
-  // path
   for (size_t i = 0; i + 1 < m_path.size(); ++i)
   {
     Vector2 a = m_path.at(i);
@@ -154,7 +112,6 @@ void Navmesh::Draw()
     DrawLineV(a, b, BLACK);
   }
 
-  // cleaned path
   for (size_t i = 0; i + 1 < m_pathCleaned.size(); ++i)
   {
     Vector2 a = m_pathCleaned.at(i);
@@ -162,12 +119,11 @@ void Navmesh::Draw()
     DrawLineV(a, b, LIME);
   }
 
-  // debug: portals (left=BLUE, right=RED, gate=YELLOW)
   for (size_t i = 1; i + 1 < m_debugPortals.size(); ++i)
   {
-    const Portal &portal = m_debugPortals[i];
-    DrawCircleV(portal.left, 2.0f, BLUE);
-    DrawCircleV(portal.right, 2.0f, RED);
+    const Portal &portal = m_debugPortals.at(i);
+    DrawCircleV(portal.left, 4.0f, BLUE);
+    DrawCircleV(portal.right, 4.0f, RED);
     DrawLineV(portal.left, portal.right, YELLOW);
   }
 };
@@ -177,6 +133,7 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
   m_trianglePath.clear();
   m_path.clear();
   m_path.push_back(start);
+  m_pathCleaned.clear();
 
   const int startTriangleIndex = FindTriangleForPoint(m_triangles, start);
   const int targetTriangleIndex = FindTriangleForPoint(m_triangles, target);
@@ -196,12 +153,6 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
       Vector2 sharedB;
       if (!GetSharedEdge(m_triangles[i], m_triangles[j], sharedA, sharedB))
       {
-        continue;
-      }
-
-      if (IsBoundaryEdge(m_outerPolygon, sharedA, sharedB))
-      {
-        // Do not connect through the map boundary edge.
         continue;
       }
 
@@ -295,24 +246,12 @@ void Navmesh::GetPath(Vector2 start, Vector2 target)
   }
 
   m_path.push_back(target);
+
+  GetPathCleaned();
 }
 
 void Navmesh::GetPathCleaned()
 {
-  m_pathCleaned.clear();
-
-  if (m_path.size() < 2)
-  {
-    m_pathCleaned = m_path;
-    return;
-  }
-
-  if (m_trianglePath.empty())
-  {
-    m_pathCleaned = m_path;
-    return;
-  }
-
   auto addIfDifferent = [&](const Vector2 &point)
   {
     if (m_pathCleaned.empty() || !Vector2Equals(m_pathCleaned.back(), point))
