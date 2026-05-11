@@ -63,3 +63,23 @@ bool Triangle::ShareEdge(const Triangle &t) const
 
   return sharedVertices >= 2;
 }
+
+std::array<Vector2, 2> Triangle::GetSharedEdge(const Triangle &t) const
+{
+  std::array<Vector2, 2> sharedVectors{};
+  int currentIndex = 0;
+
+  for (const auto &v1 : GetVertices())
+  {
+    for (const auto &v2 : t.GetVertices())
+    {
+      if (Vector2Equals(v1, v2))
+      {
+        sharedVectors.at(currentIndex++) = v1;
+        break;
+      }
+    }
+  }
+
+  return sharedVectors;
+}

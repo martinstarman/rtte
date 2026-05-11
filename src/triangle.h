@@ -17,6 +17,7 @@ public:
   bool Contains(const Vector2 v) const;
   const std::array<Vector2, 3> GetVertices() const;
   bool ShareEdge(const Triangle &t) const;
+  std::array<Vector2, 2> GetSharedEdge(const Triangle &t) const;
 
 private:
   Vector2 m_a;

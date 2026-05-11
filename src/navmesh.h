@@ -1,13 +1,13 @@
 #pragma once
 
-// TODO: sort
 #include <array>
-#include <mapbox/earcut.hpp>
-#include <raylib.h>
-#include <vector>
 #include <CXXGraph/CXXGraph.hpp>
 #include <limits>
-#include "utils.h"
+#include <mapbox/earcut.hpp>
+#include <raylib.h>
+#include <string>
+#include <vector>
+
 #include "triangle.h"
 #include "utils.h"
 
@@ -20,15 +20,16 @@ struct Portal
 class Navmesh
 {
 public:
-  Navmesh();
+  Navmesh(Rectangle mapRect);
   ~Navmesh();
+  void AddHole(const std::vector<std::array<float, 2>> &hole);
   void Draw();
-  void GetPath(const Vector2 &start, const Vector2 &target);
+  // TODO: const &
+  std::vector<Vector2> GetPath(const Vector2 &start, const Vector2 &target);
 
 private:
-  void Build();
-  size_t FindTriangleForPoint(const Vector2 &point);
+  void Triangulate();
+  size_t GetTriangleIndexFrom(const Vector2 &point);
+  std::vector<std::vector<std::array<float, 2>>> m_polygons;
   std::vector<Triangle> m_triangles;
-  std::vector<Vector2> m_path;
-  std::vector<Vector2> m_pathCleaned;
 };

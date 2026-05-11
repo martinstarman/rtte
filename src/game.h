@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <raylib.h>
 #include <string>
 #include <vector>
@@ -22,6 +23,7 @@ public:
 private:
   Camera2D m_camera;
   std::vector<Entity *> m_entities;
+  Navmesh *m_navmesh;
   int m_maxDrawingLayer;
   Vector2 GetGameMousePosition();
   void HandleCameraOffset();
@@ -29,5 +31,4 @@ private:
   void HandleEntityMovement();
   void HandleEntityTraces();
 
-  Navmesh *m_navmesh;
 };

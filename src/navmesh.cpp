@@ -1,48 +1,22 @@
 #include "navmesh.h"
 
-Navmesh::Navmesh()
+Navmesh::Navmesh(Rectangle mapRect)
 {
-  Build();
+  m_polygons.push_back({{
+      {mapRect.x, mapRect.y},
+      {mapRect.x, mapRect.y + mapRect.height},
+      {mapRect.x + mapRect.width, mapRect.y + mapRect.height},
+      {mapRect.x + mapRect.width, mapRect.y},
+  }});
 };
 
 Navmesh::~Navmesh() = default;
 
-void Navmesh::Build()
+void Navmesh::AddHole(const std::vector<std::array<float, 2>> &hole)
 {
-  std::vector<std::vector<std::array<float, 2>>> polygon;
-  polygon.push_back({{100, 0}, {100, 100}, {0, 100}, {0, 0}}); // main polygon (map rect)
-  polygon.push_back({{75, 25}, {75, 75}, {25, 75}, {25, 25}}); // holes in main polygon
-  std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(polygon);
-  std::vector<Vector2> trianglesIndices;
-
-  for (int i = 0; i < indices.size(); i++)
-  {
-    auto index = indices.at(i);
-    std::array<float, 2> p;
-
-    if (index < 4)
-    {
-      p = polygon.at(0).at(index);
-    }
-    else
-    {
-      p = polygon.at(1).at(index - polygon.at(0).size());
-    }
-
-    trianglesIndices.emplace_back(Vector2{p.at(0), p.at(1)});
-  }
-
-  m_triangles.reserve(trianglesIndices.size() / 3);
-
-  for (size_t i = 0; i + 2 < trianglesIndices.size(); i += 3)
-  {
-    Triangle triangle = Triangle(
-        trianglesIndices.at(i),
-        trianglesIndices.at(i + 1),
-        trianglesIndices.at(i + 2));
-    m_triangles.push_back(triangle);
-  }
-};
+  m_polygons.push_back(hole);
+  Triangulate();
+}
 
 void Navmesh::Draw()
 {
@@ -52,40 +26,27 @@ void Navmesh::Draw()
     DrawLineV(t.GetB(), t.GetC(), WHITE);
     DrawLineV(t.GetC(), t.GetA(), WHITE);
   }
-
-  // path
-  for (size_t i = 0; i + 1 < m_path.size(); ++i)
-  {
-    Vector2 a = m_path.at(i);
-    Vector2 b = m_path.at(i + 1);
-    DrawLineV(a, b, BLACK);
-  }
-
-  // cleaned path
-  for (size_t i = 0; i + 1 < m_pathCleaned.size(); ++i)
-  {
-    Vector2 a = m_pathCleaned.at(i);
-    Vector2 b = m_pathCleaned.at(i + 1);
-    DrawLineV(a, b, GREEN);
-  }
 };
 
-void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
+std::vector<Vector2> Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
 {
-  m_path.clear();
-  m_path.push_back(start);
+  const size_t startTriangleIndex = GetTriangleIndexFrom(start);
+  const size_t targetTriangleIndex = GetTriangleIndexFrom(target);
 
-  const size_t startTriangleIndex = FindTriangleForPoint(start);
-  const size_t targetTriangleIndex = FindTriangleForPoint(target);
-
-  std::vector<std::shared_ptr<const CXXGraph::Node<size_t>>> nodes;
-  nodes.reserve(m_triangles.size());
-  for (size_t i = 0; i < m_triangles.size(); ++i)
+  if (startTriangleIndex == targetTriangleIndex)
   {
-    nodes.push_back(std::make_shared<const CXXGraph::Node<size_t>>(std::to_string(i), i));
+    return {start, target};
   }
 
-  CXXGraph::T_EdgeSet<size_t> edgeSet;
+  std::vector<CXXGraph::Node<size_t>> nodes;
+  nodes.reserve(m_triangles.size());
+
+  for (size_t i = 0; i < m_triangles.size(); ++i)
+  {
+    nodes.emplace_back(std::to_string(i), i);
+  }
+
+  CXXGraph::T_EdgeSet<size_t> edges;
   CXXGraph::id_t edgeId = 0;
 
   for (size_t i = 0; i < m_triangles.size(); ++i)
@@ -97,135 +58,87 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
         continue;
       }
 
-      const double weight = static_cast<double>(Vector2Distance(m_triangles.at(i).GetCentroid(), m_triangles.at(j).GetCentroid()));
-      edgeSet.insert(std::make_shared<const CXXGraph::UndirectedWeightedEdge<size_t>>(edgeId++, nodes.at(i), nodes.at(j), weight));
+      const double weight = static_cast<double>(Vector2Distance(m_triangles.at(i).GetCentroid(),
+                                                                m_triangles.at(j).GetCentroid()));
+      edges.insert(std::make_shared<const CXXGraph::UndirectedWeightedEdge<size_t>>(edgeId++,
+                                                                                    nodes.at(i),
+                                                                                    nodes.at(j),
+                                                                                    weight));
     }
   }
 
-  CXXGraph::Graph<size_t> graph(edgeSet);
-  const auto result = graph.dijkstra(*nodes.at(startTriangleIndex), *nodes.at(targetTriangleIndex));
+  CXXGraph::Graph<size_t> graph(edges);
+  CXXGraph::DijkstraResult result = graph.dijkstra(nodes.at(startTriangleIndex),
+                                                   nodes.at(targetTriangleIndex));
 
   if (!result.success || result.path.empty())
   {
-    if (startTriangleIndex == targetTriangleIndex)
-    {
-      m_path.push_back(m_triangles.at(startTriangleIndex).GetCentroid());
-      m_path.push_back(target);
-    }
-    return;
+    return {};
   }
+
+  std::vector<Vector2> centroidsPath;
+  centroidsPath.push_back(start);
 
   for (const auto &nodeId : result.path)
   {
+    // TODO: i hate this
     const size_t triangleIndex = static_cast<size_t>(std::stoull(nodeId));
-    if (triangleIndex < m_triangles.size())
-    {
-      m_path.push_back(m_triangles.at(triangleIndex).GetCentroid());
-    }
+    centroidsPath.push_back(m_triangles.at(triangleIndex).GetCentroid());
   }
 
-  m_path.push_back(target);
+  centroidsPath.push_back(target);
+  std::vector<Vector2> path;
 
-  m_pathCleaned.clear();
+  std::vector<size_t> trianglesPath;
+  trianglesPath.reserve(centroidsPath.size());
 
-  std::vector<size_t> corridor;
-  corridor.reserve(m_path.size());
-  for (size_t i = 1; i + 1 < m_path.size(); ++i)
+  for (size_t i = 1; i + 1 < centroidsPath.size(); ++i)
   {
-    const size_t triangleIndex = FindTriangleForPoint(m_path.at(i));
-    if (corridor.empty() || corridor.back() != triangleIndex)
-    {
-      corridor.push_back(triangleIndex);
-    }
+    const size_t triangleIndex = GetTriangleIndexFrom(centroidsPath.at(i));
+    trianglesPath.push_back(triangleIndex);
   }
 
-  if (corridor.empty())
-  {
-    m_pathCleaned = m_path;
-    return;
-  }
-
+  // TODO
   auto addIfDifferent = [&](const Vector2 &point)
   {
-    if (m_pathCleaned.empty() || !Vector2Equals(m_pathCleaned.back(), point))
+    if (path.empty() || !Vector2Equals(path.back(), point))
     {
-      m_pathCleaned.push_back(point);
+      path.push_back(point);
     }
-  };
-
-  auto sharedEdge = [&](size_t lhs, size_t rhs, Vector2 &outA, Vector2 &outB) -> bool
-  {
-    auto lhsVertices = m_triangles.at(lhs).GetVertices();
-    auto rhsVertices = m_triangles.at(rhs).GetVertices();
-
-    int sharedCount = 0;
-    Vector2 shared[2] = {};
-    for (const Vector2 &l : lhsVertices)
-    {
-      for (const Vector2 &r : rhsVertices)
-      {
-        if (Vector2Equals(l, r))
-        {
-          if (sharedCount == 0 || !Vector2Equals(shared[0], l))
-          {
-            if (sharedCount < 2)
-            {
-              shared[sharedCount] = l;
-            }
-            ++sharedCount;
-          }
-          break;
-        }
-      }
-    }
-
-    if (sharedCount < 2)
-    {
-      return false;
-    }
-
-    outA = shared[0];
-    outB = shared[1];
-    return true;
   };
 
   std::vector<Portal> portals;
-  portals.reserve(corridor.size() + 1);
-  portals.push_back(Portal{m_path.front(), m_path.front()});
+  portals.reserve(trianglesPath.size() + 1);
+  portals.push_back(Portal{centroidsPath.front(), centroidsPath.front()});
 
-  for (size_t i = 0; i + 1 < corridor.size(); ++i)
+  for (size_t i = 0; i + 1 < trianglesPath.size(); ++i)
   {
-    Vector2 edgeA;
-    Vector2 edgeB;
+    Triangle triangle1 = m_triangles.at(trianglesPath.at(i));
+    Triangle triangle2 = m_triangles.at(trianglesPath.at(i + 1));
+    std::array<Vector2,2> sharedEdge = triangle1.GetSharedEdge(triangle2);
 
-    if (!sharedEdge(corridor.at(i), corridor.at(i + 1), edgeA, edgeB))
-    {
-      m_pathCleaned = m_path;
-      return;
-    }
-
-    const Vector2 from = m_triangles.at(corridor.at(i)).GetCentroid();
-    const Vector2 to = m_triangles.at(corridor.at(i + 1)).GetCentroid();
-    const float sideA = CrossProduct(from, to, edgeA);
-    const float sideB = CrossProduct(from, to, edgeB);
+    const Vector2 from = m_triangles.at(trianglesPath.at(i)).GetCentroid();
+    const Vector2 to = m_triangles.at(trianglesPath.at(i + 1)).GetCentroid();
+    const float crossProduct1 = CrossProduct(from, to, sharedEdge.at(0));
+    const float crossProduct2 = CrossProduct(from, to, sharedEdge.at(1));
 
     Portal portal;
 
-    if (sideA >= sideB)
+    if (crossProduct1 >= crossProduct2)
     {
-      portal.left = edgeB;
-      portal.right = edgeA;
+      portal.left = sharedEdge.at(1);
+      portal.right = sharedEdge.at(0);
     }
     else
     {
-      portal.left = edgeA;
-      portal.right = edgeB;
+      portal.left = sharedEdge.at(0);
+      portal.right = sharedEdge.at(1);
     }
 
     portals.push_back(portal);
   }
 
-  portals.push_back(Portal{m_path.back(), m_path.back()});
+  portals.push_back(Portal{centroidsPath.back(), centroidsPath.back()});
 
   Vector2 portalApex = portals.at(0).left;
   Vector2 portalLeft = portals.at(0).left;
@@ -282,14 +195,70 @@ void Navmesh::GetPath(const Vector2 &start, const Vector2 &target)
     }
   }
 
-  addIfDifferent(m_path.back());
+  addIfDifferent(centroidsPath.back());
+
+  return path;
 }
 
-size_t Navmesh::FindTriangleForPoint(const Vector2 &point)
+// TODO: refactor
+void Navmesh::Triangulate()
+{
+  m_triangles.clear();
+
+  std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(m_polygons);
+  std::vector<Vector2> trianglesIndices;
+
+  std::vector<size_t> ringOffsets;
+  ringOffsets.reserve(m_polygons.size());
+  size_t vertexOffset = 0;
+  for (const auto &ring : m_polygons)
+  {
+    ringOffsets.push_back(vertexOffset);
+    vertexOffset += ring.size();
+  }
+
+  for (const uint32_t index : indices)
+  {
+    std::array<float, 2> p;
+    bool found = false;
+
+    for (size_t ringIndex = 0; ringIndex < m_polygons.size(); ++ringIndex)
+    {
+      const size_t start = ringOffsets.at(ringIndex);
+      const size_t end = start + m_polygons.at(ringIndex).size();
+      if (index >= start && index < end)
+      {
+        p = m_polygons.at(ringIndex).at(static_cast<size_t>(index) - start);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+    {
+      continue;
+    }
+
+    trianglesIndices.emplace_back(Vector2{p.at(0), p.at(1)});
+  }
+
+  m_triangles.reserve(trianglesIndices.size() / 3);
+
+  for (size_t i = 0; i + 2 < trianglesIndices.size(); i += 3)
+  {
+    Triangle triangle = Triangle(
+        trianglesIndices.at(i),
+        trianglesIndices.at(i + 1),
+        trianglesIndices.at(i + 2));
+    m_triangles.push_back(triangle);
+  }
+}
+
+size_t Navmesh::GetTriangleIndexFrom(const Vector2 &vector)
 {
   for (size_t i = 0; i < m_triangles.size(); ++i)
   {
-    if (m_triangles.at(i).Contains(point))
+    if (m_triangles.at(i).Contains(vector))
     {
       return i;
     }

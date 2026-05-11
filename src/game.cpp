@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game() : m_maxDrawingLayer(0), m_navmesh(new Navmesh())
+Game::Game() : m_maxDrawingLayer(0)
 {
   m_camera = {0};
   m_camera.target = {0, 0};
@@ -8,9 +8,8 @@ Game::Game() : m_maxDrawingLayer(0), m_navmesh(new Navmesh())
   m_camera.rotation = 0;
   m_camera.zoom = 1;
 
-  m_navmesh->GetPath(
-      Vector2{15.0, 45.0},
-      Vector2{80.0, 47.0});
+  Rectangle mapRect = Rectangle{0, 0, 800, 600};
+  m_navmesh = new Navmesh(mapRect);
 }
 
 Game::~Game()
@@ -71,6 +70,19 @@ void Game::AddEntity(Entity *entity)
   m_entities.emplace_back(entity);
 
   int drawingLayer = entity->GetDrawingLayer();
+
+  if (entity->GetShowsTraces()) // TODO
+  {
+    std::vector<Vector2> shape = entity->GetShape();
+    std::vector<std::array<float, 2>> hole;
+
+    for (const auto &v : shape)
+    {
+      hole.push_back({v.x, v.y});
+    }
+
+    m_navmesh->AddHole(hole);
+  }
 
   if (drawingLayer > m_maxDrawingLayer)
   {
@@ -150,8 +162,10 @@ void Game::HandleEntityMovement()
     {
       if (entity->GetSelected())
       {
-        Vector2 mousePosition = GetGameMousePosition();
-        entity->SetPath({mousePosition});
+        Vector2 start = entity->GetPosition();
+        Vector2 target = GetGameMousePosition();
+        std::vector<Vector2> path = m_navmesh->GetPath(start, target);
+        entity->SetPath(path);
       }
     }
   }

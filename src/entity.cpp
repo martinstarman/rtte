@@ -96,7 +96,7 @@ void Entity::SetSelected(bool selected)
 void Entity::SetPath(const std::vector<Vector2> &path)
 {
   m_path = path;
-  m_octant = GetOctantFrom(-GetAngleBetween(path[0], m_position));
+  m_octant = GetOctantFrom(-GetAngleBetween(path.at(0), m_position));
 }
 
 void Entity::SetTrace()
@@ -169,6 +169,17 @@ void Entity::Draw()
     DrawLineV(shape.at(i),
               shape.at((i + 1) % shape.size()),
               m_selected ? GREEN : WHITE);
+  }
+
+  // path
+  if (m_path.size() > 0)
+  {
+    for (size_t i = 0; i < m_path.size() - 1; ++i)
+    {
+      Vector2 a = m_path.at(i);
+      Vector2 b = m_path.at(i + 1);
+      DrawLineV(a, b, BLACK);
+    }
   }
 }
 
@@ -267,7 +278,7 @@ void Entity::HandleMovement()
 
   if (magnitude < MOVEMENT_SPEED / 2)
   {
-    m_path.clear();
+    m_path.erase(m_path.begin());
   }
 }
 

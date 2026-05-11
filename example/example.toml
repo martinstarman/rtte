@@ -42,7 +42,7 @@ Path = "textures/sand.png"
 
 [[Entities]]
 DefaultOctant = "East"
-DefaultPosition = [150.0, 150.0]
+DefaultPosition = [64.0, 150.0]
 DrawingLayer = 1
 Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 
@@ -57,7 +57,7 @@ TracesPerSecond = 3
 
 [[Entities]]
 DefaultOctant = "NorthWest"
-DefaultPosition = [300.0, 150.0]
+DefaultPosition = [640.0, 64.0]
 DrawingLayer = 1
 Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 
