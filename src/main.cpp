@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
       Vector2 defaultPosition = {tomlDefaultPosition.at(0),
                                  tomlDefaultPosition.at(1)};
       std::vector<Vector2> shape;
-      for (int i = 0; i < tomlShape.size(); i++)
+      for (size_t i = 0; i < tomlShape.size(); ++i)
       {
         Vector2 shapePoint = {tomlShape.at(i).at(0),
                               tomlShape.at(i).at(1)};

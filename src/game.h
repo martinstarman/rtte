@@ -25,10 +25,9 @@ private:
   std::vector<Entity *> m_entities;
   Navmesh *m_navmesh;
   int m_maxDrawingLayer;
-  Vector2 GetGameMousePosition();
+  Vector2 GetGameMousePosition() const;
   void HandleCameraOffset();
   bool HandleEntitySelection();
   void HandleEntityMovement();
   void HandleEntityTraces();
-
 };

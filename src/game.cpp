@@ -48,7 +48,7 @@ void Game::Draw()
             [](Entity *a, Entity *b)
             { return a->GetZIndex() < b->GetZIndex(); });
 
-  for (int drawingLayer = 0; drawingLayer <= m_maxDrawingLayer; drawingLayer++)
+  for (size_t drawingLayer = 0; drawingLayer <= m_maxDrawingLayer; ++drawingLayer)
   {
     for (auto &entity : m_entities)
     {
@@ -59,6 +59,7 @@ void Game::Draw()
     }
   }
 
+  // TODO: debug
   m_navmesh->Draw();
 
   EndMode2D();
@@ -71,7 +72,7 @@ void Game::AddEntity(Entity *entity)
 
   int drawingLayer = entity->GetDrawingLayer();
 
-  if (entity->GetShowsTraces()) // TODO
+  if (entity->GetShowsTraces()) // TODO: movement blocking entities
   {
     std::vector<Vector2> shape = entity->GetShape();
     std::vector<std::array<float, 2>> hole;
@@ -90,7 +91,7 @@ void Game::AddEntity(Entity *entity)
   }
 }
 
-Vector2 Game::GetGameMousePosition()
+Vector2 Game::GetGameMousePosition() const
 {
   Vector2 mousePosition = GetMousePosition();
 
