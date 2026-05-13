@@ -8,13 +8,13 @@
 class Triangle
 {
 public:
-  Triangle(Vector2 a, Vector2 b, Vector2 c);
+  Triangle(const Vector2 &a, const Vector2 &b, const Vector2 &c);
   ~Triangle();
   const Vector2 &GetA() const;
   const Vector2 &GetB() const;
   const Vector2 &GetC() const;
   const Vector2 &GetCentroid() const;
-  bool Contains(const Vector2 v) const;
+  bool Contains(const Vector2 &v) const;
   const std::array<Vector2, 3> GetVertices() const;
   bool ShareEdge(const Triangle &t) const;
   std::array<Vector2, 2> GetSharedEdge(const Triangle &t) const;

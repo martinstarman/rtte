@@ -8,6 +8,7 @@ Game::Game() : m_maxDrawingLayer(0)
   m_camera.rotation = 0;
   m_camera.zoom = 1;
 
+  // TODO: toml
   Rectangle mapRect = Rectangle{0, 0, 800, 600};
   m_navmesh = new Navmesh(mapRect);
 }

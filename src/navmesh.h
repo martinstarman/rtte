@@ -27,7 +27,7 @@ public:
 
 private:
   void Triangulate();
-  size_t GetTriangleIndexFrom(const Vector2 &point) const;
+  size_t GetTriangleIndexFrom(const Vector2 &v) const;
   std::vector<std::vector<std::array<float, 2>>> m_polygons;
   std::vector<Triangle> m_triangles;
 };

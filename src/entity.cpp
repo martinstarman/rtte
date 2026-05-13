@@ -172,6 +172,7 @@ void Entity::Draw()
   }
 
   // path
+  // TODO: debug
   if (m_path.size() > 0)
   {
     for (size_t i = 0; i < m_path.size() - 1; ++i)

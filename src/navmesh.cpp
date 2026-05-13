@@ -18,13 +18,14 @@ void Navmesh::AddHole(const std::vector<std::array<float, 2>> &hole)
   Triangulate();
 }
 
+// TODO: debug
 void Navmesh::Draw() const
 {
-  for (const auto &triangle : m_triangles)
+  for (const auto &t : m_triangles)
   {
-    DrawLineV(triangle.GetA(), triangle.GetB(), WHITE);
-    DrawLineV(triangle.GetB(), triangle.GetC(), WHITE);
-    DrawLineV(triangle.GetC(), triangle.GetA(), WHITE);
+    DrawLineV(t.GetA(), t.GetB(), WHITE);
+    DrawLineV(t.GetB(), t.GetC(), WHITE);
+    DrawLineV(t.GetC(), t.GetA(), WHITE);
   }
 };
 
@@ -245,11 +246,11 @@ void Navmesh::Triangulate()
   }
 }
 
-size_t Navmesh::GetTriangleIndexFrom(const Vector2 &vector) const
+size_t Navmesh::GetTriangleIndexFrom(const Vector2 &v) const
 {
   for (size_t i = 0; i < m_triangles.size(); ++i)
   {
-    if (m_triangles.at(i).Contains(vector))
+    if (m_triangles.at(i).Contains(v))
     {
       return i;
     }

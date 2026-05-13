@@ -1,6 +1,6 @@
 #include "triangle.h"
 
-Triangle::Triangle(Vector2 a, Vector2 b, Vector2 c) : m_a(a), m_b(b), m_c(c)
+Triangle::Triangle(const Vector2 &a, const Vector2 &b, const Vector2 &c) : m_a(a), m_b(b), m_c(c)
 {
   m_centroid = Vector2{(a.x + b.x + c.x) / 3.0f,
                        (a.y + b.y + c.y) / 3.0f};
@@ -28,7 +28,7 @@ const Vector2 &Triangle::GetCentroid() const
   return m_centroid;
 }
 
-bool Triangle::Contains(const Vector2 v) const
+bool Triangle::Contains(const Vector2 &v) const
 {
   const float d1 = CrossProduct(v, m_a, m_b);
   const float d2 = CrossProduct(v, m_b, m_c);
