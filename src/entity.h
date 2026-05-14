@@ -52,14 +52,14 @@ public:
       const EntityTextureConfig &entityTextureConfig,
       const TraceTextureConfig &traceTextureConfig);
   ~Entity();
-  int GetId();
-  int GetDrawingLayer();
-  float GetZIndex();
-  bool GetSelected();
-  std::vector<Vector2> GetShape();
-  Vector2 GetPosition();
-  bool GetShowsTraces();
-  bool IsMoving();
+  int GetId() const;
+  int GetDrawingLayer() const;
+  float GetZIndex() const;
+  bool GetSelected() const;
+  std::vector<Vector2> GetShape() const;
+  Vector2 GetPosition() const;
+  bool GetShowsTraces() const;
+  bool IsMoving() const;
   void SetSelected(bool selected);
   void SetPath(const std::vector<Vector2> &path);
   void SetTrace();

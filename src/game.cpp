@@ -7,6 +7,10 @@ Game::Game() : m_maxDrawingLayer(0)
   m_camera.offset = {0, 0};
   m_camera.rotation = 0;
   m_camera.zoom = 1;
+
+  // TODO: toml
+  Rectangle mapRect = Rectangle{0, 0, 800, 600};
+  m_navmesh = new Navmesh(mapRect);
 }
 
 Game::~Game()
@@ -15,6 +19,8 @@ Game::~Game()
   {
     delete entity;
   }
+
+  delete m_navmesh;
 }
 
 void Game::Update()
@@ -43,7 +49,7 @@ void Game::Draw()
             [](Entity *a, Entity *b)
             { return a->GetZIndex() < b->GetZIndex(); });
 
-  for (int drawingLayer = 0; drawingLayer <= m_maxDrawingLayer; drawingLayer++)
+  for (size_t drawingLayer = 0; drawingLayer <= m_maxDrawingLayer; ++drawingLayer)
   {
     for (auto &entity : m_entities)
     {
@@ -53,6 +59,9 @@ void Game::Draw()
       }
     }
   }
+
+  // TODO: debug
+  m_navmesh->Draw();
 
   EndMode2D();
   EndDrawing();
@@ -64,13 +73,26 @@ void Game::AddEntity(Entity *entity)
 
   int drawingLayer = entity->GetDrawingLayer();
 
+  if (entity->GetShowsTraces()) // TODO: movement blocking entities
+  {
+    std::vector<Vector2> shape = entity->GetShape();
+    std::vector<std::array<float, 2>> hole;
+
+    for (const auto &v : shape)
+    {
+      hole.push_back({v.x, v.y});
+    }
+
+    m_navmesh->AddHole(hole);
+  }
+
   if (drawingLayer > m_maxDrawingLayer)
   {
     m_maxDrawingLayer = drawingLayer;
   }
 }
 
-Vector2 Game::GetGameMousePosition()
+Vector2 Game::GetGameMousePosition() const
 {
   Vector2 mousePosition = GetMousePosition();
 
@@ -142,8 +164,10 @@ void Game::HandleEntityMovement()
     {
       if (entity->GetSelected())
       {
-        Vector2 mousePosition = GetGameMousePosition();
-        entity->SetPath({mousePosition});
+        Vector2 start = entity->GetPosition();
+        Vector2 target = GetGameMousePosition();
+        std::vector<Vector2> path = m_navmesh->GetPath(start, target);
+        entity->SetPath(path);
       }
     }
   }

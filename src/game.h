@@ -1,11 +1,13 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <raylib.h>
 #include <string>
 #include <vector>
 
 #include "entity.h"
+#include "navmesh.h"
 
 const float CAMERA_MOVEMENT_SPEED = 5.0;
 
@@ -21,8 +23,9 @@ public:
 private:
   Camera2D m_camera;
   std::vector<Entity *> m_entities;
+  Navmesh *m_navmesh;
   int m_maxDrawingLayer;
-  Vector2 GetGameMousePosition();
+  Vector2 GetGameMousePosition() const;
   void HandleCameraOffset();
   bool HandleEntitySelection();
   void HandleEntityMovement();

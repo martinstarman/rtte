@@ -39,31 +39,31 @@ Entity::~Entity()
   }
 }
 
-int Entity::GetId()
+int Entity::GetId() const
 {
   return m_entityConfig.id;
 }
 
-int Entity::GetDrawingLayer()
+int Entity::GetDrawingLayer() const
 {
   return m_entityConfig.drawingLayer;
 }
 
-float Entity::GetZIndex()
+float Entity::GetZIndex() const
 {
   return m_position.y + (m_texture.height / 2.0);
 }
 
-bool Entity::GetSelected()
+bool Entity::GetSelected() const
 {
   return m_selected;
 }
 
-std::vector<Vector2> Entity::GetShape()
+std::vector<Vector2> Entity::GetShape() const
 {
   std::vector<Vector2> shape;
 
-  for (int i = 0; i < m_entityConfig.shape.size(); i++)
+  for (size_t i = 0; i < m_entityConfig.shape.size(); ++i)
   {
     Vector2 shapePoint = {m_position.x + m_entityConfig.shape.at(i).x,
                           m_position.y + m_entityConfig.shape.at(i).y};
@@ -73,17 +73,17 @@ std::vector<Vector2> Entity::GetShape()
   return shape;
 }
 
-Vector2 Entity::GetPosition()
+Vector2 Entity::GetPosition() const
 {
   return m_position;
 }
 
-bool Entity::GetShowsTraces()
+bool Entity::GetShowsTraces() const
 {
   return m_entityConfig.showsTraces;
 }
 
-bool Entity::IsMoving()
+bool Entity::IsMoving() const
 {
   return m_path.size() > 0;
 }
@@ -96,7 +96,7 @@ void Entity::SetSelected(bool selected)
 void Entity::SetPath(const std::vector<Vector2> &path)
 {
   m_path = path;
-  m_octant = GetOctantFrom(-GetAngleBetween(path[0], m_position));
+  m_octant = GetOctantFrom(-GetAngleBetween(path.at(0), m_position));
 }
 
 void Entity::SetTrace()
@@ -164,11 +164,23 @@ void Entity::Draw()
   // draw shape
   std::vector<Vector2> shape = GetShape();
 
-  for (int i = 0; i < shape.size(); i++)
+  for (size_t i = 0; i < shape.size(); ++i)
   {
     DrawLineV(shape.at(i),
               shape.at((i + 1) % shape.size()),
               m_selected ? GREEN : WHITE);
+  }
+
+  // path
+  // TODO: debug
+  if (m_path.size() > 0)
+  {
+    for (size_t i = 0; i < m_path.size() - 1; ++i)
+    {
+      Vector2 a = m_path.at(i);
+      Vector2 b = m_path.at(i + 1);
+      DrawLineV(a, b, BLACK);
+    }
   }
 }
 
@@ -179,7 +191,7 @@ void Entity::CreatePolygonTexture()
   int minY = INT_MAX;
   int maxY = INT_MIN;
 
-  for (int i = 0; i < m_entityConfig.shape.size(); i++)
+  for (size_t i = 0; i < m_entityConfig.shape.size(); ++i)
   {
     if (m_entityConfig.shape.at(i).x < minX)
     {
@@ -209,11 +221,11 @@ void Entity::CreatePolygonTexture()
   Image targetImage = GenImageColor(targetImageFrameWidth * m_entityTextureConfig.framesInRow, height, BLANK);
   int sourceImageFrameWidth = sourceImage.width / m_entityTextureConfig.framesInRow;
 
-  for (int frame = 0; frame < m_entityTextureConfig.framesInRow; frame++)
+  for (size_t frame = 0; frame < m_entityTextureConfig.framesInRow; ++frame)
   {
-    for (int x = 0; x < targetImageFrameWidth; x++)
+    for (size_t x = 0; x < targetImageFrameWidth; ++x)
     {
-      for (int y = 0; y < height; y++)
+      for (size_t y = 0; y < height; ++y)
       {
         Vector2 pixel = {(float)x, (float)y};
 
@@ -267,7 +279,7 @@ void Entity::HandleMovement()
 
   if (magnitude < MOVEMENT_SPEED / 2)
   {
-    m_path.clear();
+    m_path.erase(m_path.begin());
   }
 }
 
