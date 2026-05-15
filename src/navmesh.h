@@ -19,7 +19,7 @@ struct Portal
 class Navmesh
 {
 public:
-  Navmesh(Rectangle mapRect);
+  Navmesh(float mapWidth, float mapHeight);
   ~Navmesh();
   void AddHole(const std::vector<std::array<float, 2>> &hole);
   void Draw() const;

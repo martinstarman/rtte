@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  Game *game = new Game();
+  Game *game;
 
   try
   {
@@ -28,6 +28,12 @@ int main(int argc, char *argv[])
     std::filesystem::path mapFileDir = mapFilePath.parent_path();
     auto data = toml::parse(mapFilePath.string(), toml::spec::v(1, 1, 0));
     int id = 0;
+
+    auto tomlMap = toml::find<toml::value>(data, "Map");
+    auto mapWidth = toml::find<float>(tomlMap, "Width");
+    auto mapHeight = toml::find<float>(tomlMap, "Height");
+
+    game = new Game(mapWidth, mapHeight);
 
     for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
     {

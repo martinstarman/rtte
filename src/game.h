@@ -14,13 +14,15 @@ const float CAMERA_MOVEMENT_SPEED = 5.0;
 class Game
 {
 public:
-  Game();
+  Game(float mapWidth, float mapHeight);
   ~Game();
   void Update();
   void Draw();
   void AddEntity(Entity *entity);
 
 private:
+  float m_mapWidth;
+  float m_mapHeight;
   Camera2D m_camera;
   std::vector<Entity *> m_entities;
   Navmesh *m_navmesh;

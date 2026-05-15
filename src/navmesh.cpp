@@ -1,12 +1,12 @@
 #include "navmesh.h"
 
-Navmesh::Navmesh(Rectangle mapRect)
+Navmesh::Navmesh(float mapWidth, float mapHeight)
 {
   m_polygons.push_back({{
-      {mapRect.x, mapRect.y},
-      {mapRect.x, mapRect.y + mapRect.height},
-      {mapRect.x + mapRect.width, mapRect.y + mapRect.height},
-      {mapRect.x + mapRect.width, mapRect.y},
+      {0.0, 0.0},
+      {0.0, mapHeight},
+      {mapWidth, mapHeight},
+      {mapWidth, 0.0},
   }});
 };
 

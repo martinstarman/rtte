@@ -1,6 +1,11 @@
 #include "game.h"
 
-Game::Game() : m_maxDrawingLayer(0)
+Game::Game(
+    float mapWidth,
+    float mapHeight)
+    : m_maxDrawingLayer(0),
+      m_mapWidth(mapWidth),
+      m_mapHeight(mapHeight)
 {
   m_camera = {0};
   m_camera.target = {0, 0};
@@ -8,9 +13,7 @@ Game::Game() : m_maxDrawingLayer(0)
   m_camera.rotation = 0;
   m_camera.zoom = 1;
 
-  // TODO: toml
-  Rectangle mapRect = Rectangle{0, 0, 800, 600};
-  m_navmesh = new Navmesh(mapRect);
+  m_navmesh = new Navmesh(mapWidth, mapHeight);
 }
 
 Game::~Game()
@@ -105,18 +108,38 @@ void Game::HandleCameraOffset()
   if (IsKeyDown(KEY_RIGHT))
   {
     m_camera.offset.x -= CAMERA_MOVEMENT_SPEED;
+
+    if (m_camera.offset.x < -m_mapWidth + GetScreenWidth())
+    {
+      m_camera.offset.x = -m_mapWidth + GetScreenWidth();
+    }
   }
   if (IsKeyDown(KEY_LEFT))
   {
     m_camera.offset.x += CAMERA_MOVEMENT_SPEED;
+
+    if (m_camera.offset.x > 0)
+    {
+      m_camera.offset.x = 0;
+    }
   }
   if (IsKeyDown(KEY_UP))
   {
     m_camera.offset.y += CAMERA_MOVEMENT_SPEED;
+
+    if (m_camera.offset.y > 0)
+    {
+      m_camera.offset.y = 0;
+    }
   }
   if (IsKeyDown(KEY_DOWN))
   {
     m_camera.offset.y -= CAMERA_MOVEMENT_SPEED;
+
+    if (m_camera.offset.y < -m_mapHeight + GetScreenHeight())
+    {
+      m_camera.offset.y = -m_mapHeight + GetScreenHeight();
+    }
   }
 }
 

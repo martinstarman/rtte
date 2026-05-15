@@ -1,3 +1,7 @@
+[Map]
+Height = 1000.0
+Width = 1000.0
+
 [[Entities]]
 DefaultPosition = [100.0, 100.0]
 DrawingLayer = 0
