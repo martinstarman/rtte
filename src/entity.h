@@ -18,8 +18,6 @@ struct EntityConfig
 {
   int id;
   Vector2 defaultPosition;
-  int drawingLayer;
-  std::vector<Vector2> shape;
   bool showsTraces;
   Octant defaultOctant;
 };
@@ -27,14 +25,27 @@ struct EntityConfig
 struct EntityTextureConfig
 {
   std::string path;
+  int drawingLayer;
   int framesInRow;
   int framesPerSecond;
+  bool fill;
 };
 
-struct TraceTextureConfig
+struct EntityTraceConfig
 {
-  std::string path;
+  std::string texturePath;
   int tracesPerSecond;
+};
+
+struct EntityShapeConfig
+{
+  std::vector<Vector2> points;
+  bool blocksMovement;
+};
+
+struct EntityMovementConfig
+{
+  bool movable;
 };
 
 struct Trace
@@ -50,7 +61,9 @@ public:
   Entity(
       const EntityConfig &entityConfig,
       const EntityTextureConfig &entityTextureConfig,
-      const TraceTextureConfig &traceTextureConfig);
+      const EntityTraceConfig &entityTraceConfig,
+      const EntityShapeConfig &entityShapeConfig,
+      const EntityMovementConfig &entityMovementConfig);
   ~Entity();
   int GetId() const;
   int GetDrawingLayer() const;
@@ -59,6 +72,8 @@ public:
   std::vector<Vector2> GetShape() const;
   Vector2 GetPosition() const;
   bool GetShowsTraces() const;
+  bool GetBlocksMovement() const;
+  bool GetMovable() const;
   bool IsMoving() const;
   void SetSelected(bool selected);
   void SetPath(const std::vector<Vector2> &path);
@@ -80,9 +95,15 @@ private:
   int m_animationTicks;
 
 private:
-  TraceTextureConfig m_traceTextureConfig;
+  EntityTraceConfig m_entityTraceConfig;
   Texture m_traceTexture;
   std::vector<Trace> m_traces;
+
+private:
+  EntityShapeConfig m_entityShapeConfig;
+
+private:
+  EntityMovementConfig m_entityMovementConfig;
 
 private:
   void CreatePolygonTexture();

@@ -26,72 +26,93 @@ int main(int argc, char *argv[])
   {
     std::filesystem::path mapFilePath = argv[1];
     std::filesystem::path mapFileDir = mapFilePath.parent_path();
-    auto data = toml::parse(mapFilePath.string(), toml::spec::v(1, 1, 0));
-    int id = 0;
+    auto tomlData = toml::parse(mapFilePath.string(), toml::spec::v(1, 1, 0));
+    int entityId = 0;
 
-    auto tomlMap = toml::find<toml::value>(data, "Map");
-    auto mapWidth = toml::find<float>(tomlMap, "Width");
-    auto mapHeight = toml::find<float>(tomlMap, "Height");
+    auto tomlMap = toml::find<toml::value>(tomlData, "Map");
+    auto tomlMapWidth = toml::find_or<float>(tomlMap, "Width", 800.0);
+    auto tomlMapHeight = toml::find_or<float>(tomlMap, "Height", 600.0);
 
-    game = new Game(mapWidth, mapHeight);
+    game = new Game(tomlMapWidth, tomlMapHeight);
 
-    for (const auto &tomlEntity : toml::find<toml::array>(data, "Entities"))
+    for (const auto &tomlEntity : toml::find<toml::array>(tomlData, "Entities"))
     {
-      auto tomlDefaultOctant = toml::find_or<std::string>(tomlEntity, "DefaultOctant", "East");
-      auto tomlDefaultPosition = toml::find<std::vector<float>>(tomlEntity, "DefaultPosition");
-      auto tomlDrawingLayer = toml::find<int>(tomlEntity, "DrawingLayer");
-      auto tomlShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
-      auto tomlShape = toml::find<std::vector<std::vector<float>>>(tomlEntity, "Shape");
+      auto tomlEntityDefaultOctant = toml::find_or<std::string>(tomlEntity, "DefaultOctant", "East");
+      auto tomlEntityDefaultPosition = toml::find_or<std::vector<float>>(tomlEntity, "DefaultPosition", {0.0, 0.0});
+      auto tomlEntityShowsTraces = toml::find_or<bool>(tomlEntity, "ShowsTraces", false);
+
       auto tomlEntityTexture = toml::find<toml::value>(tomlEntity, "EntityTexture");
-      auto tomlTexturePath = mapFileDir / toml::find<std::string>(tomlEntityTexture, "Path");
-      auto tomlTextureFramesInRow = toml::find<int>(tomlEntityTexture, "FramesInRow");
-      auto tomlTextureFramesPerSecond = toml::find<int>(tomlEntityTexture, "FramesPerSecond");
+      auto tomlEntityTextureDrawingLayer = toml::find_or<int>(tomlEntityTexture, "DrawingLayer", 0);
+      auto tomlEntityTexturePath = toml::find_or<std::string>(tomlEntityTexture, "Path", "");
+      auto tomlEntityTextureFramesInRow = toml::find_or<int>(tomlEntityTexture, "FramesInRow", 1);
+      auto tomlEntityTextureFramesPerSecond = toml::find_or<int>(tomlEntityTexture, "FramesPerSecond", 1);
+      auto tomlEntityTextureFill = toml::find_or<bool>(tomlEntityTexture, "Fill", false);
 
-      std::string traceTexturePath = "";
-      int traceTextureTracesPerSecond = 0;
+      auto tomlEntityShape = toml::find<toml::value>(tomlEntity, "Shape");
+      auto tomlEntityShapePoints = toml::find_or<std::vector<std::vector<float>>>(tomlEntityShape, "Points", {});
+      auto tomlEntityShapeBlocksMovement = toml::find_or<bool>(tomlEntityShape, "BlocksMovement", false);
 
-      if (tomlEntity.contains("TraceTexture"))
+      std::string entityTraceTexturePath = "";
+      int entityTraceTracesPerSecond = 0;
+
+      if (tomlEntity.contains("Trace"))
       {
-        auto tomlTraceTexture = toml::find<toml::value>(tomlEntity, "TraceTexture");
-        traceTexturePath = (mapFileDir / toml::find<std::string>(tomlTraceTexture, "Path")).string();
-        traceTextureTracesPerSecond = toml::find<int>(tomlTraceTexture, "TracesPerSecond");
+        auto tomlEntityTrace = toml::find<toml::value>(tomlEntity, "Trace");
+        entityTraceTexturePath = (mapFileDir / toml::find_or<std::string>(tomlEntityTrace, "TexturePath", "")).string();
+        entityTraceTracesPerSecond = toml::find_or<int>(tomlEntityTrace, "TracesPerSecond", 0);
       }
 
-      Vector2 defaultPosition = {tomlDefaultPosition.at(0),
-                                 tomlDefaultPosition.at(1)};
-      std::vector<Vector2> shape;
-      for (size_t i = 0; i < tomlShape.size(); ++i)
+      Vector2 entityDefaultPosition = {tomlEntityDefaultPosition.at(0),
+                                       tomlEntityDefaultPosition.at(1)};
+      std::vector<Vector2> entityShape;
+      for (size_t i = 0; i < tomlEntityShapePoints.size(); ++i)
       {
-        Vector2 shapePoint = {tomlShape.at(i).at(0),
-                              tomlShape.at(i).at(1)};
-        shape.emplace_back(shapePoint);
+        Vector2 v = {tomlEntityShapePoints.at(i).at(0),
+                     tomlEntityShapePoints.at(i).at(1)};
+        entityShape.emplace_back(v);
       }
 
-      EntityConfig config = {
-          id,
-          defaultPosition,
-          tomlDrawingLayer,
-          shape,
-          tomlShowsTraces,
-          GetOctantFrom(tomlDefaultOctant),
+      std::string entityTexturePath = tomlEntityTexturePath == ""
+                                          ? ""
+                                          : (mapFileDir / tomlEntityTexturePath).string();
+
+      EntityConfig entityConfig = {
+          entityId,
+          entityDefaultPosition,
+          tomlEntityShowsTraces,
+          GetOctantFrom(tomlEntityDefaultOctant),
       };
 
-      EntityTextureConfig textureConfig = {
-          tomlTexturePath.string(),
-          tomlTextureFramesInRow,
-          tomlTextureFramesPerSecond,
+      EntityTextureConfig entityTextureConfig = {
+          entityTexturePath,
+          tomlEntityTextureDrawingLayer,
+          tomlEntityTextureFramesInRow,
+          tomlEntityTextureFramesPerSecond,
+          tomlEntityTextureFill,
       };
 
-      TraceTextureConfig traceConfig = {
-          traceTexturePath,
-          traceTextureTracesPerSecond,
+      EntityTraceConfig entityTraceConfig = {
+          entityTraceTexturePath,
+          entityTraceTracesPerSecond,
       };
 
-      game->AddEntity(new Entity(config,
-                                 textureConfig,
-                                 traceConfig));
+      EntityShapeConfig entityShapeConfig = {
+          entityShape,
+          tomlEntityShapeBlocksMovement,
+      };
 
-      id += 1;
+      EntityMovementConfig entityMovementConfig = {
+          tomlEntity.contains("Movement"),
+      };
+
+      game->AddEntity(new Entity(
+          entityConfig,
+          entityTextureConfig,
+          entityTraceConfig,
+          entityShapeConfig,
+          entityMovementConfig));
+
+      entityId += 1;
     }
   }
   catch (const toml::exception &error)

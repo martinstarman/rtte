@@ -3,73 +3,94 @@ Height = 1000.0
 Width = 1000.0
 
 [[Entities]]
-DefaultPosition = [100.0, 100.0]
-DrawingLayer = 0
-Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+DefaultPosition = [0.0, 0.0]
 
 [Entities.EntityTexture]
+DrawingLayer = 0
+Fill = true
 FramesInRow = 1
 FramesPerSecond = 1
 Path = "textures/grass.png"
 
+[Entities.Shape]
+Points = [[0.0, 0.0], [0.0, 1000.0], [1000.0, 1000.0], [1000.0, 0.0]]
+
 [[Entities]]
 DefaultPosition = [200.0, 100.0]
-DrawingLayer = 0
-Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 ShowsTraces = true
 
 [Entities.EntityTexture]
+DrawingLayer = 1
+Fill = true
 FramesInRow = 1
 FramesPerSecond = 1
 Path = "textures/snow.png"
 
+[Entities.Shape]
+Points = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+
 [[Entities]]
 DefaultPosition = [300.0, 100.0]
-DrawingLayer = 0
-Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 
 [Entities.EntityTexture]
+DrawingLayer = 1
+Fill = true
 FramesInRow = 2
 FramesPerSecond = 2
 Path = "textures/water.png"
 
+[Entities.Shape]
+BlocksMovement = true
+Points = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+
 [[Entities]]
 DefaultPosition = [400.0, 100.0]
-DrawingLayer = 0
-Shape = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
 ShowsTraces = true
 
 [Entities.EntityTexture]
+DrawingLayer = 1
+Fill = true
 FramesInRow = 1
 FramesPerSecond = 1
 Path = "textures/sand.png"
 
+[Entities.Shape]
+Points = [[0.0, 0.0], [100.0, 300.0], [200.0, 300.0], [100.0, 0.0]]
+
 [[Entities]]
 DefaultOctant = "East"
 DefaultPosition = [64.0, 150.0]
-DrawingLayer = 1
-Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 
 [Entities.EntityTexture]
+DrawingLayer = 2
 FramesInRow = 2
 FramesPerSecond = 1
 Path = "textures/character.png"
 
-[Entities.TraceTexture]
-Path = "textures/character-trace.png"
+[Entities.Trace]
+TexturePath = "textures/character-trace.png"
 TracesPerSecond = 3
+
+[Entities.Shape]
+Points = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
+
+[Entities.Movement]
 
 [[Entities]]
 DefaultOctant = "NorthWest"
 DefaultPosition = [640.0, 64.0]
-DrawingLayer = 1
-Shape = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
 
 [Entities.EntityTexture]
+DrawingLayer = 2
 FramesInRow = 2
 FramesPerSecond = 1
 Path = "textures/character.png"
 
-[Entities.TraceTexture]
-Path = "textures/character-trace.png"
+[Entities.Trace]
+TexturePath = "textures/character-trace.png"
 TracesPerSecond = 3
+
+[Entities.Shape]
+Points = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
+
+[Entities.Movement]

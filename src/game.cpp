@@ -74,9 +74,7 @@ void Game::AddEntity(Entity *entity)
 {
   m_entities.emplace_back(entity);
 
-  int drawingLayer = entity->GetDrawingLayer();
-
-  if (entity->GetShowsTraces()) // TODO: movement blocking entities
+  if (entity->GetBlocksMovement())
   {
     std::vector<Vector2> shape = entity->GetShape();
     std::vector<std::array<float, 2>> hole;
@@ -89,9 +87,9 @@ void Game::AddEntity(Entity *entity)
     m_navmesh->AddHole(hole);
   }
 
-  if (drawingLayer > m_maxDrawingLayer)
+  if (entity->GetDrawingLayer() > m_maxDrawingLayer)
   {
-    m_maxDrawingLayer = drawingLayer;
+    m_maxDrawingLayer = entity->GetDrawingLayer();
   }
 }
 
@@ -151,7 +149,7 @@ bool Game::HandleEntitySelection()
   {
     for (auto &entity : m_entities)
     {
-      if (entity->GetDrawingLayer() > 0 && !entity->GetSelected())
+      if (entity->GetMovable() && !entity->GetSelected())
       {
         Vector2 mousePosition = GetGameMousePosition();
         std::vector<Vector2> shape = entity->GetShape();
