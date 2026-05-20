@@ -21,6 +21,7 @@ public:
   void AddEntity(Entity *entity);
 
 private:
+  bool m_debug;
   float m_mapWidth;
   float m_mapHeight;
   Camera2D m_camera;
@@ -32,4 +33,5 @@ private:
   bool HandleEntitySelection();
   void HandleEntityMovement();
   void HandleEntityTraces();
+  void HandleDebug();
 };

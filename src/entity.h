@@ -80,6 +80,7 @@ public:
   void SetTrace();
   void Update();
   void Draw();
+  void DrawPath();
 
 private:
   EntityConfig m_entityConfig;

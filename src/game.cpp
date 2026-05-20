@@ -5,7 +5,8 @@ Game::Game(
     float mapHeight)
     : m_maxDrawingLayer(0),
       m_mapWidth(mapWidth),
-      m_mapHeight(mapHeight)
+      m_mapHeight(mapHeight),
+      m_debug(false)
 {
   m_camera = {0};
   m_camera.target = {0, 0};
@@ -28,12 +29,15 @@ Game::~Game()
 
 void Game::Update()
 {
+  HandleDebug();
   HandleCameraOffset();
+
   bool entitySelected = HandleEntitySelection();
   if (!entitySelected)
   {
     HandleEntityMovement();
   }
+
   HandleEntityTraces();
 
   for (auto &entity : m_entities)
@@ -59,12 +63,19 @@ void Game::Draw()
       if (entity->GetDrawingLayer() == drawingLayer)
       {
         entity->Draw();
+
+        if (m_debug)
+        {
+          entity->DrawPath();
+        }
       }
     }
   }
 
-  // TODO: debug
-  m_navmesh->Draw();
+  if (m_debug)
+  {
+    m_navmesh->Draw();
+  }
 
   EndMode2D();
   EndDrawing();
@@ -215,5 +226,13 @@ void Game::HandleEntityTraces()
         }
       }
     }
+  }
+}
+
+void Game::HandleDebug()
+{
+  if (IsKeyPressed(KEY_F1))
+  {
+    m_debug = !m_debug;
   }
 }

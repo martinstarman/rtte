@@ -18,7 +18,6 @@ void Navmesh::AddHole(const std::vector<std::array<float, 2>> &hole)
   Triangulate();
 }
 
-// TODO: debug
 void Navmesh::Draw() const
 {
   for (const auto &t : m_triangles)

@@ -190,16 +190,17 @@ void Entity::Draw()
               shape.at((i + 1) % shape.size()),
               m_selected ? GREEN : WHITE);
   }
+}
 
-  // path
-  // TODO: debug
+void Entity::DrawPath()
+{
   if (m_path.size() > 0)
   {
     for (size_t i = 0; i < m_path.size() - 1; ++i)
     {
       Vector2 a = m_path.at(i);
       Vector2 b = m_path.at(i + 1);
-      DrawLineV(a, b, BLACK);
+      DrawLineV(a, b, WHITE);
     }
   }
 }
