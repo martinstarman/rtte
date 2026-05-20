@@ -116,7 +116,6 @@ void Entity::SetSelected(bool selected)
 void Entity::SetPath(const std::vector<Vector2> &path)
 {
   m_path = path;
-  m_octant = GetOctantFrom(-GetAngleBetween(path.at(0), m_position));
 }
 
 void Entity::SetTrace()
@@ -301,6 +300,11 @@ void Entity::HandleMovement()
   if (magnitude < MOVEMENT_SPEED / 2)
   {
     m_path.erase(m_path.begin());
+
+    if (m_path.size() > 0)
+    {
+      m_octant = GetOctantFrom(-GetAngleBetween(m_path.at(0), m_position));
+    }
   }
 }
 
