@@ -23,7 +23,7 @@ public:
   ~Navmesh();
   void AddHole(const std::vector<std::array<float, 2>> &hole);
   void Draw() const;
-  std::vector<Vector2> GetPath(const Vector2 &start, const Vector2 &target) const;
+  std::vector<Vector2> GetPath(const Vector2 &start, const Vector2 &target, float entityRadius = 0.0f) const;
 
 private:
   void Triangulate();
