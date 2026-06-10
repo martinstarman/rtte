@@ -31,6 +31,8 @@ void Navmesh::Draw() const
 
 std::vector<Vector2> Navmesh::GetPath(const Vector2 &start, const Vector2 &target, float entityRadius) const
 {
+  assert(entityRadius > 0.0 && "Entity radius must be greater than zero.");
+
   size_t startTriangleIndex = GetTriangleIndexFrom(start);
   size_t targetTriangleIndex = GetTriangleIndexFrom(target);
 
