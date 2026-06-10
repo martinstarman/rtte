@@ -81,6 +81,7 @@ public:
   void Update();
   void Draw();
   void DrawPath();
+  void DrawShape();
 
 private:
   EntityConfig m_entityConfig;

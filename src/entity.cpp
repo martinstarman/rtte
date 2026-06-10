@@ -179,16 +179,6 @@ void Entity::Draw()
                       m_position.y - (m_entityTextureConfig.fill ? 0 : rectHeight / 2)};
 
   DrawTextureRec(m_texture, rectangle, position, WHITE);
-
-  // draw shape
-  std::vector<Vector2> shape = GetShape();
-
-  for (size_t i = 0; i < shape.size(); ++i)
-  {
-    DrawLineV(shape.at(i),
-              shape.at((i + 1) % shape.size()),
-              m_selected ? GREEN : WHITE);
-  }
 }
 
 void Entity::DrawPath()
@@ -201,6 +191,18 @@ void Entity::DrawPath()
       Vector2 b = m_path.at(i + 1);
       DrawLineV(a, b, WHITE);
     }
+  }
+}
+
+void Entity::DrawShape()
+{
+  std::vector<Vector2> shape = GetShape();
+
+  for (size_t i = 0; i < shape.size(); ++i)
+  {
+    DrawLineV(shape.at(i),
+              shape.at((i + 1) % shape.size()),
+              m_selected ? GREEN : WHITE);
   }
 }
 

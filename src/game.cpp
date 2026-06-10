@@ -66,6 +66,7 @@ void Game::Draw()
 
         if (m_debug)
         {
+          entity->DrawShape();
           entity->DrawPath();
         }
       }
