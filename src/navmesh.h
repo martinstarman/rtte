@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cassert>
 #include <CXXGraph/CXXGraph.hpp>
 #include <mapbox/earcut.hpp>
 #include <raylib.h>
@@ -23,7 +24,7 @@ public:
   ~Navmesh();
   void AddHole(const std::vector<std::array<float, 2>> &hole);
   void Draw() const;
-  std::vector<Vector2> GetPath(const Vector2 &start, const Vector2 &target) const;
+  std::vector<Vector2> GetPath(const Vector2 &start, const Vector2 &target, float entityRadius) const;
 
 private:
   void Triangulate();

@@ -191,6 +191,8 @@ bool Game::HandleEntitySelection()
 
 void Game::HandleEntityMovement()
 {
+  constexpr float ENTITY_RADIUS = 8.0f; // TODO: toml
+
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
   {
     for (auto &entity : m_entities)
@@ -199,7 +201,7 @@ void Game::HandleEntityMovement()
       {
         Vector2 start = entity->GetPosition();
         Vector2 target = GetGameMousePosition();
-        std::vector<Vector2> path = m_navmesh->GetPath(start, target);
+        std::vector<Vector2> path = m_navmesh->GetPath(start, target, ENTITY_RADIUS);
         entity->SetPath(path);
       }
     }
