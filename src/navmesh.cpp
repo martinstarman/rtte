@@ -137,24 +137,21 @@ std::vector<Vector2> Navmesh::GetPath(const Vector2 &start, const Vector2 &targe
       portal.right = sharedEdge.at(1);
     }
 
-    if (entityRadius > 0.0f)
+    const float edgeX = portal.right.x - portal.left.x;
+    const float edgeY = portal.right.y - portal.left.y;
+    const float edgeLength = std::sqrt((edgeX * edgeX) + (edgeY * edgeY));
+
+    if (edgeLength <= (2.0f * entityRadius))
     {
-      const float edgeX = portal.right.x - portal.left.x;
-      const float edgeY = portal.right.y - portal.left.y;
-      const float edgeLength = std::sqrt((edgeX * edgeX) + (edgeY * edgeY));
-
-      if (edgeLength <= (2.0f * entityRadius))
-      {
-        return {};
-      }
-
-      const float dirX = edgeX / edgeLength;
-      const float dirY = edgeY / edgeLength;
-      portal.left.x += dirX * entityRadius;
-      portal.left.y += dirY * entityRadius;
-      portal.right.x -= dirX * entityRadius;
-      portal.right.y -= dirY * entityRadius;
+      return {};
     }
+
+    const float dirX = edgeX / edgeLength;
+    const float dirY = edgeY / edgeLength;
+    portal.left.x += dirX * entityRadius;
+    portal.left.y += dirY * entityRadius;
+    portal.right.x -= dirX * entityRadius;
+    portal.right.y -= dirY * entityRadius;
 
     portals.push_back(portal);
   }
