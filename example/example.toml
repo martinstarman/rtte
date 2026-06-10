@@ -68,11 +68,11 @@ FramesPerSecond = 1
 Path = "textures/character.png"
 
 [Entities.Trace]
-TexturePath = "textures/character-trace.png"
-TracesPerSecond = 3
+TexturePath = "textures/trace.png"
+TracesPerSecond = 5
 
 [Entities.Shape]
-Points = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
+Points = [[-16.0, -32.0], [-16.0, 32.0], [16.0, 32.0], [16.0, -32.0]]
 
 [Entities.Movement]
 
@@ -87,10 +87,10 @@ FramesPerSecond = 1
 Path = "textures/character.png"
 
 [Entities.Trace]
-TexturePath = "textures/character-trace.png"
-TracesPerSecond = 3
+TexturePath = "textures/trace.png"
+TracesPerSecond = 5
 
 [Entities.Shape]
-Points = [[-32.0, -32.0], [-32.0, 32.0], [32.0, 32.0], [32.0, -32.0]]
+Points = [[-16.0, -32.0], [-16.0, 32.0], [16.0, 32.0], [16.0, -32.0]]
 
 [Entities.Movement]
