@@ -35,6 +35,11 @@ std::vector<Vector2> Navmesh::GetPath(const Vector2 &start, const Vector2 &targe
   size_t startTriangleIndex = GetTriangleIndexFrom(start);
   size_t targetTriangleIndex = GetTriangleIndexFrom(target);
 
+  if (startTriangleIndex == -1 || targetTriangleIndex == -1)
+  {
+    return {};
+  }
+
   if (startTriangleIndex == targetTriangleIndex)
   {
     return {start, target};
