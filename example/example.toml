@@ -10,7 +10,7 @@ DefaultPosition = [0.0, 0.0]
 [Entities.EntityTexture]
 DrawingLayer = 0
 Fill = true
-Path = "textures/grass.png"
+Path = "gfx/grass.png"
 
 [Entities.Shape]
 Points = [[0.0, 0.0], [0.0, 1000.0], [1000.0, 1000.0], [1000.0, 0.0]]
@@ -24,7 +24,7 @@ ShowsTraces = true
 [Entities.EntityTexture]
 DrawingLayer = 1
 Fill = true
-Path = "textures/snow.png"
+Path = "gfx/snow.png"
 
 [Entities.Shape]
 Points = [[0.0, 0.0], [0.0, 400.0], [400.0, 400.0], [400.0, 0.0]]
@@ -39,7 +39,7 @@ DrawingLayer = 1
 Fill = true
 FramesInRow = 2
 FramesPerSecond = 2
-Path = "textures/water.png"
+Path = "gfx/water.png"
 
 [Entities.Shape]
 BlocksMovement = true
@@ -53,7 +53,7 @@ DrawingLayer = 1
 Fill = true
 FramesInRow = 2
 FramesPerSecond = 2
-Path = "textures/water.png"
+Path = "gfx/water.png"
 
 [Entities.Shape]
 # water under the bridge do not blocks movement
@@ -67,7 +67,7 @@ DrawingLayer = 1
 Fill = true
 FramesInRow = 2
 FramesPerSecond = 2
-Path = "textures/water.png"
+Path = "gfx/water.png"
 
 [Entities.Shape]
 BlocksMovement = true
@@ -80,7 +80,7 @@ DefaultPosition = [600.0, 480.0]
 
 [Entities.EntityTexture]
 DrawingLayer = 2
-Path = "textures/bridge-with-top-rail.png"
+Path = "gfx/bridge-with-top-rail.png"
 
 [Entities.Shape]
 
@@ -89,7 +89,7 @@ DefaultPosition = [600.0, 480.0]
 
 [Entities.EntityTexture]
 DrawingLayer = 3
-Path = "textures/bottom-rail.png"
+Path = "gfx/bottom-rail.png"
 
 [Entities.Shape]
 
@@ -103,10 +103,10 @@ DefaultPosition = [64.0, 150.0]
 DrawingLayer = 3
 FramesInRow = 2
 FramesPerSecond = 1
-Path = "textures/character.png"
+Path = "gfx/character.png"
 
 [Entities.Trace]
-TexturePath = "textures/trace.png"
+TexturePath = "gfx/trace.png"
 TracesPerSecond = 5
 
 [Entities.Shape]
@@ -122,10 +122,10 @@ DefaultPosition = [800.0, 800.0]
 DrawingLayer = 3
 FramesInRow = 2
 FramesPerSecond = 1
-Path = "textures/character.png"
+Path = "gfx/character.png"
 
 [Entities.Trace]
-TexturePath = "textures/trace.png"
+TexturePath = "gfx/trace.png"
 TracesPerSecond = 5
 
 [Entities.Shape]
