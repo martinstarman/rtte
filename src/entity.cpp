@@ -18,6 +18,8 @@ Entity::Entity(
       m_entityShapeConfig(entityShapeConfig),
       m_entityMovementConfig(entityMovementConfig)
 {
+  CalculateShapeDimensions();
+
   if (entityTextureConfig.path != "")
   {
     if (entityTextureConfig.fill)
@@ -61,7 +63,12 @@ int Entity::GetDrawingLayer() const
 
 float Entity::GetZIndex() const
 {
-  return m_position.y + (m_texture.height / 2.0);
+  if (m_entityMovementConfig.movable)
+  {
+    return m_position.y + (m_texture.height / 8.0 / 2.0);
+  }
+
+  return m_position.y + m_texture.height;
 }
 
 bool Entity::GetSelected() const
@@ -86,6 +93,21 @@ std::vector<Vector2> Entity::GetShape() const
 Vector2 Entity::GetPosition() const
 {
   return m_position;
+}
+
+Vector2 Entity::GetShapeCenter() const
+{
+  Vector2 shapeCenter = {
+      m_position.x + m_shapeRectangle.x + (m_shapeRectangle.width / 2),
+      m_position.y + m_shapeRectangle.y + (m_shapeRectangle.height / 2),
+  };
+
+  return shapeCenter;
+}
+
+Rectangle Entity::GetShapeRectangle() const
+{
+  return m_shapeRectangle;
 }
 
 bool Entity::GetShowsTraces() const
@@ -122,9 +144,10 @@ void Entity::SetTrace()
 {
   if (m_traces.size() == 0 || m_traces.back().ticks >= (60 / m_entityTraceConfig.tracesPerSecond))
   {
+    Vector2 shapeCenter = GetShapeCenter();
     Trace trace = {
-        m_position,
-        (float)(GetAngleBetween(m_path[0], m_position) * (180.0f / M_PI)),
+        shapeCenter,
+        (float)(GetAngleBetween(m_path[0], shapeCenter) * (180.0f / M_PI)),
         0,
     };
 
@@ -169,27 +192,27 @@ void Entity::Draw()
   }
 
   // draw texture
-  int textureFramesInColumn = m_entityTextureConfig.fill ? 1 : 8;
+  int textureFramesInColumn = m_entityMovementConfig.movable ? 8 : 1;
   float rectX = (float)(m_currentTextureFrame * (m_texture.width / m_entityTextureConfig.framesInRow));
   float rectY = (float)(m_texture.height / textureFramesInColumn * m_octant);
   float rectWidth = (float)(m_texture.width / m_entityTextureConfig.framesInRow);
   float rectHeight = (float)(m_texture.height / textureFramesInColumn);
   Rectangle rectangle = {rectX, rectY, rectWidth, rectHeight};
-  Vector2 position = {m_position.x - (m_entityTextureConfig.fill ? 0 : rectWidth / 2),
-                      m_position.y - (m_entityTextureConfig.fill ? 0 : rectHeight / 2)};
 
-  DrawTextureRec(m_texture, rectangle, position, WHITE);
+  DrawTextureRec(m_texture, rectangle, m_position, WHITE);
 }
 
 void Entity::DrawPath()
 {
   if (m_path.size() > 0)
   {
+    DrawLineV(GetShapeCenter(), m_path.at(0), MAGENTA);
+
     for (size_t i = 0; i < m_path.size() - 1; ++i)
     {
       Vector2 a = m_path.at(i);
       Vector2 b = m_path.at(i + 1);
-      DrawLineV(a, b, WHITE);
+      DrawLineV(a, b, MAGENTA);
     }
   }
 }
@@ -202,16 +225,16 @@ void Entity::DrawShape()
   {
     DrawLineV(shape.at(i),
               shape.at((i + 1) % shape.size()),
-              m_selected ? GREEN : WHITE);
+              m_selected ? GREEN : MAGENTA);
   }
 }
 
-void Entity::CreatePolygonTexture()
+void Entity::CalculateShapeDimensions()
 {
-  int minX = INT_MAX;
-  int maxX = INT_MIN;
-  int minY = INT_MAX;
-  int maxY = INT_MIN;
+  float minX = FLT_MAX;
+  float maxX = FLT_MIN;
+  float minY = FLT_MAX;
+  float maxY = FLT_MIN;
 
   for (size_t i = 0; i < m_entityShapeConfig.points.size(); ++i)
   {
@@ -236,18 +259,22 @@ void Entity::CreatePolygonTexture()
     }
   }
 
-  int targetImageFrameWidth = maxX - minX;
-  int height = maxY - minY;
+  m_shapeRectangle = Rectangle{
+      minX, minY, maxX - minX, maxY - minY};
+}
 
+void Entity::CreatePolygonTexture()
+{
   Image sourceImage = LoadImage(m_entityTextureConfig.path.c_str());
-  Image targetImage = GenImageColor(targetImageFrameWidth * m_entityTextureConfig.framesInRow, height, BLANK);
+  Image targetImage = GenImageColor(m_shapeRectangle.width * m_entityTextureConfig.framesInRow,
+                                    m_shapeRectangle.height, BLANK);
   int sourceImageFrameWidth = sourceImage.width / m_entityTextureConfig.framesInRow;
 
   for (size_t frame = 0; frame < m_entityTextureConfig.framesInRow; ++frame)
   {
-    for (size_t x = 0; x < targetImageFrameWidth; ++x)
+    for (size_t x = 0; x < m_shapeRectangle.width; ++x)
     {
-      for (size_t y = 0; y < height; ++y)
+      for (size_t y = 0; y < m_shapeRectangle.height; ++y)
       {
         Vector2 pixel = {(float)x, (float)y};
 
@@ -256,7 +283,7 @@ void Entity::CreatePolygonTexture()
           Color color = GetImageColor(sourceImage,
                                       (x % sourceImageFrameWidth) + (frame * sourceImageFrameWidth),
                                       y % sourceImage.height);
-          ImageDrawPixel(&targetImage, x + (frame * targetImageFrameWidth), y, color);
+          ImageDrawPixel(&targetImage, x + (frame * m_shapeRectangle.width), y, color);
         }
       }
     }
@@ -285,8 +312,10 @@ void Entity::HandleAnimation()
 
 void Entity::HandleMovement()
 {
-  int dx = m_path.at(0).x - m_position.x;
-  int dy = m_path.at(0).y - m_position.y;
+  Vector2 shapeCenter = GetShapeCenter();
+
+  int dx = m_path.at(0).x - shapeCenter.x;
+  int dy = m_path.at(0).y - shapeCenter.y;
   float magnitude = std::sqrt((dx * dx) + (dy * dy));
 
   if (magnitude != 0)
@@ -295,8 +324,10 @@ void Entity::HandleMovement()
                   m_position.y + ((dy / magnitude) * MOVEMENT_SPEED)};
   }
 
-  dx = m_path.at(0).x - m_position.x;
-  dy = m_path.at(0).y - m_position.y;
+  shapeCenter = GetShapeCenter();
+
+  dx = m_path.at(0).x - shapeCenter.x;
+  dy = m_path.at(0).y - shapeCenter.y;
   magnitude = std::sqrt((dx * dx) + (dy * dy));
 
   if (magnitude < MOVEMENT_SPEED / 2)
@@ -305,7 +336,7 @@ void Entity::HandleMovement()
 
     if (m_path.size() > 0)
     {
-      m_octant = GetOctantFrom(-GetAngleBetween(m_path.at(0), m_position));
+      m_octant = GetOctantFrom(-GetAngleBetween(m_path.at(0), shapeCenter));
     }
   }
 }

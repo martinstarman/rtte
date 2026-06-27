@@ -191,17 +191,20 @@ bool Game::HandleEntitySelection()
 
 void Game::HandleEntityMovement()
 {
-  constexpr float ENTITY_RADIUS = 8.0f; // TODO: toml
-
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
   {
     for (auto &entity : m_entities)
     {
       if (entity->GetSelected())
       {
-        Vector2 start = entity->GetPosition();
+
+        Vector2 start = entity->GetShapeCenter();
+        Rectangle shapeRectangle = entity->GetShapeRectangle();
         Vector2 target = GetGameMousePosition();
-        std::vector<Vector2> path = m_navmesh->GetPath(start, target, ENTITY_RADIUS);
+
+        std::vector<Vector2> path = m_navmesh->GetPath(start, target,
+                                                       std::max(shapeRectangle.width,
+                                                                shapeRectangle.height));
         if (path.size() > 0)
         {
           entity->SetPath(path);
@@ -221,9 +224,9 @@ void Game::HandleEntityTraces()
 
       for (const auto movingEntities : m_entities)
       {
-        if (movingEntities->IsMoving())
+        if (movingEntities->GetMovable() && movingEntities->IsMoving())
         {
-          Vector2 position = movingEntities->GetPosition();
+          Vector2 position = movingEntities->GetShapeCenter();
 
           if (CheckCollisionPointPoly(position, &shape[0], shape.size()))
           {

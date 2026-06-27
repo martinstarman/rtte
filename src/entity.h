@@ -12,7 +12,7 @@
 #include "utils.h"
 
 const float MOVEMENT_SPEED = 2.5;
-const int TRACE_VISIBILITY_TICKS_COUNT = 100;
+const int TRACE_VISIBILITY_TICKS_COUNT = 400;
 
 struct EntityConfig
 {
@@ -71,6 +71,8 @@ public:
   bool GetSelected() const;
   std::vector<Vector2> GetShape() const;
   Vector2 GetPosition() const;
+  Vector2 GetShapeCenter() const;
+  Rectangle GetShapeRectangle() const;
   bool GetShowsTraces() const;
   bool GetBlocksMovement() const;
   bool GetMovable() const;
@@ -89,6 +91,7 @@ private:
   bool m_selected;
   std::vector<Vector2> m_path;
   Octant m_octant;
+  Rectangle m_shapeRectangle;
 
 private:
   EntityTextureConfig m_entityTextureConfig;
@@ -108,6 +111,7 @@ private:
   EntityMovementConfig m_entityMovementConfig;
 
 private:
+  void CalculateShapeDimensions();
   void CreatePolygonTexture();
   void HandleAnimation();
   void HandleMovement();

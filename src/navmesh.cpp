@@ -22,9 +22,9 @@ void Navmesh::Draw() const
 {
   for (const auto &t : m_triangles)
   {
-    DrawLineV(t.GetA(), t.GetB(), WHITE);
-    DrawLineV(t.GetB(), t.GetC(), WHITE);
-    DrawLineV(t.GetC(), t.GetA(), WHITE);
+    DrawLineV(t.GetA(), t.GetB(), MAGENTA);
+    DrawLineV(t.GetB(), t.GetC(), MAGENTA);
+    DrawLineV(t.GetC(), t.GetA(), MAGENTA);
   }
 };
 
