@@ -3,10 +3,10 @@
 Game::Game(
     float mapWidth,
     float mapHeight)
-    : m_maxDrawingLayer(0),
+    : m_debug(false),
       m_mapWidth(mapWidth),
       m_mapHeight(mapHeight),
-      m_debug(false)
+      m_maxDrawingLayer(0)
 {
   m_camera = {0};
   m_camera.target = {0, 0};
@@ -166,7 +166,7 @@ bool Game::HandleEntitySelection()
         Vector2 mousePosition = GetGameMousePosition();
         std::vector<Vector2> shape = entity->GetShape();
 
-        if (CheckCollisionPointPoly(mousePosition, &shape[0], shape.size()))
+        if (CheckCollisionPointPoly(mousePosition, &shape.at(0), shape.size()))
         {
           entity->SetSelected(true);
           selectedEntityId = entity->GetId();
@@ -216,21 +216,21 @@ void Game::HandleEntityMovement()
 
 void Game::HandleEntityTraces()
 {
-  for (const auto leavesTraceEntities : m_entities)
+  for (const auto entity1 : m_entities)
   {
-    if (leavesTraceEntities->GetShowsTraces())
+    if (entity1->GetShowsTraces())
     {
-      std::vector<Vector2> shape = leavesTraceEntities->GetShape();
+      std::vector<Vector2> shape = entity1->GetShape();
 
-      for (const auto movingEntities : m_entities)
+      for (const auto entity2 : m_entities)
       {
-        if (movingEntities->GetMovable() && movingEntities->IsMoving())
+        if (entity2->GetMovable() && entity2->IsMoving())
         {
-          Vector2 position = movingEntities->GetShapeCenter();
+          Vector2 position = entity2->GetShapeCenter();
 
-          if (CheckCollisionPointPoly(position, &shape[0], shape.size()))
+          if (CheckCollisionPointPoly(position, &shape.at(0), shape.size()))
           {
-            movingEntities->SetTrace();
+            entity2->SetTrace();
           }
         }
       }

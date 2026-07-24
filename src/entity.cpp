@@ -232,9 +232,9 @@ void Entity::DrawShape()
 void Entity::CalculateShapeDimensions()
 {
   float minX = FLT_MAX;
-  float maxX = FLT_MIN;
+  float maxX = -FLT_MIN;
   float minY = FLT_MAX;
-  float maxY = FLT_MIN;
+  float maxY = -FLT_MIN;
 
   for (size_t i = 0; i < m_entityShapeConfig.points.size(); ++i)
   {
@@ -314,8 +314,8 @@ void Entity::HandleMovement()
 {
   Vector2 shapeCenter = GetShapeCenter();
 
-  int dx = m_path.at(0).x - shapeCenter.x;
-  int dy = m_path.at(0).y - shapeCenter.y;
+  float dx = m_path.at(0).x - shapeCenter.x;
+  float dy = m_path.at(0).y - shapeCenter.y;
   float magnitude = std::sqrt((dx * dx) + (dy * dy));
 
   if (magnitude != 0)
