@@ -53,13 +53,13 @@ int main(int argc, char *argv[])
       auto tomlEntityShapeBlocksMovement = toml::find_or<bool>(tomlEntityShape, "BlocksMovement", false);
 
       std::string entityTraceTexturePath = "";
-      int entityTraceTracesPerSecond = 0;
+      int entityTraceTracesPerSecond = 1;
 
       if (tomlEntity.contains("Trace"))
       {
         auto tomlEntityTrace = toml::find<toml::value>(tomlEntity, "Trace");
         entityTraceTexturePath = (mapFileDir / toml::find_or<std::string>(tomlEntityTrace, "TexturePath", "")).string();
-        entityTraceTracesPerSecond = toml::find_or<int>(tomlEntityTrace, "TracesPerSecond", 0);
+        entityTraceTracesPerSecond = toml::find_or<int>(tomlEntityTrace, "TracesPerSecond", 1);
       }
 
       Vector2 entityDefaultPosition = {tomlEntityDefaultPosition.at(0),
