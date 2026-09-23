@@ -1,2 +1,3 @@
 build/*
 !build/.gitkeep
+cmake_test_discovery_*.json
