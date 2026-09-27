@@ -3,6 +3,7 @@ RTTE is attempt to create 2D isometric real time tactics game engine for games l
 
 ## Building
 Dependencies are installed automatically by [vcpkg](https://vcpkg.io) from `vcpkg.json` (manifest mode).
+
 ```
 cmake -B build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
 cmake --build build
@@ -12,3 +13,6 @@ cmake --build build
 ```
 ctest --test-dir build -C Debug --output-on-failure
 ```
+
+## TODO
+- vertical animation sprites

@@ -10,7 +10,7 @@ find_package(GTest CONFIG REQUIRED)
 find_path(EARCUT_HPP_INCLUDE_DIRS mapbox/earcut.hpp)
 find_path(CXXGRAPH_INCLUDE_DIR CXXGraph/CXXGraph.hpp)
 
-add_library(rtte_core STATIC src/sprite.cpp)
+add_library(rtte_core STATIC src/animation.cpp src/sprite.cpp)
 target_include_directories(rtte_core PUBLIC src ${EARCUT_HPP_INCLUDE_DIRS} ${CXXGRAPH_INCLUDE_DIR})
 target_link_libraries(rtte_core PUBLIC raylib toml11::toml11)
 
