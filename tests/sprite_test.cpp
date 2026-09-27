@@ -18,7 +18,7 @@ protected:
   }
 };
 
-TEST_F(SpriteTest, TextureHasImageDimensions)
+TEST_F(SpriteTest, TextureHasImageSize)
 {
   const char *path = "sample/sprite.png";
 
@@ -35,7 +35,7 @@ TEST_F(SpriteTest, TextureHasImageDimensions)
   UnloadImage(image);
 }
 
-TEST_F(SpriteTest, TextureHasGivenDimensions)
+TEST_F(SpriteTest, TextureHasGivenSize)
 {
   const char *path = "sample/sprite.png";
 

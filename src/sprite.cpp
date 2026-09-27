@@ -3,24 +3,24 @@
 Sprite::Sprite(const std::string &path, Vector3 position)
     : m_path(path),
       m_position(position),
-      m_dimensions({0.0, 0.0}),
+      m_size({0.0, 0.0}),
       m_shape({}),
       m_texture(LoadTexture(path.c_str()))
 {
 }
 
-Sprite::Sprite(const std::string &path, Vector3 position, Vector2 dimensions)
+Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size)
     : m_path(path),
       m_position(position),
-      m_dimensions(dimensions),
+      m_size(size),
       m_shape({})
 {
   Image src = LoadImage(path.c_str());
-  Image dest = GenImageColor(dimensions.x, dimensions.y, BLANK);
+  Image dest = GenImageColor(size.x, size.y, BLANK);
 
-  for (size_t x = 0; x < dimensions.x; ++x)
+  for (size_t x = 0; x < size.x; ++x)
   {
-    for (size_t y = 0; y < dimensions.y; ++y)
+    for (size_t y = 0; y < size.y; ++y)
     {
       Color color = GetImageColor(src, x % src.width, y % src.height);
       ImageDrawPixel(&dest, x, y, color);
@@ -35,7 +35,7 @@ Sprite::Sprite(const std::string &path, Vector3 position, Vector2 dimensions)
 Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape)
     : m_path(path),
       m_position(position),
-      m_dimensions({0.0, 0.0}),
+      m_size({0.0, 0.0}),
       m_shape(shape)
 {
   Vector2 topLeft = {
