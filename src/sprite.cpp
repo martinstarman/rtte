@@ -6,7 +6,7 @@ Sprite::Sprite(const std::string &path, Vector3 position)
       m_size({0.0, 0.0}),
       m_shape({}),
       m_texture(LoadTexture(path.c_str())),
-      m_animation({1, {(float)m_texture.width, (float)m_texture.height}})
+      m_animation({1, {(float)m_texture.width, (float)m_texture.height}, 0.0f})
 {
 }
 
@@ -25,7 +25,7 @@ Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size)
       m_position(position),
       m_size(size),
       m_shape({}),
-      m_animation({1, size})
+      m_animation({1, size, 0.0f})
 {
   Image src = LoadImage(path.c_str());
   Image dest = GenImageColor(size.x, size.y, BLANK);
@@ -54,7 +54,7 @@ Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size, Animatio
   size_t frameCount = animation.GetFrameCount();
   Vector2 frameSize = animation.GetFrameSize();
   Image src = LoadImage(path.c_str());
-  Image dest = GenImageColor(frameCount * size.x, size.y, BLANK); // TODO: vertical sprites
+  Image dest = GenImageColor(frameCount * size.x, size.y, BLANK);
 
   for (size_t frame = 0; frame < frameCount; ++frame)
   {
@@ -72,7 +72,7 @@ Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size, Animatio
   }
 
   m_texture = LoadTextureFromImage(dest);
-  m_animation = Animation(frameCount, size);
+  m_animation.SetFrameSize(size);
   UnloadImage(src);
   UnloadImage(dest);
 }
@@ -82,7 +82,7 @@ Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vect
       m_position(position),
       m_size({0.0, 0.0}),
       m_shape(shape),
-      m_animation({1, {0.0, 0.0}})
+      m_animation({1, {0.0, 0.0}, 0.0f})
 {
   Vector2 topLeft = {
       std::numeric_limits<float>::infinity(),
@@ -134,12 +134,11 @@ Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vect
   }
 
   m_texture = LoadTextureFromImage(dest);
-  m_animation = Animation(1, {(float)m_texture.width, (float)m_texture.height});
+  m_animation.SetFrameSize({(float)m_texture.width, (float)m_texture.height});
   UnloadImage(src);
   UnloadImage(dest);
 }
 
-// TODO: vertical sprites
 Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape, Animation animation)
     : m_path(path),
       m_position(position),
@@ -205,7 +204,7 @@ Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vect
   }
 
   m_texture = LoadTextureFromImage(dest);
-  m_animation = Animation(frameCount, {width, height});
+  m_animation.SetFrameSize({width, height});
   UnloadImage(src);
   UnloadImage(dest);
 }
@@ -215,9 +214,9 @@ Sprite::~Sprite()
   UnloadTexture(m_texture);
 }
 
-void Sprite::Update()
+void Sprite::Update(float dt)
 {
-  m_animation.Update();
+  m_animation.Update(dt);
 }
 
 void Sprite::Render()
@@ -227,7 +226,7 @@ void Sprite::Render()
   size_t currentFrame = m_animation.GetCurrentFrame();
   Rectangle rect = {
       currentFrame * frameSize.x,
-      0.0f, // TODO: vertical sprites
+      0.0f,
       frameSize.x,
       frameSize.y,
   };

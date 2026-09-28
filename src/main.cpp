@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
       {64.0, 32.0},
       {32.0, 32.0},
   };
-  Animation animation = {2, {32.0, 32.0}};
+  Animation animation = {2, {32.0, 32.0}, 1.0f};
 
   Sprite sprite1("sample/sprite1.png", Vector3{10.0, 10.0, 0.0});
   Sprite sprite2("sample/sprite1.png", Vector3{60.0, 10.0, 0.0}, Vector2{64.0, 64.0});
@@ -29,12 +29,14 @@ int main(int argc, char *argv[])
     BeginDrawing();
     ClearBackground(WHITE);
 
-    sprite1.Update();
-    sprite2.Update();
-    sprite3.Update();
-    sprite4.Update();
-    sprite5.Update();
-    sprite6.Update();
+    float dt = GetFrameTime();
+
+    sprite1.Update(dt);
+    sprite2.Update(dt);
+    sprite3.Update(dt);
+    sprite4.Update(dt);
+    sprite5.Update(dt);
+    sprite6.Update(dt);
 
     sprite1.Render();
     sprite2.Render();

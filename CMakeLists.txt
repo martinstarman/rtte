@@ -20,6 +20,6 @@ target_link_libraries(rtte PRIVATE rtte_core)
 enable_testing()
 include(GoogleTest)
 
-add_executable(rtte_tests tests/sprite_test.cpp)
+add_executable(rtte_tests tests/animation_test.cpp tests/sprite_test.cpp)
 target_link_libraries(rtte_tests PRIVATE rtte_core GTest::gtest_main)
 gtest_discover_tests(rtte_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} DISCOVERY_MODE PRE_TEST)

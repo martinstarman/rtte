@@ -42,7 +42,7 @@ TEST_F(SpriteTest, AnimatedTextureHasSpriteSheetSize)
   Image image = LoadImage(path);
   ASSERT_TRUE(IsImageValid(image));
 
-  Sprite sprite(path, Vector3{0.0, 0.0, 0.0}, Animation(2, Vector2{32.0, 32.0}));
+  Sprite sprite(path, Vector3{0.0, 0.0, 0.0}, Animation(2, Vector2{32.0, 32.0}, 1.0f));
   const Texture2D &texture = sprite.GetTexture();
 
   ASSERT_TRUE(IsTextureValid(texture));
@@ -71,7 +71,7 @@ TEST_F(SpriteTest, AnimatedTextureHasGivenSizePerFrame)
   Image image = LoadImage(path);
   ASSERT_TRUE(IsImageValid(image));
 
-  Sprite sprite(path, Vector3{0.0, 0.0, 0.0}, Vector2{64.0, 64.0}, Animation(2, Vector2{32.0, 32.0}));
+  Sprite sprite(path, Vector3{0.0, 0.0, 0.0}, Vector2{64.0, 64.0}, Animation(2, Vector2{32.0, 32.0}, 1.0f));
   const Texture2D &texture = sprite.GetTexture();
 
   ASSERT_TRUE(IsTextureValid(texture));
@@ -137,7 +137,7 @@ TEST_F(SpriteTest, AnimatedTextureHasShapeBoundsPerFrameAndIsFilledInsideShape)
       Vector2{0.0, 48.0},
   };
 
-  Sprite sprite(path, Vector3{0.0, 0.0, 0.0}, shape, Animation(2, Vector2{32.0, 32.0}));
+  Sprite sprite(path, Vector3{0.0, 0.0, 0.0}, shape, Animation(2, Vector2{32.0, 32.0}, 1.0f));
   const Texture2D &texture = sprite.GetTexture();
 
   ASSERT_TRUE(IsTextureValid(texture));

@@ -17,7 +17,7 @@ public:
   Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape);
   Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape, Animation animation);
   ~Sprite();
-  void Update();
+  void Update(float dt);
   void Render();
   const Texture2D &GetTexture() const;
 
