@@ -1,29 +1,23 @@
 cmake_minimum_required(VERSION 4.3)
 
-set (CMAKE_CXX_STANDARD 17)
+project(rtte CXX)
 
-project(rtte)
-
-add_executable(rtte)
-
-target_sources(rtte
-  PRIVATE
-    src/entity.cpp
-    src/game.cpp
-    src/main.cpp
-    src/navmesh.cpp
-    src/triangle.cpp
-    src/utils.cpp
-)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(raylib CONFIG REQUIRED)
-target_link_libraries(rtte PRIVATE raylib)
-
 find_package(toml11 CONFIG REQUIRED)
-target_link_libraries(rtte PRIVATE toml11::toml11)
+find_package(GTest CONFIG REQUIRED)
 
-find_path(EARCUT_HPP_INCLUDE_DIRS "mapbox/earcut.hpp")
-target_include_directories(rtte PRIVATE ${EARCUT_HPP_INCLUDE_DIRS})
+add_library(rtte_core STATIC src/animation.cpp src/sprite.cpp src/navmesh.cpp src/mission.cpp)
+target_include_directories(rtte_core PUBLIC src)
+target_link_libraries(rtte_core PUBLIC raylib toml11::toml11)
 
-find_path(CXXGRAPH_INCLUDE_DIR CXXGraph/CXXGraph.hpp)
-target_include_directories(rtte PRIVATE ${CXXGRAPH_INCLUDE_DIR})
+add_executable(rtte src/main.cpp)
+target_link_libraries(rtte PRIVATE rtte_core)
+
+enable_testing()
+include(GoogleTest)
+
+add_executable(rtte_tests tests/animation_test.cpp tests/sprite_test.cpp tests/navmesh_test.cpp tests/mission_test.cpp)
+target_link_libraries(rtte_tests PRIVATE rtte_core GTest::gtest_main)
+gtest_discover_tests(rtte_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} DISCOVERY_MODE PRE_TEST)

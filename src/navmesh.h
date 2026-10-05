@@ -1,34 +1,27 @@
 #pragma once
 
-#include <array>
-#include <cassert>
-#include <CXXGraph/CXXGraph.hpp>
-#include <mapbox/earcut.hpp>
+#include <limits>
 #include <raylib.h>
-#include <string>
+#include <raymath.h>
 #include <vector>
-
-#include "triangle.h"
-#include "utils.h"
-
-struct Portal
-{
-  Vector2 left;
-  Vector2 right;
-};
 
 class Navmesh
 {
 public:
-  Navmesh(float mapWidth, float mapHeight);
-  ~Navmesh();
-  void AddHole(const std::vector<std::array<float, 2>> &hole);
-  void Draw() const;
-  std::vector<Vector2> GetPath(const Vector2 &start, const Vector2 &target, float entityRadius) const;
+  Navmesh(Rectangle bounds, const std::vector<std::vector<Vector2>> &holes, float agentRadius);
+  std::vector<Vector2> FindPath(Vector2 start, Vector2 target) const;
+  void Render() const;
 
 private:
-  void Triangulate();
-  size_t GetTriangleIndexFrom(const Vector2 &v) const;
-  std::vector<std::vector<std::array<float, 2>>> m_polygons;
-  std::vector<Triangle> m_triangles;
+  static constexpr float kEpsilon = 1e-3f;
+
+  static Vector2 OutwardNormal(Vector2 a, Vector2 b);
+  bool IsWalkable(Vector2 v) const;
+  bool IsVisible(Vector2 a, Vector2 b) const;
+
+  Rectangle m_bounds;
+  std::vector<std::vector<Vector2>> m_holes;
+  std::vector<std::vector<Vector2>> m_expandedHoles;
+  std::vector<Vector2> m_nodes;
+  std::vector<std::vector<int>> m_edges;
 };
