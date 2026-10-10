@@ -104,3 +104,49 @@ TEST(CharacterTest, YSortIndexIsBelowCenter)
 
   EXPECT_GT(character.GetYSortIndex(), 50.0f);
 }
+
+TEST(CharacterTest, LeavesFootprintEveryStep)
+{
+  Character character(Vector3{0.0, 0.0, 1.0});
+
+  character.SetPath({{0.0, 0.0}, {100.0, 0.0}});
+  character.Update(5.0f * Character::kStepLength / Character::kSpeed);
+  std::vector<Footprint> footprints = character.GetFootprints();
+
+  ASSERT_EQ(footprints.size(), 5);
+  EXPECT_FLOAT_EQ(footprints.at(0).GetPosition().x, Character::kStepLength);
+  EXPECT_FLOAT_EQ(footprints.at(4).GetPosition().x, 5.0f * Character::kStepLength);
+  EXPECT_FLOAT_EQ(footprints.at(0).GetPosition().z, 1.0f);
+}
+
+TEST(CharacterTest, AlternatesFeet)
+{
+  Character character(Vector3{0.0, 0.0, 0.0});
+
+  character.SetPath({{0.0, 0.0}, {100.0, 0.0}});
+  character.Update(2.0f * Character::kStepLength / Character::kSpeed);
+  std::vector<Footprint> footprints = character.GetFootprints();
+
+  ASSERT_EQ(footprints.size(), 2);
+  EXPECT_LT(footprints.at(0).GetPosition().y * footprints.at(1).GetPosition().y, 0.0f);
+}
+
+TEST(CharacterTest, GetFootprintsClears)
+{
+  Character character(Vector3{0.0, 0.0, 0.0});
+
+  character.SetPath({{0.0, 0.0}, {100.0, 0.0}});
+  character.Update(2.0f * Character::kStepLength / Character::kSpeed);
+  character.GetFootprints();
+
+  EXPECT_TRUE(character.GetFootprints().empty());
+}
+
+TEST(CharacterTest, NoFootprintsWhenStanding)
+{
+  Character character(Vector3{0.0, 0.0, 0.0});
+
+  character.Update(1.0f);
+
+  EXPECT_TRUE(character.GetFootprints().empty());
+}

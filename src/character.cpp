@@ -4,7 +4,10 @@ Character::Character(Vector3 position)
     : Renderable(position),
       m_path({}),
       m_pathIndex(0),
-      m_selected(false)
+      m_selected(false),
+      m_stepDistance(0.0f),
+      m_leftFoot(true),
+      m_footprints({})
 {
 }
 
@@ -20,6 +23,7 @@ void Character::Update(float dt)
 
     if (remaining <= distance)
     {
+      Walk(position, target);
       m_position.x = target.x;
       m_position.y = target.y;
       distance -= remaining;
@@ -28,6 +32,7 @@ void Character::Update(float dt)
     else
     {
       Vector2 moved = Vector2MoveTowards(position, target, distance);
+      Walk(position, moved);
       m_position.x = moved.x;
       m_position.y = moved.y;
       distance = 0.0f;
@@ -91,4 +96,41 @@ void Character::SetSelected(bool selected)
 Vector2 Character::GetPosition2D() const
 {
   return {m_position.x, m_position.y};
+}
+
+std::vector<Footprint> Character::GetFootprints()
+{
+  std::vector<Footprint> footprints;
+  std::swap(footprints, m_footprints);
+
+  return footprints;
+}
+
+void Character::Walk(Vector2 from, Vector2 to)
+{
+  float distance = Vector2Distance(from, to);
+
+  if (distance <= 0.0f)
+  {
+    return;
+  }
+
+  Vector2 direction = Vector2Normalize(Vector2Subtract(to, from));
+  Vector2 normal = {-direction.y, direction.x};
+  float rotation = std::atan2(direction.y, direction.x) * RAD2DEG + 90.0f;
+
+  while (m_stepDistance + distance >= kStepLength)
+  {
+    float advance = kStepLength - m_stepDistance;
+    from = Vector2Add(from, Vector2Scale(direction, advance));
+    distance -= advance;
+    m_stepDistance = 0.0f;
+
+    float side = m_leftFoot ? -kFootOffset : kFootOffset;
+    Vector2 foot = Vector2Add(from, Vector2Scale(normal, side));
+    m_footprints.emplace_back(Vector3{foot.x, foot.y, m_position.z}, rotation);
+    m_leftFoot = !m_leftFoot;
+  }
+
+  m_stepDistance += distance;
 }

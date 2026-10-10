@@ -10,9 +10,12 @@ Mission::Mission(const std::string &path, const toml::value &data)
       m_mapSize(ParseMapSize(data)),
       m_camera({{0.0, 0.0}, {0.0, 0.0}, 0.0f, 1.0f}),
       m_scrollSpeed(500.0f),
-      m_navmesh({0.0, 0.0, m_mapSize.x, m_mapSize.y}, ParseObstacles(data), 8.0f),
+      m_obstacles(ParseObstacles(data)),
+      m_navmesh({0.0, 0.0, m_mapSize.x, m_mapSize.y}, GetMovementHoles(m_obstacles), 8.0f),
+      m_surfaces(ParseSurfaces(data)),
       m_sprites(ParseSprites(data, std::filesystem::path(path).parent_path())),
       m_characters(ParseCharacters(data)),
+      m_footprints({}),
       m_dragging(false),
       m_dragStart({0.0, 0.0})
 {
@@ -75,9 +78,29 @@ void Mission::Update(float dt)
     sprite.Update(dt);
   }
 
+  for (Footprint &footprint : m_footprints)
+  {
+    footprint.Update(dt);
+  }
+
+  m_footprints.erase(
+      std::remove_if(m_footprints.begin(), m_footprints.end(), [](const Footprint &footprint)
+                     { return footprint.IsExpired(); }),
+      m_footprints.end());
+
   for (Character &character : m_characters)
   {
     character.Update(dt);
+
+    for (const Footprint &footprint : character.GetFootprints())
+    {
+      Vector3 position = footprint.GetPosition();
+
+      if (HasFootprints({position.x, position.y}))
+      {
+        m_footprints.push_back(footprint);
+      }
+    }
   }
 }
 
@@ -97,6 +120,24 @@ void Mission::Render()
     DrawLineV({0.0, y}, {m_mapSize.x, y}, GRAY);
   }
 
+  for (const Surface &surface : m_surfaces)
+  {
+    surface.Render();
+  }
+
+  for (const Obstacle &obstacle : m_obstacles)
+  {
+    if (obstacle.BlocksVision())
+    {
+      const std::vector<Vector2> &points = obstacle.GetPoints();
+
+      for (size_t i = 0; i < points.size(); ++i)
+      {
+        DrawLineEx(points.at(i), points.at((i + 1) % points.size()), 3.0f, SKYBLUE);
+      }
+    }
+  }
+
   m_navmesh.Render();
 
   std::vector<const Renderable *> renderables;
@@ -109,6 +150,11 @@ void Mission::Render()
   for (const Character &character : m_characters)
   {
     renderables.push_back(&character);
+  }
+
+  for (const Footprint &footprint : m_footprints)
+  {
+    renderables.push_back(&footprint);
   }
 
   std::stable_sort(renderables.begin(), renderables.end(), [](const Renderable *a, const Renderable *b)
@@ -147,6 +193,16 @@ const std::vector<Character> &Mission::GetCharacters() const
 const std::vector<Sprite> &Mission::GetSprites() const
 {
   return m_sprites;
+}
+
+const std::vector<Obstacle> &Mission::GetObstacles() const
+{
+  return m_obstacles;
+}
+
+const std::vector<Surface> &Mission::GetSurfaces() const
+{
+  return m_surfaces;
 }
 
 Rectangle Mission::MakeRectangle(Vector2 a, Vector2 b)
@@ -198,6 +254,19 @@ void Mission::MoveSelected(Vector2 target)
   }
 }
 
+bool Mission::HasFootprints(Vector2 point) const
+{
+  for (const Surface &surface : m_surfaces)
+  {
+    if (surface.HasFootprints() && surface.Contains(point))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 Vector2 Mission::ParseMapSize(const toml::value &data)
 {
   std::array<float, 2> size = toml::find_or<std::array<float, 2>>(
@@ -206,25 +275,66 @@ Vector2 Mission::ParseMapSize(const toml::value &data)
   return {size.at(0), size.at(1)};
 }
 
-std::vector<std::vector<Vector2>> Mission::ParseObstacles(const toml::value &data)
+std::vector<Obstacle> Mission::ParseObstacles(const toml::value &data)
 {
-  std::vector<std::vector<Vector2>> obstacles;
+  std::vector<Obstacle> obstacles;
   std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
       data, "Obstacle", std::vector<toml::value>{});
 
   for (const toml::value &table : tables)
   {
-    std::vector<Vector2> obstacle = ParsePoints(table, "Points");
+    std::vector<Vector2> points = ParsePoints(table, "Points");
 
-    if (obstacle.size() < 3)
+    if (points.size() < 3)
     {
       continue;
     }
 
-    obstacles.push_back(obstacle);
+    bool blocksMovement = toml::find_or<bool>(table, "BlocksMovement", true);
+    bool blocksVision = toml::find_or<bool>(table, "BlocksVision", false);
+
+    obstacles.emplace_back(points, blocksMovement, blocksVision);
   }
 
   return obstacles;
+}
+
+std::vector<std::vector<Vector2>> Mission::GetMovementHoles(const std::vector<Obstacle> &obstacles)
+{
+  std::vector<std::vector<Vector2>> holes;
+
+  for (const Obstacle &obstacle : obstacles)
+  {
+    if (obstacle.BlocksMovement())
+    {
+      holes.push_back(obstacle.GetPoints());
+    }
+  }
+
+  return holes;
+}
+
+std::vector<Surface> Mission::ParseSurfaces(const toml::value &data)
+{
+  std::vector<Surface> surfaces;
+  std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
+      data, "Surface", std::vector<toml::value>{});
+
+  for (const toml::value &table : tables)
+  {
+    std::vector<Vector2> points = ParsePoints(table, "Points");
+
+    if (points.size() < 3)
+    {
+      continue;
+    }
+
+    bool footprints = toml::find_or<bool>(table, "Footprints", false);
+
+    surfaces.emplace_back(points, footprints);
+  }
+
+  return surfaces;
 }
 
 std::vector<Character> Mission::ParseCharacters(const toml::value &data)

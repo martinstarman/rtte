@@ -111,3 +111,43 @@ TEST_F(MissionTest, SkipsSpriteWithoutPathOrPosition)
 
   std::filesystem::remove(path);
 }
+
+TEST_F(MissionTest, ParsesObstacleBlocking)
+{
+  std::filesystem::path path = std::filesystem::temp_directory_path() / "rtte_mission_obstacles.toml";
+  std::ofstream(path)
+      << "[[Obstacle]]\nPoints = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0]]\n\n"
+      << "[[Obstacle]]\nPoints = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0]]\nBlocksVision = true\n\n"
+      << "[[Obstacle]]\nPoints = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0]]\nBlocksMovement = false\nBlocksVision = true\n";
+
+  Mission mission(path.string());
+  const std::vector<Obstacle> &obstacles = mission.GetObstacles();
+
+  ASSERT_EQ(obstacles.size(), 3);
+  EXPECT_TRUE(obstacles.at(0).BlocksMovement());
+  EXPECT_FALSE(obstacles.at(0).BlocksVision());
+  EXPECT_TRUE(obstacles.at(1).BlocksMovement());
+  EXPECT_TRUE(obstacles.at(1).BlocksVision());
+  EXPECT_FALSE(obstacles.at(2).BlocksMovement());
+  EXPECT_TRUE(obstacles.at(2).BlocksVision());
+
+  std::filesystem::remove(path);
+}
+
+TEST_F(MissionTest, ParsesSurfaces)
+{
+  std::filesystem::path path = std::filesystem::temp_directory_path() / "rtte_mission_surfaces.toml";
+  std::ofstream(path)
+      << "[[Surface]]\nPoints = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0]]\nFootprints = true\n\n"
+      << "[[Surface]]\nPoints = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0]]\n\n"
+      << "[[Surface]]\nPoints = [[0.0, 0.0], [10.0, 0.0]]\nFootprints = true\n";
+
+  Mission mission(path.string());
+  const std::vector<Surface> &surfaces = mission.GetSurfaces();
+
+  ASSERT_EQ(surfaces.size(), 2);
+  EXPECT_TRUE(surfaces.at(0).HasFootprints());
+  EXPECT_FALSE(surfaces.at(1).HasFootprints());
+
+  std::filesystem::remove(path);
+}
