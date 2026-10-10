@@ -3,9 +3,11 @@
 #include <limits>
 #include <raylib.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "animation.h"
+#include "texture_handle.h"
 
 class Sprite
 {
@@ -16,7 +18,6 @@ public:
   Sprite(const std::string &path, Vector3 position, Vector2 size, Animation animation);
   Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape);
   Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape, Animation animation);
-  ~Sprite();
   void Update(float dt);
   void Render();
   const Texture2D &GetTexture() const;
@@ -26,6 +27,6 @@ private:
   Vector3 m_position;
   Vector2 m_size;
   std::vector<Vector2> m_shape;
-  Texture2D m_texture;
+  TextureHandle m_texture;
   Animation m_animation;
 };

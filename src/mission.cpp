@@ -10,9 +10,11 @@ Mission::Mission(const std::string &path, const toml::value &data)
       m_mapSize(ParseMapSize(data)),
       m_camera({{0.0, 0.0}, {0.0, 0.0}, 0.0f, 1.0f}),
       m_scrollSpeed(500.0f),
-      m_navmesh({0.0, 0.0, m_mapSize.x, m_mapSize.y}, ParseHoles(data), 8.0f),
-      m_pathStart({0.0, 0.0}),
-      m_walkPath({})
+      m_navmesh({0.0, 0.0, m_mapSize.x, m_mapSize.y}, ParseObstacles(data), 8.0f),
+      m_sprites(ParseSprites(data, std::filesystem::path(path).parent_path())),
+      m_characters(ParseCharacters(data)),
+      m_dragging(false),
+      m_dragStart({0.0, 0.0})
 {
 }
 
@@ -50,10 +52,33 @@ void Mission::Update(float dt)
 
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
   {
-    m_pathStart = mouse;
+    m_dragging = true;
+    m_dragStart = mouse;
   }
 
-  m_walkPath = m_navmesh.FindPath(m_pathStart, mouse);
+  if (m_dragging && IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+  {
+    if (IsDragSelecting(mouse))
+    {
+      SelectInRectangle(MakeRectangle(m_dragStart, mouse));
+    }
+    else
+    {
+      Click(mouse);
+    }
+
+    m_dragging = false;
+  }
+
+  for (Sprite &sprite : m_sprites)
+  {
+    sprite.Update(dt);
+  }
+
+  for (Character &character : m_characters)
+  {
+    character.Update(dt);
+  }
 }
 
 void Mission::Render()
@@ -74,12 +99,24 @@ void Mission::Render()
 
   m_navmesh.Render();
 
-  for (size_t i = 1; i < m_walkPath.size(); ++i)
+  for (Sprite &sprite : m_sprites)
   {
-    DrawLineEx(m_walkPath.at(i - 1), m_walkPath.at(i), 2.0f, RED);
+    sprite.Render();
   }
 
-  DrawCircleV(m_pathStart, 4.0f, GREEN);
+  for (const Character &character : m_characters)
+  {
+    character.Render();
+  }
+
+  Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), m_camera);
+
+  if (IsDragSelecting(mouse))
+  {
+    Rectangle rect = MakeRectangle(m_dragStart, mouse);
+    DrawRectangleRec(rect, Fade(YELLOW, 0.2f));
+    DrawRectangleLinesEx(rect, 1.0f, YELLOW);
+  }
 
   EndMode2D();
 }
@@ -87,6 +124,63 @@ void Mission::Render()
 Vector2 Mission::GetMapSize() const
 {
   return m_mapSize;
+}
+
+const std::vector<Character> &Mission::GetCharacters() const
+{
+  return m_characters;
+}
+
+const std::vector<Sprite> &Mission::GetSprites() const
+{
+  return m_sprites;
+}
+
+Rectangle Mission::MakeRectangle(Vector2 a, Vector2 b)
+{
+  return {std::min(a.x, b.x), std::min(a.y, b.y), std::abs(a.x - b.x), std::abs(a.y - b.y)};
+}
+
+bool Mission::IsDragSelecting(Vector2 mouse) const
+{
+  return m_dragging && Vector2Distance(m_dragStart, mouse) >= kDragThreshold;
+}
+
+void Mission::Click(Vector2 point)
+{
+  for (size_t i = 0; i < m_characters.size(); ++i)
+  {
+    if (m_characters.at(i).Contains(point))
+    {
+      for (size_t j = 0; j < m_characters.size(); ++j)
+      {
+        m_characters.at(j).SetSelected(i == j);
+      }
+
+      return;
+    }
+  }
+
+  MoveSelected(point);
+}
+
+void Mission::SelectInRectangle(Rectangle rect)
+{
+  for (Character &character : m_characters)
+  {
+    character.SetSelected(CheckCollisionPointRec(character.GetPosition(), rect));
+  }
+}
+
+void Mission::MoveSelected(Vector2 target)
+{
+  for (Character &character : m_characters)
+  {
+    if (character.IsSelected())
+    {
+      character.SetPath(m_navmesh.FindPath(character.GetPosition(), target));
+    }
+  }
 }
 
 Vector2 Mission::ParseMapSize(const toml::value &data)
@@ -97,31 +191,140 @@ Vector2 Mission::ParseMapSize(const toml::value &data)
   return {size.at(0), size.at(1)};
 }
 
-std::vector<std::vector<Vector2>> Mission::ParseHoles(const toml::value &data)
+std::vector<std::vector<Vector2>> Mission::ParseObstacles(const toml::value &data)
 {
-  std::vector<std::vector<Vector2>> holes;
+  std::vector<std::vector<Vector2>> obstacles;
   std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
-      data, "Map", "Hole", std::vector<toml::value>{});
+      data, "Obstacle", std::vector<toml::value>{});
 
   for (const toml::value &table : tables)
   {
-    std::vector<std::array<float, 2>> points = toml::find_or<std::vector<std::array<float, 2>>>(
-        table, "Points", std::vector<std::array<float, 2>>{});
+    std::vector<Vector2> obstacle = ParsePoints(table, "Points");
 
-    if (points.size() < 3)
+    if (obstacle.size() < 3)
     {
       continue;
     }
 
-    std::vector<Vector2> hole;
-
-    for (const std::array<float, 2> &point : points)
-    {
-      hole.push_back({point.at(0), point.at(1)});
-    }
-
-    holes.push_back(hole);
+    obstacles.push_back(obstacle);
   }
 
-  return holes;
+  return obstacles;
+}
+
+std::vector<Character> Mission::ParseCharacters(const toml::value &data)
+{
+  std::vector<Character> characters;
+  std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
+      data, "Character", std::vector<toml::value>{});
+
+  for (const toml::value &table : tables)
+  {
+    if (!table.contains("Position"))
+    {
+      continue;
+    }
+
+    std::array<float, 2> position = toml::find<std::array<float, 2>>(table, "Position");
+    float speed = toml::find_or<float>(table, "Speed", 150.0f);
+
+    characters.push_back(Character({position.at(0), position.at(1)}, speed));
+  }
+
+  return characters;
+}
+
+std::vector<Sprite> Mission::ParseSprites(const toml::value &data, const std::filesystem::path &directory)
+{
+  std::vector<Sprite> sprites;
+  std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
+      data, "Sprite", std::vector<toml::value>{});
+
+  for (const toml::value &table : tables)
+  {
+    if (!table.contains("Path") || !table.contains("Position"))
+    {
+      continue;
+    }
+
+    std::string path = (directory / toml::find<std::string>(table, "Path")).string();
+    std::array<float, 3> xyz = toml::find<std::array<float, 3>>(table, "Position");
+    Vector3 position = {xyz.at(0), xyz.at(1), xyz.at(2)};
+    std::optional<Animation> animation = ParseAnimation(table);
+
+    if (table.contains("Shape"))
+    {
+      std::vector<Vector2> shape = ParsePoints(table, "Shape");
+
+      if (shape.size() < 3)
+      {
+        continue;
+      }
+
+      if (animation)
+      {
+        sprites.emplace_back(path, position, shape, *animation);
+      }
+      else
+      {
+        sprites.emplace_back(path, position, shape);
+      }
+    }
+    else if (table.contains("Size"))
+    {
+      std::array<float, 2> wh = toml::find<std::array<float, 2>>(table, "Size");
+      Vector2 size = {wh.at(0), wh.at(1)};
+
+      if (animation)
+      {
+        sprites.emplace_back(path, position, size, *animation);
+      }
+      else
+      {
+        sprites.emplace_back(path, position, size);
+      }
+    }
+    else
+    {
+      if (animation)
+      {
+        sprites.emplace_back(path, position, *animation);
+      }
+      else
+      {
+        sprites.emplace_back(path, position);
+      }
+    }
+  }
+
+  return sprites;
+}
+
+std::optional<Animation> Mission::ParseAnimation(const toml::value &table)
+{
+  if (!table.contains("Animation"))
+  {
+    return std::nullopt;
+  }
+
+  const toml::value &animation = toml::find(table, "Animation");
+  size_t frameCount = toml::find<size_t>(animation, "FrameCount");
+  std::array<float, 2> frameSize = toml::find<std::array<float, 2>>(animation, "FrameSize");
+  float fps = toml::find_or<float>(animation, "Fps", 1.0f);
+
+  return Animation(frameCount, {frameSize.at(0), frameSize.at(1)}, fps);
+}
+
+std::vector<Vector2> Mission::ParsePoints(const toml::value &table, const std::string &key)
+{
+  std::vector<std::array<float, 2>> points = toml::find_or<std::vector<std::array<float, 2>>>(
+      table, key, std::vector<std::array<float, 2>>{});
+  std::vector<Vector2> result;
+
+  for (const std::array<float, 2> &point : points)
+  {
+    result.push_back({point.at(0), point.at(1)});
+  }
+
+  return result;
 }

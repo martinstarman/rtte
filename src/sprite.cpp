@@ -6,7 +6,7 @@ Sprite::Sprite(const std::string &path, Vector3 position)
       m_size({0.0, 0.0}),
       m_shape({}),
       m_texture(LoadTexture(path.c_str())),
-      m_animation({1, {(float)m_texture.width, (float)m_texture.height}, 0.0f})
+      m_animation({1, {(float)m_texture.Get().width, (float)m_texture.Get().height}, 0.0f})
 {
 }
 
@@ -39,7 +39,7 @@ Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size)
     }
   }
 
-  m_texture = LoadTextureFromImage(dest);
+  m_texture = TextureHandle(LoadTextureFromImage(dest));
   UnloadImage(src);
   UnloadImage(dest);
 }
@@ -71,7 +71,7 @@ Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size, Animatio
     }
   }
 
-  m_texture = LoadTextureFromImage(dest);
+  m_texture = TextureHandle(LoadTextureFromImage(dest));
   m_animation.SetFrameSize(size);
   UnloadImage(src);
   UnloadImage(dest);
@@ -133,8 +133,8 @@ Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vect
     }
   }
 
-  m_texture = LoadTextureFromImage(dest);
-  m_animation.SetFrameSize({(float)m_texture.width, (float)m_texture.height});
+  m_texture = TextureHandle(LoadTextureFromImage(dest));
+  m_animation.SetFrameSize({(float)m_texture.Get().width, (float)m_texture.Get().height});
   UnloadImage(src);
   UnloadImage(dest);
 }
@@ -203,15 +203,10 @@ Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vect
     }
   }
 
-  m_texture = LoadTextureFromImage(dest);
+  m_texture = TextureHandle(LoadTextureFromImage(dest));
   m_animation.SetFrameSize({width, height});
   UnloadImage(src);
   UnloadImage(dest);
-}
-
-Sprite::~Sprite()
-{
-  UnloadTexture(m_texture);
 }
 
 void Sprite::Update(float dt)
@@ -231,10 +226,10 @@ void Sprite::Render()
       frameSize.y,
   };
 
-  DrawTextureRec(m_texture, rect, position, WHITE);
+  DrawTextureRec(m_texture.Get(), rect, position, WHITE);
 }
 
 const Texture2D &Sprite::GetTexture() const
 {
-  return m_texture;
+  return m_texture.Get();
 }
