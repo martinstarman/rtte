@@ -14,8 +14,8 @@ Mission::Mission(const std::string &path, const toml::value &data)
       m_navmesh({0.0, 0.0, m_mapSize.x, m_mapSize.y}, GetMovementHoles(m_obstacles), 8.0f),
       m_surfaces(ParseSurfaces(data)),
       m_sprites(ParseSprites(data, std::filesystem::path(path).parent_path())),
-      m_characters(ParseCharacters(data)),
-      m_enemies(ParseEnemies(data)),
+      m_characters(ParseCharacters(data, std::filesystem::path(path).parent_path())),
+      m_enemies(ParseEnemies(data, std::filesystem::path(path).parent_path())),
       m_selectedEnemy(std::nullopt),
       m_footprints({}),
       m_dragging(false),
@@ -402,7 +402,7 @@ std::vector<Surface> Mission::ParseSurfaces(const toml::value &data)
   return surfaces;
 }
 
-std::vector<Character> Mission::ParseCharacters(const toml::value &data)
+std::vector<Character> Mission::ParseCharacters(const toml::value &data, const std::filesystem::path &directory)
 {
   std::vector<Character> characters;
   std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
@@ -415,13 +415,23 @@ std::vector<Character> Mission::ParseCharacters(const toml::value &data)
       continue;
     }
 
-    characters.push_back(Character(ParsePosition(table)));
+    Vector3 position = ParsePosition(table);
+
+    if (table.contains("Sprite"))
+    {
+      std::string sprite = (directory / toml::find<std::string>(table, "Sprite")).string();
+      characters.push_back(Character(position, sprite));
+    }
+    else
+    {
+      characters.push_back(Character(position));
+    }
   }
 
   return characters;
 }
 
-std::vector<Enemy> Mission::ParseEnemies(const toml::value &data)
+std::vector<Enemy> Mission::ParseEnemies(const toml::value &data, const std::filesystem::path &directory)
 {
   std::vector<Enemy> enemies;
   std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
@@ -438,7 +448,15 @@ std::vector<Enemy> Mission::ParseEnemies(const toml::value &data)
     std::vector<Vector2> path = ParsePoints(table, "Path");
     float direction = toml::find_or<float>(table, "Direction", 0.0f);
 
-    enemies.emplace_back(position, path, direction);
+    if (table.contains("Sprite"))
+    {
+      std::string sprite = (directory / toml::find<std::string>(table, "Sprite")).string();
+      enemies.emplace_back(position, path, direction, sprite);
+    }
+    else
+    {
+      enemies.emplace_back(position, path, direction);
+    }
   }
 
   return enemies;

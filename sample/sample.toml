@@ -39,16 +39,20 @@ Footprints = true
 
 [[Character]]
 Position = [50.0, 50.0, 0.0]
+Sprite = "soldier.png"
 
 [[Character]]
 Position = [80.0, 50.0, 0.0]
+Sprite = "soldier.png"
 
 [[Enemy]]
 Position = [700.0, 120.0, 0.0]
+Sprite = "enemy.png"
 Direction = 180.0
 
 [[Enemy]]
 Position = [600.0, 620.0, 0.0]
+Sprite = "enemy.png"
 Path = [[900.0, 620.0], [900.0, 750.0], [600.0, 750.0], [600.0, 620.0]]
 
 [[Sprite]]

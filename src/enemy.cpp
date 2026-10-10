@@ -5,8 +5,18 @@ Enemy::Enemy(Vector3 position, const std::vector<Vector2> &path, float direction
       m_path(path),
       m_pathIndex(0),
       m_direction(direction),
-      m_time(0.0f)
+      m_time(0.0f),
+      m_moving(false),
+      m_sprite(kAnimationFps)
 {
+  m_sprite.SetAngle(m_direction);
+}
+
+Enemy::Enemy(Vector3 position, const std::vector<Vector2> &path, float direction, const std::string &spritePath)
+    : Enemy(position, path, direction)
+{
+  m_sprite = DirectionalSprite(spritePath, kAnimationFps);
+  m_sprite.SetAngle(m_direction);
 }
 
 void Enemy::Update(float dt)
@@ -15,6 +25,7 @@ void Enemy::Update(float dt)
 
   float distance = kSpeed * dt;
   size_t reached = 0;
+  m_moving = false;
 
   while (!m_path.empty() && distance > 0.0f && reached <= m_path.size())
   {
@@ -25,6 +36,8 @@ void Enemy::Update(float dt)
     if (remaining > 0.0f)
     {
       m_direction = std::atan2(target.y - position.y, target.x - position.x) * RAD2DEG;
+      m_sprite.SetAngle(m_direction);
+      m_moving = true;
       reached = 0;
     }
 
@@ -44,16 +57,29 @@ void Enemy::Update(float dt)
       distance = 0.0f;
     }
   }
+
+  if (m_moving)
+  {
+    m_sprite.Update(dt);
+  }
 }
 
 void Enemy::Render() const
 {
   Vector2 position = GetPosition2D();
-  float look = GetLookAngle() * DEG2RAD;
-  Vector2 end = {position.x + std::cos(look) * kRadius * 2.0f, position.y + std::sin(look) * kRadius * 2.0f};
 
-  DrawCircleV(position, kRadius, RED);
-  DrawLineEx(position, end, 2.0f, RED);
+  if (!m_sprite.IsLoaded())
+  {
+    float look = GetLookAngle() * DEG2RAD;
+    Vector2 end = {position.x + std::cos(look) * kRadius * 2.0f, position.y + std::sin(look) * kRadius * 2.0f};
+
+    DrawCircleV(position, kRadius, RED);
+    DrawLineEx(position, end, 2.0f, RED);
+    return;
+  }
+
+  DrawEllipse((int)position.x, (int)position.y, kRadius, kRadius / 2.0f, Fade(BLACK, 0.3f));
+  m_sprite.Render(position, m_moving);
 }
 
 float Enemy::GetYSortIndex() const
@@ -69,6 +95,16 @@ bool Enemy::Contains(Vector2 point) const
 float Enemy::GetDirection() const
 {
   return m_direction;
+}
+
+size_t Enemy::GetFacing() const
+{
+  return m_sprite.GetFacing();
+}
+
+bool Enemy::IsMoving() const
+{
+  return m_moving;
 }
 
 float Enemy::GetLookAngle() const

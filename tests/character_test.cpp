@@ -150,3 +150,53 @@ TEST(CharacterTest, NoFootprintsWhenStanding)
 
   EXPECT_TRUE(character.GetFootprints().empty());
 }
+
+TEST(CharacterTest, FacesSouthByDefault)
+{
+  Character character(Vector3{0.0, 0.0, 0.0});
+
+  EXPECT_EQ(character.GetFacing(), 2);
+}
+
+TEST(CharacterTest, FacingFollowsMovementDirection)
+{
+  struct Case
+  {
+    Vector2 target;
+    size_t facing;
+  };
+
+  std::vector<Case> cases = {
+      {{100.0, 0.0}, 0},
+      {{100.0, 100.0}, 1},
+      {{0.0, 100.0}, 2},
+      {{-100.0, 100.0}, 3},
+      {{-100.0, 0.0}, 4},
+      {{-100.0, -100.0}, 5},
+      {{0.0, -100.0}, 6},
+      {{100.0, -100.0}, 7},
+      {{100.0, 30.0}, 0},
+      {{100.0, 60.0}, 1},
+  };
+
+  for (const Case &c : cases)
+  {
+    Character character(Vector3{0.0, 0.0, 0.0});
+
+    character.SetPath({c.target});
+    character.Update(0.1f);
+
+    EXPECT_EQ(character.GetFacing(), c.facing) << c.target.x << ", " << c.target.y;
+  }
+}
+
+TEST(CharacterTest, KeepsFacingAfterStopping)
+{
+  Character character(Vector3{0.0, 0.0, 0.0});
+
+  character.SetPath({{-50.0, 0.0}});
+  character.Update(10.0f);
+
+  EXPECT_FALSE(character.IsMoving());
+  EXPECT_EQ(character.GetFacing(), 4);
+}

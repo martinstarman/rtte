@@ -7,12 +7,24 @@ Character::Character(Vector3 position)
       m_selected(false),
       m_stepDistance(0.0f),
       m_leftFoot(true),
-      m_footprints({})
+      m_footprints({}),
+      m_sprite(kAnimationFps)
 {
+}
+
+Character::Character(Vector3 position, const std::string &spritePath)
+    : Character(position)
+{
+  m_sprite = DirectionalSprite(spritePath, kAnimationFps);
 }
 
 void Character::Update(float dt)
 {
+  if (IsMoving())
+  {
+    m_sprite.Update(dt);
+  }
+
   float distance = kSpeed * dt;
 
   while (IsMoving() && distance > 0.0f)
@@ -54,11 +66,23 @@ void Character::Render() const
     }
   }
 
-  DrawCircleV(position, kRadius, GREEN);
+  if (!m_sprite.IsLoaded())
+  {
+    DrawCircleV(position, kRadius, GREEN);
+  }
+  else
+  {
+    DrawEllipse((int)position.x, (int)position.y, kRadius, kRadius / 2.0f, Fade(BLACK, 0.3f));
+  }
 
   if (m_selected)
   {
     DrawCircleLinesV(position, kRadius + 3.0f, YELLOW);
+  }
+
+  if (m_sprite.IsLoaded())
+  {
+    m_sprite.Render(position, IsMoving());
   }
 }
 
@@ -98,6 +122,11 @@ Vector2 Character::GetPosition2D() const
   return {m_position.x, m_position.y};
 }
 
+size_t Character::GetFacing() const
+{
+  return m_sprite.GetFacing();
+}
+
 std::vector<Footprint> Character::GetFootprints()
 {
   std::vector<Footprint> footprints;
@@ -116,8 +145,10 @@ void Character::Walk(Vector2 from, Vector2 to)
   }
 
   Vector2 direction = Vector2Normalize(Vector2Subtract(to, from));
+  float angle = std::atan2(direction.y, direction.x) * RAD2DEG;
+  m_sprite.SetAngle(angle);
   Vector2 normal = {-direction.y, direction.x};
-  float rotation = std::atan2(direction.y, direction.x) * RAD2DEG + 90.0f;
+  float rotation = angle + 90.0f;
 
   while (m_stepDistance + distance >= kStepLength)
   {

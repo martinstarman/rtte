@@ -42,8 +42,8 @@ private:
   static std::vector<Obstacle> ParseObstacles(const toml::value &data);
   static std::vector<std::vector<Vector2>> GetMovementHoles(const std::vector<Obstacle> &obstacles);
   static std::vector<Surface> ParseSurfaces(const toml::value &data);
-  static std::vector<Character> ParseCharacters(const toml::value &data);
-  static std::vector<Enemy> ParseEnemies(const toml::value &data);
+  static std::vector<Character> ParseCharacters(const toml::value &data, const std::filesystem::path &directory);
+  static std::vector<Enemy> ParseEnemies(const toml::value &data, const std::filesystem::path &directory);
   static std::vector<Sprite> ParseSprites(const toml::value &data, const std::filesystem::path &directory);
   static std::optional<Animation> ParseAnimation(const toml::value &table);
   static Vector3 ParsePosition(const toml::value &table);

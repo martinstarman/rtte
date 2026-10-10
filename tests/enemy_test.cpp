@@ -103,3 +103,32 @@ TEST(EnemyTest, ViewIgnoresMovementOnlyObstacle)
     EXPECT_NEAR(Vector2Length(polygon.at(i)), Enemy::kViewDistance, 1e-2f);
   }
 }
+
+TEST(EnemyTest, FacingFollowsInitialDirection)
+{
+  Enemy enemy(Vector3{0.0, 0.0, 0.0}, {}, 180.0f);
+
+  EXPECT_EQ(enemy.GetFacing(), 4);
+  EXPECT_FALSE(enemy.IsMoving());
+}
+
+TEST(EnemyTest, FacingFollowsMovement)
+{
+  Enemy enemy(Vector3{0.0, 0.0, 0.0}, {{0.0, -100.0}}, 0.0f);
+
+  enemy.Update(0.1f);
+
+  EXPECT_EQ(enemy.GetFacing(), 6);
+  EXPECT_TRUE(enemy.IsMoving());
+}
+
+TEST(EnemyTest, StopsMovingAtSingleWaypoint)
+{
+  Enemy enemy(Vector3{0.0, 0.0, 0.0}, {{30.0, 0.0}}, 90.0f);
+
+  enemy.Update(10.0f);
+  enemy.Update(0.1f);
+
+  EXPECT_FALSE(enemy.IsMoving());
+  EXPECT_EQ(enemy.GetFacing(), 0);
+}
