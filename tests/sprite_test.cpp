@@ -155,3 +155,25 @@ TEST_F(SpriteTest, AnimatedTextureHasShapeBoundsPerFrameAndIsFilledInsideShape)
   UnloadImage(result);
   UnloadImage(image);
 }
+
+TEST_F(SpriteTest, YSortIndexUsesTextureHeight)
+{
+  Sprite sprite("sample/sprite1.png", Vector3{0.0, 10.0, 0.0});
+
+  EXPECT_FLOAT_EQ(sprite.GetYSortIndex(), 10.0f + sprite.GetTexture().height);
+}
+
+TEST_F(SpriteTest, YSortIndexUsesSize)
+{
+  Sprite sprite("sample/sprite1.png", Vector3{0.0, 10.0, 0.0}, Vector2{64.0, 48.0});
+
+  EXPECT_FLOAT_EQ(sprite.GetYSortIndex(), 58.0f);
+}
+
+TEST_F(SpriteTest, YSortIndexUsesShapeHeight)
+{
+  std::vector<Vector2> shape = {{0.0, 0.0}, {32.0, 0.0}, {64.0, 40.0}, {32.0, 40.0}};
+  Sprite sprite("sample/sprite1.png", Vector3{0.0, 10.0, 0.0}, shape);
+
+  EXPECT_FLOAT_EQ(sprite.GetYSortIndex(), 50.0f);
+}

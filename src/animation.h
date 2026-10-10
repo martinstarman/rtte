@@ -8,9 +8,9 @@ public:
   Animation(size_t frameCount, Vector2 frameSize, float fps);
   ~Animation();
   void Update(float dt);
-  size_t GetFrameCount();
-  size_t GetCurrentFrame();
-  Vector2 GetFrameSize();
+  size_t GetFrameCount() const;
+  size_t GetCurrentFrame() const;
+  Vector2 GetFrameSize() const;
   void SetFrameSize(Vector2 frameSize);
 
 private:

@@ -14,6 +14,7 @@
 #include "animation.h"
 #include "character.h"
 #include "navmesh.h"
+#include "renderable.h"
 #include "sprite.h"
 
 class Mission
@@ -33,6 +34,8 @@ private:
   static std::vector<Character> ParseCharacters(const toml::value &data);
   static std::vector<Sprite> ParseSprites(const toml::value &data, const std::filesystem::path &directory);
   static std::optional<Animation> ParseAnimation(const toml::value &table);
+  static Vector3 ParsePosition(const toml::value &table);
+  static Vector2 ParseSize(const toml::value &table);
   static std::vector<Vector2> ParsePoints(const toml::value &table, const std::string &key);
   static Rectangle MakeRectangle(Vector2 a, Vector2 b);
   bool IsDragSelecting(Vector2 mouse) const;

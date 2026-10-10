@@ -1,8 +1,8 @@
 #include "sprite.h"
 
 Sprite::Sprite(const std::string &path, Vector3 position)
-    : m_path(path),
-      m_position(position),
+    : Renderable(position),
+      m_path(path),
       m_size({0.0, 0.0}),
       m_shape({}),
       m_texture(LoadTexture(path.c_str())),
@@ -11,8 +11,8 @@ Sprite::Sprite(const std::string &path, Vector3 position)
 }
 
 Sprite::Sprite(const std::string &path, Vector3 position, Animation animation)
-    : m_path(path),
-      m_position(position),
+    : Renderable(position),
+      m_path(path),
       m_size({0.0, 0.0}),
       m_shape({}),
       m_texture(LoadTexture(path.c_str())),
@@ -21,8 +21,8 @@ Sprite::Sprite(const std::string &path, Vector3 position, Animation animation)
 }
 
 Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size)
-    : m_path(path),
-      m_position(position),
+    : Renderable(position),
+      m_path(path),
       m_size(size),
       m_shape({}),
       m_animation({1, size, 0.0f})
@@ -45,8 +45,8 @@ Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size)
 }
 
 Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size, Animation animation)
-    : m_path(path),
-      m_position(position),
+    : Renderable(position),
+      m_path(path),
       m_size(size),
       m_shape({}),
       m_animation(animation)
@@ -78,8 +78,8 @@ Sprite::Sprite(const std::string &path, Vector3 position, Vector2 size, Animatio
 }
 
 Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape)
-    : m_path(path),
-      m_position(position),
+    : Renderable(position),
+      m_path(path),
       m_size({0.0, 0.0}),
       m_shape(shape),
       m_animation({1, {0.0, 0.0}, 0.0f})
@@ -140,8 +140,8 @@ Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vect
 }
 
 Sprite::Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape, Animation animation)
-    : m_path(path),
-      m_position(position),
+    : Renderable(position),
+      m_path(path),
       m_size({0.0, 0.0}),
       m_shape(shape),
       m_animation(animation)
@@ -214,7 +214,7 @@ void Sprite::Update(float dt)
   m_animation.Update(dt);
 }
 
-void Sprite::Render()
+void Sprite::Render() const
 {
   Vector2 position = {m_position.x, m_position.y};
   Vector2 frameSize = m_animation.GetFrameSize();
@@ -232,4 +232,9 @@ void Sprite::Render()
 const Texture2D &Sprite::GetTexture() const
 {
   return m_texture.Get();
+}
+
+float Sprite::GetYSortIndex() const
+{
+  return m_position.y + m_texture.Get().height;
 }

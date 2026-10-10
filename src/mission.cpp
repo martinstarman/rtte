@@ -99,14 +99,27 @@ void Mission::Render()
 
   m_navmesh.Render();
 
-  for (Sprite &sprite : m_sprites)
+  std::vector<const Renderable *> renderables;
+
+  for (const Sprite &sprite : m_sprites)
   {
-    sprite.Render();
+    renderables.push_back(&sprite);
   }
 
   for (const Character &character : m_characters)
   {
-    character.Render();
+    renderables.push_back(&character);
+  }
+
+  std::stable_sort(renderables.begin(), renderables.end(), [](const Renderable *a, const Renderable *b)
+                   {
+                     float az = a->GetPosition().z;
+                     float bz = b->GetPosition().z;
+                     return az != bz ? az < bz : a->GetYSortIndex() < b->GetYSortIndex(); });
+
+  for (const Renderable *renderable : renderables)
+  {
+    renderable->Render();
   }
 
   Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), m_camera);
@@ -168,7 +181,8 @@ void Mission::SelectInRectangle(Rectangle rect)
 {
   for (Character &character : m_characters)
   {
-    character.SetSelected(CheckCollisionPointRec(character.GetPosition(), rect));
+    Vector3 position = character.GetPosition();
+    character.SetSelected(CheckCollisionPointRec({position.x, position.y}, rect));
   }
 }
 
@@ -178,7 +192,8 @@ void Mission::MoveSelected(Vector2 target)
   {
     if (character.IsSelected())
     {
-      character.SetPath(m_navmesh.FindPath(character.GetPosition(), target));
+      Vector3 position = character.GetPosition();
+      character.SetPath(m_navmesh.FindPath({position.x, position.y}, target));
     }
   }
 }
@@ -225,10 +240,7 @@ std::vector<Character> Mission::ParseCharacters(const toml::value &data)
       continue;
     }
 
-    std::array<float, 2> position = toml::find<std::array<float, 2>>(table, "Position");
-    float speed = toml::find_or<float>(table, "Speed", 150.0f);
-
-    characters.push_back(Character({position.at(0), position.at(1)}, speed));
+    characters.push_back(Character(ParsePosition(table)));
   }
 
   return characters;
@@ -248,8 +260,7 @@ std::vector<Sprite> Mission::ParseSprites(const toml::value &data, const std::fi
     }
 
     std::string path = (directory / toml::find<std::string>(table, "Path")).string();
-    std::array<float, 3> xyz = toml::find<std::array<float, 3>>(table, "Position");
-    Vector3 position = {xyz.at(0), xyz.at(1), xyz.at(2)};
+    Vector3 position = ParsePosition(table);
     std::optional<Animation> animation = ParseAnimation(table);
 
     if (table.contains("Shape"))
@@ -272,8 +283,7 @@ std::vector<Sprite> Mission::ParseSprites(const toml::value &data, const std::fi
     }
     else if (table.contains("Size"))
     {
-      std::array<float, 2> wh = toml::find<std::array<float, 2>>(table, "Size");
-      Vector2 size = {wh.at(0), wh.at(1)};
+      Vector2 size = ParseSize(table);
 
       if (animation)
       {
@@ -313,6 +323,20 @@ std::optional<Animation> Mission::ParseAnimation(const toml::value &table)
   float fps = toml::find_or<float>(animation, "Fps", 1.0f);
 
   return Animation(frameCount, {frameSize.at(0), frameSize.at(1)}, fps);
+}
+
+Vector3 Mission::ParsePosition(const toml::value &table)
+{
+  std::array<float, 3> position = toml::find<std::array<float, 3>>(table, "Position");
+
+  return {position.at(0), position.at(1), position.at(2)};
+}
+
+Vector2 Mission::ParseSize(const toml::value &table)
+{
+  std::array<float, 2> size = toml::find<std::array<float, 2>>(table, "Size");
+
+  return {size.at(0), size.at(1)};
 }
 
 std::vector<Vector2> Mission::ParsePoints(const toml::value &table, const std::string &key)

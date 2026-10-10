@@ -4,24 +4,28 @@
 #include <raymath.h>
 #include <vector>
 
-class Character
+#include "renderable.h"
+
+class Character : public Renderable
 {
 public:
-  Character(Vector2 position, float speed);
+  static constexpr float kSpeed = 150.0f;
+
+  Character(Vector3 position);
   void Update(float dt);
-  void Render() const;
+  void Render() const override;
   void SetPath(const std::vector<Vector2> &path);
-  Vector2 GetPosition() const;
+  float GetYSortIndex() const override;
   bool IsMoving() const;
   bool Contains(Vector2 point) const;
   bool IsSelected() const;
   void SetSelected(bool selected);
 
 private:
+  Vector2 GetPosition2D() const;
+
   static constexpr float kRadius = 8.0f;
 
-  Vector2 m_position;
-  float m_speed;
   std::vector<Vector2> m_path;
   size_t m_pathIndex;
   bool m_selected;

@@ -57,7 +57,7 @@ TEST_F(MissionTest, ParsesCharacters)
 TEST_F(MissionTest, SkipsCharacterWithoutPosition)
 {
   std::filesystem::path path = std::filesystem::temp_directory_path() / "rtte_mission_characters.toml";
-  std::ofstream(path) << "[[Character]]\nSpeed = 100.0\n\n[[Character]]\nPosition = [10.0, 20.0]\n";
+  std::ofstream(path) << "[[Character]]\n\n[[Character]]\nPosition = [10.0, 20.0, 0.0]\n";
 
   Mission mission(path.string());
   const std::vector<Character> &characters = mission.GetCharacters();

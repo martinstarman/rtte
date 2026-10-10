@@ -8,7 +8,7 @@ find_package(raylib CONFIG REQUIRED)
 find_package(toml11 CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
-add_library(rtte_core STATIC src/animation.cpp src/sprite.cpp src/texture_handle.cpp src/navmesh.cpp src/character.cpp src/mission.cpp)
+add_library(rtte_core STATIC src/animation.cpp src/renderable.cpp src/sprite.cpp src/texture_handle.cpp src/navmesh.cpp src/character.cpp src/mission.cpp)
 target_include_directories(rtte_core PUBLIC src)
 target_link_libraries(rtte_core PUBLIC raylib toml11::toml11)
 

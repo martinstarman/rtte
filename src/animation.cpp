@@ -27,17 +27,17 @@ void Animation::Update(float dt)
   }
 }
 
-size_t Animation::GetFrameCount()
+size_t Animation::GetFrameCount() const
 {
   return m_frameCount;
 }
 
-size_t Animation::GetCurrentFrame()
+size_t Animation::GetCurrentFrame() const
 {
   return m_currentFrame;
 }
 
-Vector2 Animation::GetFrameSize()
+Vector2 Animation::GetFrameSize() const
 {
   return m_frameSize;
 }

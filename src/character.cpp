@@ -1,8 +1,7 @@
 #include "character.h"
 
-Character::Character(Vector2 position, float speed)
-    : m_position(position),
-      m_speed(speed),
+Character::Character(Vector3 position)
+    : Renderable(position),
       m_path({}),
       m_pathIndex(0),
       m_selected(false)
@@ -11,22 +10,26 @@ Character::Character(Vector2 position, float speed)
 
 void Character::Update(float dt)
 {
-  float distance = m_speed * dt;
+  float distance = kSpeed * dt;
 
   while (IsMoving() && distance > 0.0f)
   {
     Vector2 target = m_path.at(m_pathIndex);
-    float remaining = Vector2Distance(m_position, target);
+    Vector2 position = GetPosition2D();
+    float remaining = Vector2Distance(position, target);
 
     if (remaining <= distance)
     {
-      m_position = target;
+      m_position.x = target.x;
+      m_position.y = target.y;
       distance -= remaining;
       ++m_pathIndex;
     }
     else
     {
-      m_position = Vector2MoveTowards(m_position, target, distance);
+      Vector2 moved = Vector2MoveTowards(position, target, distance);
+      m_position.x = moved.x;
+      m_position.y = moved.y;
       distance = 0.0f;
     }
   }
@@ -34,9 +37,11 @@ void Character::Update(float dt)
 
 void Character::Render() const
 {
+  Vector2 position = GetPosition2D();
+
   if (IsMoving())
   {
-    DrawLineEx(m_position, m_path.at(m_pathIndex), 2.0f, RED);
+    DrawLineEx(position, m_path.at(m_pathIndex), 2.0f, RED);
 
     for (size_t i = m_pathIndex + 1; i < m_path.size(); ++i)
     {
@@ -44,11 +49,11 @@ void Character::Render() const
     }
   }
 
-  DrawCircleV(m_position, kRadius, GREEN);
+  DrawCircleV(position, kRadius, GREEN);
 
   if (m_selected)
   {
-    DrawCircleLinesV(m_position, kRadius + 3.0f, YELLOW);
+    DrawCircleLinesV(position, kRadius + 3.0f, YELLOW);
   }
 }
 
@@ -58,9 +63,9 @@ void Character::SetPath(const std::vector<Vector2> &path)
   m_pathIndex = 0;
 }
 
-Vector2 Character::GetPosition() const
+float Character::GetYSortIndex() const
 {
-  return m_position;
+  return m_position.y + kRadius;
 }
 
 bool Character::IsMoving() const
@@ -70,7 +75,7 @@ bool Character::IsMoving() const
 
 bool Character::Contains(Vector2 point) const
 {
-  return CheckCollisionPointCircle(point, m_position, kRadius);
+  return CheckCollisionPointCircle(point, GetPosition2D(), kRadius);
 }
 
 bool Character::IsSelected() const
@@ -81,4 +86,9 @@ bool Character::IsSelected() const
 void Character::SetSelected(bool selected)
 {
   m_selected = selected;
+}
+
+Vector2 Character::GetPosition2D() const
+{
+  return {m_position.x, m_position.y};
 }
