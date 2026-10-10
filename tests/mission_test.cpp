@@ -151,3 +151,24 @@ TEST_F(MissionTest, ParsesSurfaces)
 
   std::filesystem::remove(path);
 }
+
+TEST_F(MissionTest, ParsesEnemies)
+{
+  std::filesystem::path path = std::filesystem::temp_directory_path() / "rtte_mission_enemies.toml";
+  std::ofstream(path)
+      << "[[Enemy]]\nPosition = [10.0, 20.0, 0.0]\nDirection = 90.0\n\n"
+      << "[[Enemy]]\nPosition = [30.0, 40.0, 0.0]\nPath = [[100.0, 40.0], [30.0, 40.0]]\n\n"
+      << "[[Enemy]]\nDirection = 45.0\n";
+
+  Mission mission(path.string());
+  const std::vector<Enemy> &enemies = mission.GetEnemies();
+
+  ASSERT_EQ(enemies.size(), 2);
+  EXPECT_FLOAT_EQ(enemies.at(0).GetPosition().x, 10.0f);
+  EXPECT_FLOAT_EQ(enemies.at(0).GetDirection(), 90.0f);
+  EXPECT_FLOAT_EQ(enemies.at(1).GetPosition().y, 40.0f);
+  EXPECT_FLOAT_EQ(enemies.at(1).GetDirection(), 0.0f);
+  EXPECT_FALSE(mission.GetSelectedEnemy().has_value());
+
+  std::filesystem::remove(path);
+}

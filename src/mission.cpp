@@ -15,6 +15,8 @@ Mission::Mission(const std::string &path, const toml::value &data)
       m_surfaces(ParseSurfaces(data)),
       m_sprites(ParseSprites(data, std::filesystem::path(path).parent_path())),
       m_characters(ParseCharacters(data)),
+      m_enemies(ParseEnemies(data)),
+      m_selectedEnemy(std::nullopt),
       m_footprints({}),
       m_dragging(false),
       m_dragStart({0.0, 0.0})
@@ -88,6 +90,11 @@ void Mission::Update(float dt)
                      { return footprint.IsExpired(); }),
       m_footprints.end());
 
+  for (Enemy &enemy : m_enemies)
+  {
+    enemy.Update(dt);
+  }
+
   for (Character &character : m_characters)
   {
     character.Update(dt);
@@ -152,6 +159,11 @@ void Mission::Render()
     renderables.push_back(&character);
   }
 
+  for (const Enemy &enemy : m_enemies)
+  {
+    renderables.push_back(&enemy);
+  }
+
   for (const Footprint &footprint : m_footprints)
   {
     renderables.push_back(&footprint);
@@ -166,6 +178,11 @@ void Mission::Render()
   for (const Renderable *renderable : renderables)
   {
     renderable->Render();
+  }
+
+  if (m_selectedEnemy)
+  {
+    RenderViewCone(m_enemies.at(*m_selectedEnemy));
   }
 
   Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), m_camera);
@@ -188,6 +205,16 @@ Vector2 Mission::GetMapSize() const
 const std::vector<Character> &Mission::GetCharacters() const
 {
   return m_characters;
+}
+
+const std::vector<Enemy> &Mission::GetEnemies() const
+{
+  return m_enemies;
+}
+
+std::optional<size_t> Mission::GetSelectedEnemy() const
+{
+  return m_selectedEnemy;
 }
 
 const std::vector<Sprite> &Mission::GetSprites() const
@@ -230,7 +257,45 @@ void Mission::Click(Vector2 point)
     }
   }
 
+  for (size_t i = 0; i < m_enemies.size(); ++i)
+  {
+    if (m_enemies.at(i).Contains(point))
+    {
+      if (m_selectedEnemy == i)
+      {
+        m_selectedEnemy = std::nullopt;
+      }
+      else
+      {
+        m_selectedEnemy = i;
+      }
+
+      return;
+    }
+  }
+
   MoveSelected(point);
+}
+
+void Mission::RenderViewCone(const Enemy &enemy) const
+{
+  std::vector<Vector2> polygon = enemy.GetViewPolygon(m_obstacles);
+  Vector2 origin = polygon.at(0);
+
+  for (size_t i = 1; i + 1 < polygon.size(); ++i)
+  {
+    Vector2 a = polygon.at(i);
+    Vector2 b = polygon.at(i + 1);
+
+    float cross = (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
+
+    if (cross > 0.0f)
+    {
+      std::swap(a, b);
+    }
+
+    DrawTriangle(origin, a, b, Fade(RED, 0.25f));
+  }
 }
 
 void Mission::SelectInRectangle(Rectangle rect)
@@ -354,6 +419,29 @@ std::vector<Character> Mission::ParseCharacters(const toml::value &data)
   }
 
   return characters;
+}
+
+std::vector<Enemy> Mission::ParseEnemies(const toml::value &data)
+{
+  std::vector<Enemy> enemies;
+  std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
+      data, "Enemy", std::vector<toml::value>{});
+
+  for (const toml::value &table : tables)
+  {
+    if (!table.contains("Position"))
+    {
+      continue;
+    }
+
+    Vector3 position = ParsePosition(table);
+    std::vector<Vector2> path = ParsePoints(table, "Path");
+    float direction = toml::find_or<float>(table, "Direction", 0.0f);
+
+    enemies.emplace_back(position, path, direction);
+  }
+
+  return enemies;
 }
 
 std::vector<Sprite> Mission::ParseSprites(const toml::value &data, const std::filesystem::path &directory)

@@ -8,7 +8,7 @@ find_package(raylib CONFIG REQUIRED)
 find_package(toml11 CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
-add_library(rtte_core STATIC src/animation.cpp src/renderable.cpp src/sprite.cpp src/texture_handle.cpp src/navmesh.cpp src/obstacle.cpp src/surface.cpp src/footprint.cpp src/character.cpp src/mission.cpp)
+add_library(rtte_core STATIC src/animation.cpp src/renderable.cpp src/sprite.cpp src/texture_handle.cpp src/navmesh.cpp src/obstacle.cpp src/surface.cpp src/footprint.cpp src/character.cpp src/enemy.cpp src/mission.cpp)
 target_include_directories(rtte_core PUBLIC src)
 target_link_libraries(rtte_core PUBLIC raylib toml11::toml11)
 
@@ -18,6 +18,6 @@ target_link_libraries(rtte PRIVATE rtte_core)
 enable_testing()
 include(GoogleTest)
 
-add_executable(rtte_tests tests/animation_test.cpp tests/sprite_test.cpp tests/texture_handle_test.cpp tests/navmesh_test.cpp tests/surface_test.cpp tests/footprint_test.cpp tests/character_test.cpp tests/mission_test.cpp)
+add_executable(rtte_tests tests/animation_test.cpp tests/sprite_test.cpp tests/texture_handle_test.cpp tests/navmesh_test.cpp tests/surface_test.cpp tests/footprint_test.cpp tests/character_test.cpp tests/enemy_test.cpp tests/mission_test.cpp)
 target_link_libraries(rtte_tests PRIVATE rtte_core GTest::gtest_main)
 gtest_discover_tests(rtte_tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} DISCOVERY_MODE PRE_TEST)
