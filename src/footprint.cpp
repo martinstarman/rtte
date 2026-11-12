@@ -17,7 +17,7 @@ void Footprint::Render() const
   Rectangle rect = {m_position.x, m_position.y, kSize.x, kSize.y};
   Vector2 origin = {kSize.x / 2.0f, kSize.y / 2.0f};
 
-  DrawRectanglePro(rect, origin, m_rotation, Fade(LIGHTGRAY, GetOpacity()));
+  DrawRectanglePro(rect, origin, m_rotation, Fade(BLACK, GetOpacity()));
 }
 
 float Footprint::GetYSortIndex() const

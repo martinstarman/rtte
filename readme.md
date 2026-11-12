@@ -9,10 +9,6 @@ cmake -B build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cm
 cmake --build build
 ```
 
-## Testing
-```
-ctest --test-dir build -C Debug --output-on-failure
-```
-
 ## TODO
 - vertical animation sprites
+- unify debug colors

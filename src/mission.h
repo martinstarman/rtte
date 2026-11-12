@@ -16,6 +16,7 @@
 #include "character.h"
 #include "enemy.h"
 #include "footprint.h"
+#include "globals.h"
 #include "navmesh.h"
 #include "obstacle.h"
 #include "renderable.h"

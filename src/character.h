@@ -9,6 +9,7 @@
 
 #include "directional_sprite.h"
 #include "footprint.h"
+#include "globals.h"
 #include "renderable.h"
 
 class Character : public Renderable

@@ -145,26 +145,31 @@ std::vector<Vector2> Navmesh::FindPath(Vector2 start, Vector2 target) const
 
 void Navmesh::Render() const
 {
-  for (size_t i = 0; i < m_edges.size(); ++i)
+  if (g_debug)
   {
-    for (int to : m_edges.at(i))
+    // debug: navmesh edges
+    for (size_t i = 0; i < m_edges.size(); ++i)
     {
-      DrawLineV(m_nodes.at(i), m_nodes.at(to), Fade(LIGHTGRAY, 0.2f));
+      for (int to : m_edges.at(i))
+      {
+        DrawLineV(m_nodes.at(i), m_nodes.at(to), Fade(WHITE, 0.1f));
+      }
     }
+    
+    // debug: holes and expanded holes
+    for (size_t i = 0; i < m_holes.size(); ++i)
+    {
+      const std::vector<Vector2> &expanded = m_expandedHoles.at(i);
+      DrawLineStrip(expanded.data(), (int)expanded.size(), Fade(YELLOW, 0.2f));
+      DrawLineV(expanded.back(), expanded.front(), Fade(YELLOW, 0.2f));
+
+      const std::vector<Vector2> &hole = m_holes.at(i);
+      DrawLineStrip(hole.data(), (int)hole.size(), YELLOW);
+      DrawLineV(hole.back(), hole.front(), YELLOW);
+    }
+
+    DrawRectangleLinesEx(m_bounds, 1.0f, YELLOW);
   }
-
-  for (size_t i = 0; i < m_holes.size(); ++i)
-  {
-    const std::vector<Vector2> &expanded = m_expandedHoles.at(i);
-    DrawLineStrip(expanded.data(), (int)expanded.size(), Fade(ORANGE, 0.5f));
-    DrawLineV(expanded.back(), expanded.front(), Fade(ORANGE, 0.5f));
-
-    const std::vector<Vector2> &hole = m_holes.at(i);
-    DrawLineStrip(hole.data(), (int)hole.size(), YELLOW);
-    DrawLineV(hole.back(), hole.front(), YELLOW);
-  }
-
-  DrawRectangleLinesEx(m_bounds, 1.0f, YELLOW);
 }
 
 bool Navmesh::IsWalkable(Vector2 v) const

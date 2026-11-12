@@ -25,6 +25,11 @@ Mission::Mission(const std::string &path, const toml::value &data)
 
 void Mission::Update(float dt)
 {
+  if (IsKeyPressed(KEY_F1))
+  {
+    g_debug = !g_debug;
+  }
+
   Vector2 direction = {0.0, 0.0};
 
   if (IsKeyDown(KEY_LEFT))
@@ -117,14 +122,18 @@ void Mission::Render()
 
   DrawRectangleV({0.0, 0.0}, m_mapSize, BLACK);
 
-  for (float x = 0.0f; x <= m_mapSize.x; x += 100.0f)
+  // debug: grid
+  if (g_debug)
   {
-    DrawLineV({x, 0.0}, {x, m_mapSize.y}, GRAY);
-  }
+    for (float x = 0.0f; x <= m_mapSize.x; x += 100.0f)
+    {
+      DrawLineV({x, 0.0}, {x, m_mapSize.y}, Fade(GRAY, 0.2f));
+    }
 
-  for (float y = 0.0f; y <= m_mapSize.y; y += 100.0f)
-  {
-    DrawLineV({0.0, y}, {m_mapSize.x, y}, GRAY);
+    for (float y = 0.0f; y <= m_mapSize.y; y += 100.0f)
+    {
+      DrawLineV({0.0, y}, {m_mapSize.x, y}, Fade(GRAY, 0.2f));
+    }
   }
 
   for (const Surface &surface : m_surfaces)
@@ -132,15 +141,19 @@ void Mission::Render()
     surface.Render();
   }
 
-  for (const Obstacle &obstacle : m_obstacles)
+  // debug: block vision obstacles (other blocks are yellow holes in navmesh)
+  if (g_debug)
   {
-    if (obstacle.BlocksVision())
+    for (const Obstacle &obstacle : m_obstacles)
     {
-      const std::vector<Vector2> &points = obstacle.GetPoints();
-
-      for (size_t i = 0; i < points.size(); ++i)
+      if (obstacle.BlocksVision())
       {
-        DrawLineEx(points.at(i), points.at((i + 1) % points.size()), 3.0f, SKYBLUE);
+        const std::vector<Vector2> &points = obstacle.GetPoints();
+
+        for (size_t i = 0; i < points.size(); ++i)
+        {
+          DrawLineEx(points.at(i), points.at((i + 1) % points.size()), 3.0f, SKYBLUE);
+        }
       }
     }
   }
@@ -323,7 +336,7 @@ bool Mission::HasFootprints(Vector2 point) const
 {
   for (const Surface &surface : m_surfaces)
   {
-    if (surface.HasFootprints() && surface.Contains(point))
+    if (surface.Contains(point))
     {
       return true;
     }
@@ -394,9 +407,7 @@ std::vector<Surface> Mission::ParseSurfaces(const toml::value &data)
       continue;
     }
 
-    bool footprints = toml::find_or<bool>(table, "Footprints", false);
-
-    surfaces.emplace_back(points, footprints);
+    surfaces.emplace_back(points);
   }
 
   return surfaces;

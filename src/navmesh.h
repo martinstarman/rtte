@@ -5,6 +5,8 @@
 #include <raymath.h>
 #include <vector>
 
+#include "globals.h"
+
 class Navmesh
 {
 public:

@@ -56,7 +56,7 @@ void Character::Render() const
 {
   Vector2 position = GetPosition2D();
 
-  if (IsMoving())
+  if (g_debug && IsMoving())
   {
     DrawLineEx(position, m_path.at(m_pathIndex), 2.0f, RED);
 
@@ -66,11 +66,8 @@ void Character::Render() const
     }
   }
 
-  if (!m_sprite.IsLoaded())
-  {
-    DrawCircleV(position, kRadius, GREEN);
-  }
-  else
+  // shadow
+  if (m_sprite.IsLoaded())
   {
     DrawEllipse((int)position.x, (int)position.y, kRadius, kRadius / 2.0f, Fade(BLACK, 0.3f));
   }
