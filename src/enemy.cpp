@@ -112,7 +112,7 @@ float Enemy::GetLookAngle() const
   return m_direction + kSweepAngle * std::sin(m_time * kSweepSpeed);
 }
 
-std::vector<Vector2> Enemy::GetViewPolygon(const std::vector<Obstacle> &obstacles) const
+std::vector<Vector2> Enemy::GetViewPolygon(const std::vector<Sector> &sectores) const
 {
   Vector2 origin = GetPosition2D();
   float start = GetLookAngle() - kViewAngle / 2.0f;
@@ -122,7 +122,7 @@ std::vector<Vector2> Enemy::GetViewPolygon(const std::vector<Obstacle> &obstacle
   {
     float angle = (start + kViewAngle * i / kViewRays) * DEG2RAD;
     Vector2 end = {origin.x + std::cos(angle) * kViewDistance, origin.y + std::sin(angle) * kViewDistance};
-    float length = CastRay(origin, end, obstacles);
+    float length = CastRay(origin, end, sectores);
 
     polygon.push_back(Vector2Lerp(origin, end, length / kViewDistance));
   }
@@ -135,18 +135,18 @@ Vector2 Enemy::GetPosition2D() const
   return {m_position.x, m_position.y};
 }
 
-float Enemy::CastRay(Vector2 origin, Vector2 end, const std::vector<Obstacle> &obstacles) const
+float Enemy::CastRay(Vector2 origin, Vector2 end, const std::vector<Sector> &sectores) const
 {
   float nearest = kViewDistance;
 
-  for (const Obstacle &obstacle : obstacles)
+  for (const Sector &sector : sectores)
   {
-    if (!obstacle.BlocksVision())
+    if (!sector.BlocksVision())
     {
       continue;
     }
 
-    const std::vector<Vector2> &points = obstacle.GetPoints();
+    const std::vector<Vector2> &points = sector.GetPoints();
 
     for (size_t i = 0; i < points.size(); ++i)
     {

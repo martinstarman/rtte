@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
   while (!WindowShouldClose())
   {
     BeginDrawing();
-    ClearBackground(DARKGRAY);
+    ClearBackground(BLACK);
 
     float dt = GetFrameTime();
 

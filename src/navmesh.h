@@ -23,7 +23,6 @@ private:
 
   Rectangle m_bounds;
   std::vector<std::vector<Vector2>> m_holes;
-  std::vector<std::vector<Vector2>> m_expandedHoles;
   std::vector<Vector2> m_nodes;
   std::vector<std::vector<int>> m_edges;
 };

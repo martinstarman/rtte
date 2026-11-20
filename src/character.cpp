@@ -66,12 +66,6 @@ void Character::Render() const
     }
   }
 
-  // shadow
-  if (m_sprite.IsLoaded())
-  {
-    DrawEllipse((int)position.x, (int)position.y, kRadius, kRadius / 2.0f, Fade(BLACK, 0.3f));
-  }
-
   if (m_selected)
   {
     DrawCircleLinesV(position, kRadius + 3.0f, YELLOW);

@@ -9,26 +9,6 @@ Navmesh::Navmesh(Rectangle bounds, const std::vector<std::vector<Vector2>> &hole
 {
   for (const std::vector<Vector2> &hole : m_holes)
   {
-    std::vector<Vector2> expandedHole;
-    size_t count = hole.size();
-
-    for (size_t i = 0; i < count; ++i)
-    {
-      const Vector2 &prev = hole.at((i + count - 1) % count);
-      const Vector2 &curr = hole.at(i);
-      const Vector2 &next = hole.at((i + 1) % count);
-      Vector2 n1 = OutwardNormal(prev, curr);
-      Vector2 n2 = OutwardNormal(curr, next);
-      float scale = agentRadius / (1.0f + Vector2DotProduct(n1, n2));
-
-      expandedHole.push_back(Vector2Add(curr, Vector2Scale(Vector2Add(n1, n2), scale)));
-    }
-
-    m_expandedHoles.push_back(expandedHole);
-  }
-
-  for (const std::vector<Vector2> &hole : m_expandedHoles)
-  {
     for (const Vector2 &v : hole)
     {
       if (IsWalkable(v))
@@ -159,10 +139,6 @@ void Navmesh::Render() const
     // debug: holes and expanded holes
     for (size_t i = 0; i < m_holes.size(); ++i)
     {
-      const std::vector<Vector2> &expanded = m_expandedHoles.at(i);
-      DrawLineStrip(expanded.data(), (int)expanded.size(), Fade(YELLOW, 0.2f));
-      DrawLineV(expanded.back(), expanded.front(), Fade(YELLOW, 0.2f));
-
       const std::vector<Vector2> &hole = m_holes.at(i);
       DrawLineStrip(hole.data(), (int)hole.size(), YELLOW);
       DrawLineV(hole.back(), hole.front(), YELLOW);
@@ -178,20 +154,12 @@ bool Navmesh::IsWalkable(Vector2 v) const
   {
     return false;
   }
-
-  for (const std::vector<Vector2> &hole : m_expandedHoles)
+  
+  for (const std::vector<Vector2> &hole : m_holes)
   {
-    bool isInside = true;
+    bool isInside = CheckCollisionPointPoly(v, &hole[0], hole.size());
 
-    for (size_t i = 0; i < hole.size() && isInside; ++i)
-    {
-      const Vector2 &a = hole.at(i);
-      const Vector2 &b = hole.at((i + 1) % hole.size());
-
-      isInside = Vector2DotProduct(OutwardNormal(a, b), Vector2Subtract(v, a)) < -kEpsilon;
-    }
-
-    if (isInside)
+    if(isInside)
     {
       return false;
     }
@@ -202,7 +170,7 @@ bool Navmesh::IsWalkable(Vector2 v) const
 
 bool Navmesh::IsVisible(Vector2 a, Vector2 b) const
 {
-  for (const std::vector<Vector2> &hole : m_expandedHoles)
+  for (const std::vector<Vector2> &hole : m_holes)
   {
     bool isOutside = false;
 

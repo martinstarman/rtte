@@ -18,10 +18,9 @@
 #include "footprint.h"
 #include "globals.h"
 #include "navmesh.h"
-#include "obstacle.h"
 #include "renderable.h"
+#include "sector.h"
 #include "sprite.h"
-#include "surface.h"
 
 class Mission
 {
@@ -34,15 +33,13 @@ public:
   const std::vector<Enemy> &GetEnemies() const;
   std::optional<size_t> GetSelectedEnemy() const;
   const std::vector<Sprite> &GetSprites() const;
-  const std::vector<Obstacle> &GetObstacles() const;
-  const std::vector<Surface> &GetSurfaces() const;
+  const std::vector<Sector> &GetSectores() const;
 
 private:
   Mission(const std::string &path, const toml::value &data);
   static Vector2 ParseMapSize(const toml::value &data);
-  static std::vector<Obstacle> ParseObstacles(const toml::value &data);
-  static std::vector<std::vector<Vector2>> GetMovementHoles(const std::vector<Obstacle> &obstacles);
-  static std::vector<Surface> ParseSurfaces(const toml::value &data);
+  static std::vector<Sector> ParseSectores(const toml::value &data);
+  static std::vector<std::vector<Vector2>> GetMovementHoles(const std::vector<Sector> &sectores);
   static std::vector<Character> ParseCharacters(const toml::value &data, const std::filesystem::path &directory);
   static std::vector<Enemy> ParseEnemies(const toml::value &data, const std::filesystem::path &directory);
   static std::vector<Sprite> ParseSprites(const toml::value &data, const std::filesystem::path &directory);
@@ -64,9 +61,8 @@ private:
   Vector2 m_mapSize;
   Camera2D m_camera;
   float m_scrollSpeed;
-  std::vector<Obstacle> m_obstacles;
+  std::vector<Sector> m_sectores;
   Navmesh m_navmesh;
-  std::vector<Surface> m_surfaces;
   std::vector<Sprite> m_sprites;
   std::vector<Character> m_characters;
   std::vector<Enemy> m_enemies;

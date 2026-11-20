@@ -10,9 +10,8 @@ Mission::Mission(const std::string &path, const toml::value &data)
       m_mapSize(ParseMapSize(data)),
       m_camera({{0.0, 0.0}, {0.0, 0.0}, 0.0f, 1.0f}),
       m_scrollSpeed(500.0f),
-      m_obstacles(ParseObstacles(data)),
-      m_navmesh({0.0, 0.0, m_mapSize.x, m_mapSize.y}, GetMovementHoles(m_obstacles), 8.0f),
-      m_surfaces(ParseSurfaces(data)),
+      m_sectores(ParseSectores(data)),
+      m_navmesh({0.0, 0.0, m_mapSize.x, m_mapSize.y}, GetMovementHoles(m_sectores), 8.0f),
       m_sprites(ParseSprites(data, std::filesystem::path(path).parent_path())),
       m_characters(ParseCharacters(data, std::filesystem::path(path).parent_path())),
       m_enemies(ParseEnemies(data, std::filesystem::path(path).parent_path())),
@@ -136,19 +135,14 @@ void Mission::Render()
     }
   }
 
-  for (const Surface &surface : m_surfaces)
-  {
-    surface.Render();
-  }
-
-  // debug: block vision obstacles (other blocks are yellow holes in navmesh)
+  // debug: block vision sectores (other blocks are yellow holes in navmesh)
   if (g_debug)
   {
-    for (const Obstacle &obstacle : m_obstacles)
+    for (const Sector &sector : m_sectores)
     {
-      if (obstacle.BlocksVision())
+      if (sector.BlocksVision() || sector.ShowFootprints())
       {
-        const std::vector<Vector2> &points = obstacle.GetPoints();
+        const std::vector<Vector2> &points = sector.GetPoints();
 
         for (size_t i = 0; i < points.size(); ++i)
         {
@@ -235,14 +229,9 @@ const std::vector<Sprite> &Mission::GetSprites() const
   return m_sprites;
 }
 
-const std::vector<Obstacle> &Mission::GetObstacles() const
+const std::vector<Sector> &Mission::GetSectores() const
 {
-  return m_obstacles;
-}
-
-const std::vector<Surface> &Mission::GetSurfaces() const
-{
-  return m_surfaces;
+  return m_sectores;
 }
 
 Rectangle Mission::MakeRectangle(Vector2 a, Vector2 b)
@@ -292,7 +281,7 @@ void Mission::Click(Vector2 point)
 
 void Mission::RenderViewCone(const Enemy &enemy) const
 {
-  std::vector<Vector2> polygon = enemy.GetViewPolygon(m_obstacles);
+  std::vector<Vector2> polygon = enemy.GetViewPolygon(m_sectores);
   Vector2 origin = polygon.at(0);
 
   for (size_t i = 1; i + 1 < polygon.size(); ++i)
@@ -334,9 +323,9 @@ void Mission::MoveSelected(Vector2 target)
 
 bool Mission::HasFootprints(Vector2 point) const
 {
-  for (const Surface &surface : m_surfaces)
+  for (const Sector &sector : m_sectores)
   {
-    if (surface.Contains(point))
+    if (sector.ShowFootprints() && sector.Contains(point))
     {
       return true;
     }
@@ -353,11 +342,11 @@ Vector2 Mission::ParseMapSize(const toml::value &data)
   return {size.at(0), size.at(1)};
 }
 
-std::vector<Obstacle> Mission::ParseObstacles(const toml::value &data)
+std::vector<Sector> Mission::ParseSectores(const toml::value &data)
 {
-  std::vector<Obstacle> obstacles;
+  std::vector<Sector> sectores;
   std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
-      data, "Obstacle", std::vector<toml::value>{});
+      data, "Sector", std::vector<toml::value>{});
 
   for (const toml::value &table : tables)
   {
@@ -370,47 +359,27 @@ std::vector<Obstacle> Mission::ParseObstacles(const toml::value &data)
 
     bool blocksMovement = toml::find_or<bool>(table, "BlocksMovement", true);
     bool blocksVision = toml::find_or<bool>(table, "BlocksVision", false);
+    bool showFootprints = toml::find_or<bool>(table, "ShowFootprints", false);
 
-    obstacles.emplace_back(points, blocksMovement, blocksVision);
+    sectores.emplace_back(points, blocksMovement, blocksVision, showFootprints);
   }
 
-  return obstacles;
+  return sectores;
 }
 
-std::vector<std::vector<Vector2>> Mission::GetMovementHoles(const std::vector<Obstacle> &obstacles)
+std::vector<std::vector<Vector2>> Mission::GetMovementHoles(const std::vector<Sector> &sectores)
 {
   std::vector<std::vector<Vector2>> holes;
 
-  for (const Obstacle &obstacle : obstacles)
+  for (const Sector &sector : sectores)
   {
-    if (obstacle.BlocksMovement())
+    if (sector.BlocksMovement())
     {
-      holes.push_back(obstacle.GetPoints());
+      holes.push_back(sector.GetPoints());
     }
   }
 
   return holes;
-}
-
-std::vector<Surface> Mission::ParseSurfaces(const toml::value &data)
-{
-  std::vector<Surface> surfaces;
-  std::vector<toml::value> tables = toml::find_or<std::vector<toml::value>>(
-      data, "Surface", std::vector<toml::value>{});
-
-  for (const toml::value &table : tables)
-  {
-    std::vector<Vector2> points = ParsePoints(table, "Points");
-
-    if (points.size() < 3)
-    {
-      continue;
-    }
-
-    surfaces.emplace_back(points);
-  }
-
-  return surfaces;
 }
 
 std::vector<Character> Mission::ParseCharacters(const toml::value &data, const std::filesystem::path &directory)

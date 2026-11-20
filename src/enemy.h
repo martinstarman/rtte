@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "directional_sprite.h"
-#include "obstacle.h"
 #include "renderable.h"
+#include "sector.h"
 
 class Enemy : public Renderable
 {
@@ -30,7 +30,7 @@ public:
   size_t GetFacing() const;
   bool IsMoving() const;
   float GetLookAngle() const;
-  std::vector<Vector2> GetViewPolygon(const std::vector<Obstacle> &obstacles) const;
+  std::vector<Vector2> GetViewPolygon(const std::vector<Sector> &sectores) const;
 
 private:
   static constexpr float kRadius = 8.0f;
@@ -39,7 +39,7 @@ private:
   static constexpr float kAnimationFps = 2.0f * kSpeed / kStepLength;
 
   Vector2 GetPosition2D() const;
-  float CastRay(Vector2 origin, Vector2 end, const std::vector<Obstacle> &obstacles) const;
+  float CastRay(Vector2 origin, Vector2 end, const std::vector<Sector> &sectores) const;
 
   std::vector<Vector2> m_path;
   size_t m_pathIndex;

@@ -8,7 +8,3 @@ Dependencies are installed automatically by [vcpkg](https://vcpkg.io) from `vcpk
 cmake -B build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
 cmake --build build
 ```
-
-## TODO
-- vertical animation sprites
-- unify debug colors
