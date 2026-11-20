@@ -1,11 +1,11 @@
 #include "animation.h"
 
-Animation::Animation(size_t frameCount, Vector2 frameSize, float fps)
+Animation::Animation(int frameCount, Vector2 frameSize, int fps)
     : m_currentFrame(0),
       m_frameCount(frameCount),
       m_frameSize(frameSize),
-      m_frameDuration(fps > 0.0f ? 1.0f / fps : 0.0f),
-      m_elapsed(0.0f)
+      m_frameDuration(fps > 0 ? 1.0f / (float)fps : 0.0f),
+      m_timeElapsed(0.0f)
 {
 }
 
@@ -18,21 +18,21 @@ void Animation::Update(float dt)
     return;
   }
 
-  m_elapsed += dt;
+  m_timeElapsed += dt;
 
-  while (m_elapsed >= m_frameDuration)
+  while (m_timeElapsed >= m_frameDuration)
   {
-    m_elapsed -= m_frameDuration;
+    m_timeElapsed -= m_frameDuration;
     m_currentFrame = (m_currentFrame + 1) % m_frameCount;
   }
 }
 
-size_t Animation::GetFrameCount() const
+int Animation::GetFrameCount() const
 {
   return m_frameCount;
 }
 
-size_t Animation::GetCurrentFrame() const
+int Animation::GetCurrentFrame() const
 {
   return m_currentFrame;
 }
@@ -40,9 +40,4 @@ size_t Animation::GetCurrentFrame() const
 Vector2 Animation::GetFrameSize() const
 {
   return m_frameSize;
-}
-
-void Animation::SetFrameSize(Vector2 frameSize)
-{
-  m_frameSize = frameSize;
 }

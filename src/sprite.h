@@ -1,33 +1,23 @@
 #pragma once
 
-#include <limits>
+#include <algorithm>
 #include <raylib.h>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "animation.h"
-#include "renderable.h"
-#include "texture_handle.h"
+#include "drawable.h"
 
-class Sprite : public Renderable
+class Sprite : public Drawable
 {
 public:
-  Sprite(const std::string &path, Vector3 position);
-  Sprite(const std::string &path, Vector3 position, Animation animation);
   Sprite(const std::string &path, Vector3 position, Vector2 size);
   Sprite(const std::string &path, Vector3 position, Vector2 size, Animation animation);
-  Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape);
-  Sprite(const std::string &path, Vector3 position, const std::vector<Vector2> shape, Animation animation);
+  ~Sprite();
   void Update(float dt);
   void Render() const override;
-  const Texture2D &GetTexture() const;
-  float GetYSortIndex() const override;
 
 private:
   std::string m_path;
-  Vector2 m_size;
-  std::vector<Vector2> m_shape;
-  TextureHandle m_texture;
+  Texture m_texture;
   Animation m_animation;
 };

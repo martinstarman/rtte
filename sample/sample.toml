@@ -1,56 +1,23 @@
-[Map]
-Size = [1200.0, 1000.0]
+[map]
+size = [1200, 1000]
 
-[[Character]]
-Position = [50.0, 50.0, 1.0]
-Sprite = "soldier.png"
+# water - z = 0
+# ground - z = 1
+# trees, buildings = z = 2
 
-[[Character]]
-Position = [80.0, 50.0, 1.0]
-Sprite = "soldier.png"
+[[sprites]]
+path = "water.png"
+position = [0, 0, 0] # Vec3
+size = [1200, 1000]
 
-[[Sector]]
-Points = [[400.0, 0.0], [460.0, 0.0], [460.0, 450.0], [400.0, 450.0]]
+[sprites.animation]
+fps = 4
+frame_count = 8
+frame_size = [32, 32]
 
-[[Sprite]]
-Animation = {FrameCount = 8, FrameSize = [32.0, 32.0], Fps = 5.0}
-Path = "water.png"
-Position = [400.0, 0.0, 0.0]
-Shape = [[0.0, 0.0], [60.0, 0.0], [60.0, 450.0], [0.0, 450.0]]
-
-[[Sector]]
-Points = [[400.0, 500.0], [460.0, 500.0], [460.0, 1000.0], [400.0, 1000.0]]
-
-[[Sprite]]
-Animation = {FrameCount = 8, FrameSize = [32.0, 32.0], Fps = 5.0}
-Path = "water.png"
-Position = [400.0, 500.0, 0.0]
-Shape = [[0.0, 0.0], [60.0, 0.0], [60.0, 500.0], [0.0, 500.0]]
-
-[[Sector]]
-BlocksMovement = false
-Points = [[20.0, 400.0], [320.0, 400.0], [320.0, 780.0], [20.0, 780.0]]
-ShowFootprints = true
-
-[[Sprite]]
-Path = "snow.png"
-Position = [20.0, 400.0, 0.0]
-Shape = [[0.0, 0.0], [300.0, 0.0], [300.0, 380.0], [0.0, 380.0]]
-
-[[Enemy]]
-Direction = 180.0
-Position = [700.0, 120.0, 0.0]
-Sprite = "enemy.png"
-
-[[Enemy]]
-Path = [[900.0, 620.0], [900.0, 750.0], [600.0, 750.0], [600.0, 620.0]]
-Position = [600.0, 620.0, 0.0]
-Sprite = "enemy.png"
-
-[[Sector]]
-BlocksVision = true
-Points = [[650.0, 100.0], [660.0, 100.0], [660.0, 110.0], [650.0, 110.0]]
-
-[[Sprite]]
-Path = "tree.png"
-Position = [634.0, 30.0, 1.0]
+# areas only polygons
+# [[area]]
+# points = []
+# blocks_movement = true
+# blocks_vision = true
+# show_footprints = true
