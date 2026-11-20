@@ -7,19 +7,21 @@ int main(int argc, char *argv[])
   InitWindow(800, 600, "RTTE");
   SetTargetFPS(60);
 
-  Mission mission("sample/sample.toml");
-
-  while (!WindowShouldClose())
   {
-    BeginDrawing();
-    ClearBackground(BLACK);
+    Mission mission("sample/sample.toml");
 
-    float dt = GetFrameTime();
+    while (!WindowShouldClose())
+    {
+      BeginDrawing();
+      ClearBackground(MAGENTA);
 
-    mission.Update(dt);
-    mission.Render();
+      float dt = GetFrameTime();
 
-    EndDrawing();
+      mission.Update(dt);
+      mission.Render();
+
+      EndDrawing();
+    }
   }
 
   CloseWindow();

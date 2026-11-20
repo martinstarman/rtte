@@ -5,18 +5,17 @@
 class Animation
 {
 public:
-  Animation(size_t frameCount, Vector2 frameSize, float fps);
+  Animation(int frameCount, Vector2 frameSize, int fps);
   ~Animation();
   void Update(float dt);
-  size_t GetFrameCount() const;
-  size_t GetCurrentFrame() const;
+  int GetFrameCount() const;
+  int GetCurrentFrame() const;
   Vector2 GetFrameSize() const;
-  void SetFrameSize(Vector2 frameSize);
 
 private:
-  size_t m_currentFrame;
-  size_t m_frameCount;
+  int m_currentFrame;
+  int m_frameCount;
   Vector2 m_frameSize;
   float m_frameDuration;
-  float m_elapsed;
+  float m_timeElapsed;
 };
